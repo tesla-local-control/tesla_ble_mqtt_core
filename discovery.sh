@@ -18,7 +18,7 @@ setup_auto_discovery() {
  echo "DEV_NAME=$DEV_NAME"
  echo "TOPIC_ROOT=$TOPIC_ROOT"
 
- mosquitto_pub -h $MQTT_IP -p $MQTT_PORT -u "${MQTT_USER}" -P "${MQTT_PWD}" -t homeassistant/binary_sensor/${DEV_ID}/presence/config -m \
+ mosquitto_pub -h $MQTT_IP -p $MQTT_PORT -u "${MQTT_USER}" -P "${MQTT_PWD}" -t homeassistant/binary_sensor/${DEV_ID}/presence/config -r -m \
   '{
    "state_topic": "'${TOPIC_ROOT}'/binary_sensor/presence",
    "device": {
@@ -34,7 +34,7 @@ setup_auto_discovery() {
    "unique_id": "'${DEV_ID}'_presence"
   }'
 
- mosquitto_pub -h $MQTT_IP -p $MQTT_PORT -u "${MQTT_USER}" -P "${MQTT_PWD}" -t homeassistant/button/${DEV_ID}/generate_keys/config -m \
+ mosquitto_pub -h $MQTT_IP -p $MQTT_PORT -u "${MQTT_USER}" -P "${MQTT_PWD}" -t homeassistant/button/${DEV_ID}/generate_keys/config -r -m \
   '{
    "command_topic": "'${TOPIC_ROOT}'/config",
    "device": {
@@ -52,7 +52,7 @@ setup_auto_discovery() {
    "unique_id": "'${DEV_ID}'_generate_keys"
   }'
 
- mosquitto_pub -h $MQTT_IP -p $MQTT_PORT -u "${MQTT_USER}" -P "${MQTT_PWD}" -t homeassistant/button/${DEV_ID}/deploy_key/config -m \
+ mosquitto_pub -h $MQTT_IP -p $MQTT_PORT -u "${MQTT_USER}" -P "${MQTT_PWD}" -t homeassistant/button/${DEV_ID}/deploy_key/config -r -m \
   '{
    "command_topic": "'${TOPIC_ROOT}'/config",
    "device": {
@@ -70,7 +70,7 @@ setup_auto_discovery() {
    "unique_id": "'${DEV_ID}'_deploy_key"
   }'
 
- mosquitto_pub -h $MQTT_IP -p $MQTT_PORT -u "${MQTT_USER}" -P "${MQTT_PWD}" -t homeassistant/button/${DEV_ID}/scan_bluetooth/config -m \
+ mosquitto_pub -h $MQTT_IP -p $MQTT_PORT -u "${MQTT_USER}" -P "${MQTT_PWD}" -t homeassistant/button/${DEV_ID}/scan_bluetooth/config -r -m \
   '{
    "command_topic": "'${TOPIC_ROOT}'/config",
    "device": {
@@ -88,7 +88,7 @@ setup_auto_discovery() {
    "unique_id": "'${DEV_ID}'_scan_bluetooth"
   }'
 
- mosquitto_pub -h $MQTT_IP -p $MQTT_PORT -u "${MQTT_USER}" -P "${MQTT_PWD}" -t homeassistant/button/${DEV_ID}/wake/config -m \
+ mosquitto_pub -h $MQTT_IP -p $MQTT_PORT -u "${MQTT_USER}" -P "${MQTT_PWD}" -t homeassistant/button/${DEV_ID}/wake/config -r -m \
   '{
    "command_topic": "'${TOPIC_ROOT}'/command",
    "device": {
@@ -105,7 +105,7 @@ setup_auto_discovery() {
    "unique_id": "'${DEV_ID}'_wake"
   }'
 
- mosquitto_pub -h $MQTT_IP -p $MQTT_PORT -u "${MQTT_USER}" -P "${MQTT_PWD}" -t homeassistant/button/${DEV_ID}/flash-lights/config -m \
+ mosquitto_pub -h $MQTT_IP -p $MQTT_PORT -u "${MQTT_USER}" -P "${MQTT_PWD}" -t homeassistant/button/${DEV_ID}/flash-lights/config -r -m \
   '{
    "command_topic": "'${TOPIC_ROOT}'/command",
    "device": {
@@ -122,7 +122,7 @@ setup_auto_discovery() {
    "unique_id": "'${DEV_ID}'_flash_lights"
   }'
 
-  mosquitto_pub -h $MQTT_IP -p $MQTT_PORT -u "${MQTT_USER}" -P "${MQTT_PWD}" -t homeassistant/button/${DEV_ID}/honk/config -m \
+  mosquitto_pub -h $MQTT_IP -p $MQTT_PORT -u "${MQTT_USER}" -P "${MQTT_PWD}" -t homeassistant/button/${DEV_ID}/honk/config -r -m \
   '{
    "command_topic": "'${TOPIC_ROOT}'/command",
    "device": {
@@ -139,7 +139,7 @@ setup_auto_discovery() {
    "unique_id": "'${DEV_ID}'_honk"
   }'
 
- mosquitto_pub -h $MQTT_IP -p $MQTT_PORT -u "${MQTT_USER}" -P "${MQTT_PWD}" -t homeassistant/button/${DEV_ID}/lock/config -m \
+ mosquitto_pub -h $MQTT_IP -p $MQTT_PORT -u "${MQTT_USER}" -P "${MQTT_PWD}" -t homeassistant/button/${DEV_ID}/lock/config -r -m \
   '{
    "command_topic": "'${TOPIC_ROOT}'/command",
    "device": {
@@ -156,7 +156,7 @@ setup_auto_discovery() {
    "unique_id": "'${DEV_ID}'_lock"
   }'
 
- mosquitto_pub -h $MQTT_IP -p $MQTT_PORT -u "${MQTT_USER}" -P "${MQTT_PWD}" -t homeassistant/button/${DEV_ID}/unlock/config -m \
+ mosquitto_pub -h $MQTT_IP -p $MQTT_PORT -u "${MQTT_USER}" -P "${MQTT_PWD}" -t homeassistant/button/${DEV_ID}/unlock/config -r -m \
   '{
    "command_topic": "'${TOPIC_ROOT}'/command",
    "device": {
@@ -173,7 +173,7 @@ setup_auto_discovery() {
    "unique_id": "'${DEV_ID}'_unlock"
    }'
 
- mosquitto_pub -h $MQTT_IP -p $MQTT_PORT -u "${MQTT_USER}" -P "${MQTT_PWD}" -t homeassistant/button/${DEV_ID}/auto-seat-climate/config -m \
+ mosquitto_pub -h $MQTT_IP -p $MQTT_PORT -u "${MQTT_USER}" -P "${MQTT_PWD}" -t homeassistant/button/${DEV_ID}/auto-seat-climate/config -r -m \
   '{
    "command_topic": "'${TOPIC_ROOT}'/auto-seat-and-climate",
    "device": {
@@ -190,7 +190,7 @@ setup_auto_discovery() {
    "unique_id": "'${DEV_ID}'_auto_seat-climate"
    }'
 
- mosquitto_pub -h $MQTT_IP -p $MQTT_PORT -u "${MQTT_USER}" -P "${MQTT_PWD}" -t homeassistant/button/${DEV_ID}/climate-off/config -m \
+ mosquitto_pub -h $MQTT_IP -p $MQTT_PORT -u "${MQTT_USER}" -P "${MQTT_PWD}" -t homeassistant/button/${DEV_ID}/climate-off/config -r -m \
   '{
    "command_topic": "'${TOPIC_ROOT}'/command",
    "device": {
@@ -207,7 +207,7 @@ setup_auto_discovery() {
    "unique_id": "'${DEV_ID}'_climate-off"
    }'
 
- mosquitto_pub -h $MQTT_IP -p $MQTT_PORT -u "${MQTT_USER}" -P "${MQTT_PWD}" -t homeassistant/button/${DEV_ID}/climate-on/config -m \
+ mosquitto_pub -h $MQTT_IP -p $MQTT_PORT -u "${MQTT_USER}" -P "${MQTT_PWD}" -t homeassistant/button/${DEV_ID}/climate-on/config -r -m \
   '{
    "command_topic": "'${TOPIC_ROOT}'/command",
    "device": {
@@ -224,7 +224,7 @@ setup_auto_discovery() {
    "unique_id": "'${DEV_ID}'_climate-on"
    }'
 
- mosquitto_pub -h $MQTT_IP -p $MQTT_PORT -u "${MQTT_USER}" -P "${MQTT_PWD}" -t homeassistant/button/${DEV_ID}/trunk-open/config -m \
+ mosquitto_pub -h $MQTT_IP -p $MQTT_PORT -u "${MQTT_USER}" -P "${MQTT_PWD}" -t homeassistant/button/${DEV_ID}/trunk-open/config -r -m \
   '{
    "command_topic": "'${TOPIC_ROOT}'/command",
    "device": {
@@ -241,7 +241,7 @@ setup_auto_discovery() {
    "unique_id": "'${DEV_ID}'_trunk-open"
    }'
 
- mosquitto_pub -h $MQTT_IP -p $MQTT_PORT -u "${MQTT_USER}" -P "${MQTT_PWD}" -t homeassistant/button/${DEV_ID}/trunk-close/config -m \
+ mosquitto_pub -h $MQTT_IP -p $MQTT_PORT -u "${MQTT_USER}" -P "${MQTT_PWD}" -t homeassistant/button/${DEV_ID}/trunk-close/config -r -m \
   '{
    "command_topic": "'${TOPIC_ROOT}'/command",
    "device": {
@@ -258,7 +258,7 @@ setup_auto_discovery() {
    "unique_id": "'${DEV_ID}'_trunk-close"
    }'
 
- mosquitto_pub -h $MQTT_IP -p $MQTT_PORT -u "${MQTT_USER}" -P "${MQTT_PWD}" -t homeassistant/button/${DEV_ID}/frunk-open/config -m \
+ mosquitto_pub -h $MQTT_IP -p $MQTT_PORT -u "${MQTT_USER}" -P "${MQTT_PWD}" -t homeassistant/button/${DEV_ID}/frunk-open/config -r -m \
   '{
    "command_topic": "'${TOPIC_ROOT}'/command",
    "device": {
@@ -275,7 +275,7 @@ setup_auto_discovery() {
    "unique_id": "'${DEV_ID}'_frunk-open"
    }'
 
- mosquitto_pub -h $MQTT_IP -p $MQTT_PORT -u "${MQTT_USER}" -P "${MQTT_PWD}" -t homeassistant/button/${DEV_ID}/charging-start/config -m \
+ mosquitto_pub -h $MQTT_IP -p $MQTT_PORT -u "${MQTT_USER}" -P "${MQTT_PWD}" -t homeassistant/button/${DEV_ID}/charging-start/config -r -m \
   '{
    "command_topic": "'${TOPIC_ROOT}'/command",
    "device": {
@@ -292,7 +292,7 @@ setup_auto_discovery() {
    "unique_id": "'${DEV_ID}'_charging-start"
    }'
 
- mosquitto_pub -h $MQTT_IP -p $MQTT_PORT -u "${MQTT_USER}" -P "${MQTT_PWD}" -t homeassistant/button/${DEV_ID}/charging-stop/config -m \
+ mosquitto_pub -h $MQTT_IP -p $MQTT_PORT -u "${MQTT_USER}" -P "${MQTT_PWD}" -t homeassistant/button/${DEV_ID}/charging-stop/config -r -m \
   '{
    "command_topic": "'${TOPIC_ROOT}'/command",
    "device": {
@@ -309,7 +309,7 @@ setup_auto_discovery() {
    "unique_id": "'${DEV_ID}'_charging-stop"
    }'
 
- mosquitto_pub -h $MQTT_IP -p $MQTT_PORT -u "${MQTT_USER}" -P "${MQTT_PWD}" -t homeassistant/button/${DEV_ID}/charge-port-open/config -m \
+ mosquitto_pub -h $MQTT_IP -p $MQTT_PORT -u "${MQTT_USER}" -P "${MQTT_PWD}" -t homeassistant/button/${DEV_ID}/charge-port-open/config -r -m \
   '{
    "command_topic": "'${TOPIC_ROOT}'/command",
    "device": {
@@ -326,7 +326,7 @@ setup_auto_discovery() {
    "unique_id": "'${DEV_ID}'_charge-port-open"
    }'
 
- mosquitto_pub -h $MQTT_IP -p $MQTT_PORT -u "${MQTT_USER}" -P "${MQTT_PWD}" -t homeassistant/button/${DEV_ID}/charge-port-close/config -m \
+ mosquitto_pub -h $MQTT_IP -p $MQTT_PORT -u "${MQTT_USER}" -P "${MQTT_PWD}" -t homeassistant/button/${DEV_ID}/charge-port-close/config -r -m \
   '{
    "command_topic": "'${TOPIC_ROOT}'/command",
    "device": {
@@ -343,7 +343,7 @@ setup_auto_discovery() {
    "unique_id": "'${DEV_ID}'_charge-port-close"
    }'
 
- mosquitto_pub -h $MQTT_IP -p $MQTT_PORT -u "${MQTT_USER}" -P "${MQTT_PWD}" -t homeassistant/button/${DEV_ID}/windows-close/config -m \
+ mosquitto_pub -h $MQTT_IP -p $MQTT_PORT -u "${MQTT_USER}" -P "${MQTT_PWD}" -t homeassistant/button/${DEV_ID}/windows-close/config -r -m \
   '{
    "command_topic": "'${TOPIC_ROOT}'/command",
    "device": {
@@ -360,7 +360,7 @@ setup_auto_discovery() {
    "unique_id": "'${DEV_ID}'_windows-close"
    }'
 
- mosquitto_pub -h $MQTT_IP -p $MQTT_PORT -u "${MQTT_USER}" -P "${MQTT_PWD}" -t homeassistant/button/${DEV_ID}/windows-vent/config -m \
+ mosquitto_pub -h $MQTT_IP -p $MQTT_PORT -u "${MQTT_USER}" -P "${MQTT_PWD}" -t homeassistant/button/${DEV_ID}/windows-vent/config -r -m \
   '{
    "command_topic": "'${TOPIC_ROOT}'/command",
    "device": {
@@ -377,7 +377,7 @@ setup_auto_discovery() {
    "unique_id": "'${DEV_ID}'_windows-vent"
    }'
 
- mosquitto_pub -h $MQTT_IP -p $MQTT_PORT -u "${MQTT_USER}" -P "${MQTT_PWD}" -t homeassistant/number/${DEV_ID}/charging-set-amps/config -m \
+ mosquitto_pub -h $MQTT_IP -p $MQTT_PORT -u "${MQTT_USER}" -P "${MQTT_PWD}" -t homeassistant/number/${DEV_ID}/charging-set-amps/config -r -m \
   '{
    "command_topic": "'${TOPIC_ROOT}'/charging-amps",
    "device": {
@@ -398,7 +398,7 @@ setup_auto_discovery() {
    "icon": "mdi:current-ac"
    }'
 
- mosquitto_pub -h $MQTT_IP -p $MQTT_PORT -u "${MQTT_USER}" -P "${MQTT_PWD}" -t homeassistant/number/${DEV_ID}/charging-set-limit/config -m \
+ mosquitto_pub -h $MQTT_IP -p $MQTT_PORT -u "${MQTT_USER}" -P "${MQTT_PWD}" -t homeassistant/number/${DEV_ID}/charging-set-limit/config -r -m \
   '{
    "command_topic": "'${TOPIC_ROOT}'/charging-set-limit",
    "device": {
@@ -419,7 +419,7 @@ setup_auto_discovery() {
    "icon": "mdi:battery-90"
    }'
 
- mosquitto_pub -h $MQTT_IP -p $MQTT_PORT -u "${MQTT_USER}" -P "${MQTT_PWD}" -t homeassistant/number/${DEV_ID}/climate-temp/config -m \
+ mosquitto_pub -h $MQTT_IP -p $MQTT_PORT -u "${MQTT_USER}" -P "${MQTT_PWD}" -t homeassistant/number/${DEV_ID}/climate-temp/config -r -m \
   '{
    "command_topic": "'${TOPIC_ROOT}'/climate-set-temp",
    "device": {
@@ -440,7 +440,7 @@ setup_auto_discovery() {
    "icon": "mdi:temperature"
    }'
 
- mosquitto_pub -h $MQTT_IP -p $MQTT_PORT -u "${MQTT_USER}" -P "${MQTT_PWD}" -t homeassistant/switch/${DEV_ID}/sw-heater/config -m \
+ mosquitto_pub -h $MQTT_IP -p $MQTT_PORT -u "${MQTT_USER}" -P "${MQTT_PWD}" -t homeassistant/switch/${DEV_ID}/sw-heater/config -r -m \
   '{
    "command_topic": "'${TOPIC_ROOT}'/sw-heater",
    "device": {
@@ -457,7 +457,7 @@ setup_auto_discovery() {
    "unique_id": "'${DEV_ID}'_sw_heater"
    }'
 
- mosquitto_pub -h $MQTT_IP -p $MQTT_PORT -u "${MQTT_USER}" -P "${MQTT_PWD}" -t homeassistant/switch/${DEV_ID}/sentry-mode/config -m \
+ mosquitto_pub -h $MQTT_IP -p $MQTT_PORT -u "${MQTT_USER}" -P "${MQTT_PWD}" -t homeassistant/switch/${DEV_ID}/sentry-mode/config -r -m \
   '{
    "command_topic": "'${TOPIC_ROOT}'/sentry-mode",
    "device": {
@@ -474,7 +474,7 @@ setup_auto_discovery() {
    "unique_id": "'${DEV_ID}'_sentry-mode"
    }'
 
- mosquitto_pub -h $MQTT_IP -p $MQTT_PORT -u "${MQTT_USER}" -P "${MQTT_PWD}" -t homeassistant/select/${DEV_ID}/heated_seat_left/config -m \
+ mosquitto_pub -h $MQTT_IP -p $MQTT_PORT -u "${MQTT_USER}" -P "${MQTT_PWD}" -t homeassistant/select/${DEV_ID}/heated_seat_left/config -r -m \
   '{
    "command_topic": "'${TOPIC_ROOT}'/heated_seat_left",
    "device": {
@@ -492,7 +492,7 @@ setup_auto_discovery() {
    "unique_id": "'${DEV_ID}'_heated_seat_left"
    }'
 
- mosquitto_pub -h $MQTT_IP -p $MQTT_PORT -u "${MQTT_USER}" -P "${MQTT_PWD}" -t homeassistant/select/${DEV_ID}/heated_seat_right/config -m \
+ mosquitto_pub -h $MQTT_IP -p $MQTT_PORT -u "${MQTT_USER}" -P "${MQTT_PWD}" -t homeassistant/select/${DEV_ID}/heated_seat_right/config -r -m \
   '{
    "command_topic": "'${TOPIC_ROOT}'/heated_seat_right",
    "device": {
@@ -511,7 +511,7 @@ setup_auto_discovery() {
    }'
 
 # Entities which are seemingly not useful for BLE commands
-#  mosquitto_pub -h $MQTT_IP -p $MQTT_PORT -u "${MQTT_USER}" -P "${MQTT_PWD}" -t homeassistant/button/${DEV_ID}/ping/config -m \
+#  mosquitto_pub -h $MQTT_IP -p $MQTT_PORT -u "${MQTT_USER}" -P "${MQTT_PWD}" -t homeassistant/button/${DEV_ID}/ping/config -r -m \
 #  '{
 #   "command_topic": "'${TOPIC_ROOT}'/command",
 #   "device": {
@@ -529,7 +529,7 @@ setup_auto_discovery() {
 #   "unique_id": "'${DEV_ID}'_ping"
 #  }'
 #
-#  mosquitto_pub -h $MQTT_IP -p $MQTT_PORT -u "${MQTT_USER}" -P "${MQTT_PWD}" -t homeassistant/button/${DEV_ID}/product-info/config -m \
+#  mosquitto_pub -h $MQTT_IP -p $MQTT_PORT -u "${MQTT_USER}" -P "${MQTT_PWD}" -t homeassistant/button/${DEV_ID}/product-info/config -r -m \
 #  '{
 #   "command_topic": "'${TOPIC_ROOT}'/command",
 #   "device": {
@@ -547,7 +547,7 @@ setup_auto_discovery() {
 #   "unique_id": "'${DEV_ID}'_product-info"
 #   }'
 #
-# mosquitto_pub -h $MQTT_IP -p $MQTT_PORT -u "${MQTT_USER}" -P "${MQTT_PWD}" -t homeassistant/button/${DEV_ID}/session-info/config -m \
+# mosquitto_pub -h $MQTT_IP -p $MQTT_PORT -u "${MQTT_USER}" -P "${MQTT_PWD}" -t homeassistant/button/${DEV_ID}/session-info/config -r -m \
 #  '{
 #   "command_topic": "'${TOPIC_ROOT}'/command",
 #   "device": {
