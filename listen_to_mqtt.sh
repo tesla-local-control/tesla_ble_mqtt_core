@@ -1,7 +1,7 @@
 #!/bin/ash
 
 listen_to_mqtt() {
- echo "Listening to MQTT"
+ log.info "Listening to MQTT"
  mosquitto_sub --nodelay -E -c -i tesla_ble_mqtt -q 1 -h $MQTT_IP -p $MQTT_PORT -u "${MQTT_USER}" -P "${MQTT_PWD}" -t tesla_ble_mqtt/+/+ -F "%t %p" | while read -r payload
   do
    topic=${payload%% *}
@@ -9,136 +9,127 @@ listen_to_mqtt() {
    topic_stripped=${topic#*/}
    vin=${topic_stripped%/*}
    cmnd=${topic_stripped#*/}
-   echo "Received MQTT message $topic $msg VIN: $vin COMMAND: $cmnd"
+   log.info "Received MQTT message $topic $msg VIN: $vin COMMAND: $cmnd"
 
    case $cmnd in
     config)
-     echo "Configuration $msg requested"
+     log.info "Configuration $msg requested"
      case $msg in
       generate_keys)
-       echo "Generating the private key"
+       log.notice "Generating the private key"
        openssl ecparam -genkey -name prime256v1 -noout > /share/tesla_ble_mqtt/${vin}_private.pem
        cat /share/tesla_ble_mqtt/${vin}_private.pem
-       echo "Generating the public key"
+       log.notice "Generating the public key"
        openssl ec -in /share/tesla_ble_mqtt/${vin}_private.pem -pubout > /share/tesla_ble_mqtt/${vin}_public.pem
        cat /share/tesla_ble_mqtt/${vin}_public.pem
-       echo "KEYS GENERATED. Next:
+       log.notice "KEYS GENERATED. Next:
        1/ Remove any previously deployed BLE keys from vehicle before deploying this one
        2/ Wake the car up with your Tesla App
        3/ Push the button 'Deploy Key'";;
 
       deploy_key)
-       echo "Deploying public key to vehicle"
+       log.notice "Deploying public key to vehicle"
        send_key $vin;;
 
       scan_bluetooth)
-       echo "Scanning Bluetooth"
+       log.notice "Scanning Bluetooth"
        scan_bluetooth;;
 
       *)
-       echo "Invalid Configuration request. Topic: $topic Message: $msg";;
+       log.error "Invalid Configuration request. Topic: $topic Message: $msg";;
      esac;;
 
     command)
-     echo "Command $msg requested"
+     log.info "Command $msg requested"
      case $msg in
        wake)
-        echo "Waking Car"
+        log.notice "Waking Car"
         send_command $vin "-domain vcsec $msg";;
        trunk-open)
-        echo "Opening Trunk"
+        log.notice "Opening Trunk"
         send_command $vin $msg;;
        trunk-close)
-        echo "Closing Trunk"
+        log.notice "Closing Trunk"
         send_command $vin $msg;;
        charging-start)
-        echo "Start Charging"
+        log.notice "Start Charging"
         send_command $vin $msg;;
        charging-stop)
-        echo "Stop Charging"
+        log.notice "Stop Charging"
         send_command $vin $msg;;
        charge-port-open)
-        echo "Open Charge Port"
+        log.notice "Open Charge Port"
         send_command $vin $msg;;
        charge-port-close)
-        echo "Close Charge Port"
+        log.notice "Close Charge Port"
         send_command $vin $msg;;
        climate-on)
-        echo "Start Climate"
+        log.notice "Start Climate"
         send_command $vin $msg;;
        climate-off)
-        echo "Stop Climate"
+        log.notice "Stop Climate"
         send_command $vin $msg;;
        flash-lights)
-        echo "Flash Lights"
+        log.notice "Flash Lights"
         send_command $vin $msg;;
        frunk-open)
-        echo "Open Frunk"
+        log.notice "Open Frunk"
         send_command $vin $msg;;
        honk)
-        echo "Honk Horn"
-        send_command $vin $msg;;
-       ping)
-        echo "Ping Car"
+        log.notice "Honk Horn"
         send_command $vin $msg;;
        lock)
-        echo "Lock Car"
+        log.notice "Lock Car"
         send_command $vin $msg;;
        unlock)
-        echo "Unlock Car"
+        log.notice "Unlock Car"
         send_command $vin $msg;;
        windows-close)
-        echo "Close Windows"
+        log.notice "Close Windows"
         send_command $vin $msg;;
        windows-vent)
-        echo "Vent Windows"
-        send_command $vin $msg;;
-       product-info)
-        echo "Get Product Info (experimental)"
-        send_command $vin $msg;;
-       session-info)
-        echo "Get Session Info (experimental)"
+        log.notice "Vent Windows"
         send_command $vin $msg;;
        *)
-        echo "Invalid Command Request. Topic: $topic Message: $msg";;
+        log.error "Invalid Command Request. Topic: $topic Message: $msg";;
       esac;;
 
     charging-amps)
-     echo "Set Charging Amps to $msg requested"
+     log.info "Set Charging Amps to $msg requested"
      # https://github.com/iainbullock/tesla_ble_mqtt_docker/issues/4
      if [ $msg -gt 4 ]; then
-     echo "Set amps"
+     log.notice "Set amps"
       send_command $vin "charging-set-amps $msg"
      else
-      echo "First Amp set"
+      log.notice "First Amp set"
       send_command $vin "charging-set-amps $msg"
       sleep 1
-      echo "Second Amp set"
+      log.notice "Second Amp set"
       send_command $vin "charging-set-amps $msg"
      fi;;
 
     auto-seat-and-climate)
-     echo "Start Auto Seat and Climate"
+     log.notice "Start Auto Seat and Climate"
      send_command $vin "auto-seat-and-climate LR on";;
 
     charging-set-limit)
-     echo "Set Charging Limit to $msg requested"
+     log.notice "Set Charging Limit to $msg"
      send_command $vin "charging-set-limit $msg";;
 
     climate-set-temp)
-     echo "Set Climate Temp to $msg requested"
+     log.notice "Set Climate Temp to $msg"
      send_command $vin "climate-set-temp ${msg}C";;
 
     heated_seat_left)
-     echo "Set Seat heater to front-left $msg requested"
+     log.notice "Set Seat heater to front-left $msg"
      send_command $vin "seat-heater front-left $msg";;
 
     heated_seat_right)
-     echo "Set Seat heater to front-right $msg requested"
+     log.notice "Set Seat heater to front-right $msg"
      send_command $vin "seat-heater front-right $msg";;
 
     *)
-     echo "Invalid MQTT topic. Topic: $topic Message: $msg";;
+     log.error "Invalid MQTT topic. Topic: $topic Message: $msg";;
    esac
   done
 }
@@ -148,34 +139,30 @@ listen_for_HA_start() {
   do
    topic=$(echo "$payload" | cut -d ' ' -f 1)
    msg=$(echo "$payload" | cut -d ' ' -f 2-)
-   echo "Received HA Status message: $topic $msg"
+   log.info "Received HA Status message: $topic $msg"
    case $topic in
 
     homeassistant/status)
      case $msg in
        offline)
-        echo "Home Assistant is stopping";;
+        log.info "Home Assistant is stopping";;
        online)
         # https://github.com/iainbullock/tesla_ble_mqtt_docker/discussions/6
-        echo "Home Assistant is starting, re-running MQTT auto-discovery"
-        if [ "$TESLA_VIN" ]; then
-         setup_auto_discovery $TESLA_VIN
-        else
-         if [ "$TESLA_VIN1" ] && [ $TESLA_VIN1 != "00000000000000000" ]; then
-          setup_auto_discovery $TESLA_VIN1
-         fi
-         if [ "$TESLA_VIN2" ] && [ $TESLA_VIN2 != "00000000000000000" ]; then
-          setup_auto_discovery $TESLA_VIN2
-         fi
-         if [ "$TESLA_VIN3" ] && [ $TESLA_VIN3 != "00000000000000000" ]; then
-          setup_auto_discovery $TESLA_VIN3
-         fi
+        log.notice "Home Assistant is starting, re-running MQTT auto-discovery"
+        if [ "$TESLA_VIN1" ] && [ $TESLA_VIN1 != "00000000000000000" ]; then
+         setup_auto_discovery $TESLA_VIN1
+        fi
+        if [ "$TESLA_VIN2" ] && [ $TESLA_VIN2 != "00000000000000000" ]; then
+         setup_auto_discovery $TESLA_VIN2
+        fi
+        if [ "$TESLA_VIN3" ] && [ $TESLA_VIN3 != "00000000000000000" ]; then
+         setup_auto_discovery $TESLA_VIN3
         fi;;
        *)
-        echo "Invalid Command Request. Topic: $topic Message: $msg";;
+        log.error "Invalid Command Request. Topic: $topic Message: $msg";;
      esac;;
     *)
-     echo "Invalid MQTT topic. Topic: $topic Message: $msg";;
+     log.error "Invalid MQTT topic. Topic: $topic Message: $msg";;
    esac
   done
 }
