@@ -1,10 +1,10 @@
 #!/bin/ash
 
 setup_auto_discovery() {
- log.notice "Setting up HA auto discovery for $1"
+ log_notice "Setting up HA auto discovery for $1"
 
- TOPIC_ROOT=tesla_ble/$1
- TOPIC_ID=$1
+ TOPIC_ROOT=tesla_ble_mqtt/$1
+ TOPIC_ID=$TOPIC_ROOT
 
  mosquitto_pub -h $MQTT_IP -p $MQTT_PORT -u "${MQTT_USER}" -P "${MQTT_PWD}" -t homeassistant/binary_sensor/${TOPIC_ID}/presence/config -m \
   '{

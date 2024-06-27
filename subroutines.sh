@@ -4,23 +4,23 @@ send_command() {
  vin=$1
  shift
  for i in $(seq 5); do
-  log.notice "Sending command $@ to $vin, attempt $i/5"
+  log_notice "Sending command $@ to $vin, attempt $i/5"
   set +e
   message=$(tesla-control -vin $vin -ble -key-name /share/tesla_ble_mqtt/${vin}_private.pem -key-file /share/tesla_ble_mqtt/${vin}_private.pem $@)
   EXIT_STATUS=$?
   set -e
   if [ $EXIT_STATUS -eq 0 ]; then
-    log.info "tesla-control send command succeeded"
+    log_info "tesla-control send command succeeded"
     break
   else
 	if [[ $message == *"Failed to execute command: car could not execute command"* ]]; then
-	  log.error $message
-	  log.notice "Skipping command $1"
+	  log_error $message
+	  log_notice "Skipping command $1"
 	  break
 	else
-    log.error "tesla-control send command failed exit status $EXIT_STATUS."
-	  log.info $message
-	  log.notice "Retrying in $SEND_CMD_RETRY_DELAY seconds"
+    log_error "tesla-control send command failed exit status $EXIT_STATUS."
+	  log_info $message
+	  log_notice "Retrying in $SEND_CMD_RETRY_DELAY seconds"
 	fi
     sleep $SEND_CMD_RETRY_DELAY
   fi
@@ -28,18 +28,18 @@ send_command() {
 }
 
 listen_to_ble() {
- log.notice "Listening to BLE for presence"
- log.warning "Needs updating for multi-car, only supports TESLA_VIN1 at this time. Doesn't support deprecated TESLA_VIN usage"
+ log_notice "Listening to BLE for presence"
+ log_warning "Needs updating for multi-car, only supports TESLA_VIN1 at this time. Doesn't support deprecated TESLA_VIN usage"
  PRESENCE_TIMEOUT=5
  set +e
- bluetoothctl --timeout $PRESENCE_TIMEOUT scan on | grep $BLE_MAC
+ bluetoothctl --timeout $PRESENCE_TIMEOUT scan on | grep $BLE_MAC1
  EXIT_STATUS=$?
  set -e
  if [ $EXIT_STATUS -eq 0 ]; then
-   echo "$BLE_MAC presence detected"
+   echo "$BLE_MAC1 presence detected"
    mosquitto_pub --nodelay -h $MQTT_IP -p $MQTT_PORT -u "${MQTT_USER}" -P "${MQTT_PWD}" -t tesla_ble_mqtt/$TESLA_VIN1/binary_sensor/presence -m ON
  else
-   echo "$BLE_MAC presence not detected"
+   echo "$BLE_MAC1 presence not detected"
    mosquitto_pub --nodelay -h $MQTT_IP -p $MQTT_PORT -u "${MQTT_USER}" -P "${MQTT_PWD}" -t tesla_ble_mqtt/$TESLA_VIN1/binary_sensor/presence -m OFF
  fi
 }
@@ -52,10 +52,10 @@ send_key() {
   EXIT_STATUS=$?
   set -e
   if [ $EXIT_STATUS -eq 0 ]; then
-    log.notice "KEY SENT TO VEHICLE: PLEASE CHECK YOU TESLA'S SCREEN AND ACCEPT WITH YOUR CARD"
+    log_notice "KEY SENT TO VEHICLE: PLEASE CHECK YOU TESLA'S SCREEN AND ACCEPT WITH YOUR CARD"
     break
   else
-    log.notice "COULD NOT SEND THE KEY. Is the car awake and sufficiently close to the bluetooth device?"
+    log_notice "COULD NOT SEND THE KEY. Is the car awake and sufficiently close to the bluetooth device?"
     sleep $SEND_CMD_RETRY_DELAY
   fi
  done
@@ -64,14 +64,14 @@ send_key() {
 scan_bluetooth(){
  VIN_HASH=`echo -n ${TESLA_VIN} | sha1sum`
  BLE_ADVERT=S${VIN_HASH:0:16}C
- log.notice "Calculating BLE Advert ${BLE_ADVERT} from VIN"
- log.notice "Scanning Bluetooth for $BLE_ADVERT, wait 10 secs"
+ log_notice "Calculating BLE Advert ${BLE_ADVERT} from VIN"
+ log_notice "Scanning Bluetooth for $BLE_ADVERT, wait 10 secs"
  bluetoothctl --timeout 10 scan on | grep $BLE_ADVERT
- log.warning "More work needed on this"
+ log_warning "More work needed on this"
 }
 
 delete_legacies(){
-log.notice "Deleting Legacy MQTT Topics"
+log_notice "Deleting Legacy MQTT Topics"
 mosquitto_pub -h $MQTT_IP -p $MQTT_PORT -u "${MQTT_USER}" -P "${MQTT_PWD}" -t homeassistant/switch/tesla_ble/sw-heater/config -n
 mosquitto_pub -h $MQTT_IP -p $MQTT_PORT -u "${MQTT_USER}" -P "${MQTT_PWD}" -t homeassistant/switch/tesla_ble/sentry-mode/config -n
 mosquitto_pub -h $MQTT_IP -p $MQTT_PORT -u "${MQTT_USER}" -P "${MQTT_PWD}" -t homeassistant/select/tesla_ble/heated_seat_left/config -n
@@ -102,7 +102,7 @@ mosquitto_pub -h $MQTT_IP -p $MQTT_PORT -u "${MQTT_USER}" -P "${MQTT_PWD}" -t ho
 mosquitto_pub -h $MQTT_IP -p $MQTT_PORT -u "${MQTT_USER}" -P "${MQTT_PWD}" -t homeassistant/button/tesla_ble/windows-vent/config -n
 
 if [ -f /share/tesla_ble_mqtt/private.pem ]; then
- log.notice "Renaming legacy keys"
+ log_notice "Renaming legacy keys"
  mv /share/tesla_ble_mqtt/private.pem /share/tesla_ble_mqtt/${TESLA_VIN1}_private.pem
  mv /share/tesla_ble_mqtt/public.pem /share/tesla_ble_mqtt/${TESLA_VIN1}_public.pem
 fi
