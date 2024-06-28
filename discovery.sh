@@ -43,7 +43,8 @@ setup_auto_discovery() {
    "name": "Generate Keys",
    "payload_press": "generate_keys",
    "qos": 1,
-   "unique_id": "'${DEV_ID}'_generate_keys"
+   "unique_id": "'${DEV_ID}'_generate_keys",
+   "entity_category": "config"
   }'
 
  mosquitto_pub -h $MQTT_IP -p $MQTT_PORT -u "${MQTT_USER}" -P "${MQTT_PWD}" -t homeassistant/button/${DEV_ID}/deploy_key/config -m \
@@ -61,7 +62,8 @@ setup_auto_discovery() {
    "name": "Deploy Key",
    "payload_press": "deploy_key",
    "qos": 1,
-   "unique_id": "'${DEV_ID}'_deploy_key"
+   "unique_id": "'${DEV_ID}'_deploy_key",
+   "entity_category": "config"
   }'
 
  mosquitto_pub -h $MQTT_IP -p $MQTT_PORT -u "${MQTT_USER}" -P "${MQTT_PWD}" -t homeassistant/button/${DEV_ID}/scan_bluetooth/config -m \
@@ -79,7 +81,8 @@ setup_auto_discovery() {
    "name": "Scan Bluetooth",
    "payload_press": "scan_bluetooth",
    "qos": 1,
-   "unique_id": "'${DEV_ID}'_scan_bluetooth"
+   "unique_id": "'${DEV_ID}'_scan_bluetooth",
+   "entity_category": "diagnostic"
   }'
 
  mosquitto_pub -h $MQTT_IP -p $MQTT_PORT -u "${MQTT_USER}" -P "${MQTT_PWD}" -t homeassistant/button/${DEV_ID}/wake/config -m \
