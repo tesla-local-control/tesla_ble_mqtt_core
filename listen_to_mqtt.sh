@@ -2,7 +2,8 @@
 
 listen_to_mqtt() {
  # log_info "Listening to MQTT"
- eval $MOSQUITTO_SUB_BASE --nodelay -t tesla_ble/+/+ -F ""%t %p" -E -c -i tesla_ble_mqtt -q 1" | while read -r payload
+ eval $MOSQUITTO_SUB_BASE --nodelay -t tesla_ble/+/+ -F ""%t %p" -E -c -i tesla_ble_mqtt -q 1" \
+      | while read -r payload
   do
    topic=${payload%% *}
    msg=${payload#* }
@@ -14,18 +15,22 @@ listen_to_mqtt() {
    case $cmnd in
     config)
      log_info "Configuration $msg requested"
+
      case $msg in
       generate_keys)
        log_notice "Generating the private key"
        openssl ecparam -genkey -name prime256v1 -noout > /share/tesla_ble_mqtt/${vin}_private.pem
-       cat /share/tesla_ble_mqtt/${vin}_private.pem
+       log_debug "$(cat /share/tesla_ble_mqtt/${vin}_private.pem)"
+       [ "$DEBUG" != "true" ] \
+         && log_notice "The private key is shown only in debug mode"
        log_notice "Generating the public key"
        openssl ec -in /share/tesla_ble_mqtt/${vin}_private.pem -pubout > /share/tesla_ble_mqtt/${vin}_public.pem
-       cat /share/tesla_ble_mqtt/${vin}_public.pem
+       log_notice "$(cat /share/tesla_ble_mqtt/${vin}_public.pem)"
        log_notice "KEYS GENERATED. Next:
        1/ Remove any previously deployed BLE keys from vehicle before deploying this one
        2/ Wake the car up with your Tesla App
-       3/ Push the button 'Deploy Key'";;
+       3/ Push the button 'Deploy Key'"
+      ;;
 
       deploy_key)
        log_notice "Deploying public key to vehicle"
@@ -37,7 +42,7 @@ listen_to_mqtt() {
 
       *)
        log_error "Invalid Configuration request. Topic: $topic Message: $msg";;
-     esac;;
+     esac
 
     command)
      log_info "Command $msg requested"
@@ -92,7 +97,7 @@ listen_to_mqtt() {
         send_command $vin $msg;;
        *)
         log_error "Invalid Command Request. Topic: $topic Message: $msg";;
-      esac;;
+      esac
 
     charging-amps)
      log_info "Set Charging Amps to $msg requested"
@@ -106,7 +111,7 @@ listen_to_mqtt() {
       sleep 1
       log_notice "Second Amp set"
       send_command $vin "charging-set-amps $msg"
-     fi;;
+     fi
 
     auto-seat-and-climate)
      log_notice "Start Auto Seat and Climate"
@@ -157,10 +162,11 @@ listen_for_HA_start() {
         fi
         if [ "$TESLA_VIN3" ] && [ $TESLA_VIN3 != "00000000000000000" ]; then
          setup_auto_discovery $TESLA_VIN3
-        fi;;
+        fi
+       ;;
        *)
         log_error "Invalid Command Request. Topic: $topic Message: $msg";;
-     esac;;
+     esac
     *)
      log_error "Invalid MQTT topic. Topic: $topic Message: $msg";;
    esac
