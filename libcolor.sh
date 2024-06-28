@@ -17,7 +17,7 @@ else
   RED='\033[0;31m'
 fi
 
-function log_debug   { [ $DEBUG == "true" ] && echo -e "${NOCOLOR}$1"; }
+function log_debug   { [ $DEBUG == "true" ] && echo -e "${NOCOLOR}$1" || true; }
 function log_info    { echo -e "${GREEN}$1${NOCOLOR}"; }
 function log_notice  { echo -e "${CYAN}$1${NOCOLOR}"; }
 function log_warning { echo -e "${YELLOW}$1${NOCOLOR}"; }
