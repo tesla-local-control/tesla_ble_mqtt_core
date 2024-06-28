@@ -22,6 +22,7 @@ if [ -n "${HASSIO_TOKEN:-}" ]; then
   export TESLA_VIN1="$(bashio::config 'vin1')"
   export TESLA_VIN2="$(bashio::config 'vin2')"
   export TESLA_VIN3="$(bashio::config 'vin3')"
+  export PRESENCE_DETECTION="$(bashio::config 'presence_detection')"
   export BLE_MAC1="$(bashio::config 'ble_mac1')"
   export BLE_MAC2="$(bashio::config 'ble_mac2')"
   export BLE_MAC3="$(bashio::config 'ble_mac3')"
@@ -56,6 +57,7 @@ fi
 ### INITIALIZE AND LOG CONFIG VARS ##################################################################################
 log_green "Configuration Options are:
   TESLA_VIN=$TESLA_VIN1; $TESLA_VIN2; $TESLA_VIN3
+  PRESENCE_DETECTION=$PRESENCE_DETECTION
   BLE_MAC=$BLE_MAC1; $BLE_MAC2; $BLE_MAC3
   MQTT_IP=$MQTT_IP
   MQTT_PORT=$MQTT_PORT
@@ -102,8 +104,10 @@ do
  listen_to_mqtt
  ((counter++))
  if [[ $counter -gt 90 ]]; then
-  log_info "Reached 90 MQTT loops (~3min): Launch BLE scanning for car presence"
-  listen_to_ble
+  if [ "$PRESENCE_DETECTION" = true ] ; then
+   log_info "Reached 90 MQTT loops (~3min): Launch BLE scanning for car presence"
+   listen_to_ble
+  fi
   counter=0
  fi
  sleep 2
