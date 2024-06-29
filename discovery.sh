@@ -119,7 +119,7 @@ setup_auto_discovery() {
    "unique_id": "'${DEV_ID}'_flash_lights"
   }'
 
-  mosquitto_pub -h $MQTT_IP -p $MQTT_PORT -u "${MQTT_USER}" -P "${MQTT_PWD}" -t homeassistant/button/${DEV_ID}/honk/config -m \
+ eval $MOSQUITTO_PUB_BASE -t homeassistant/button/${DEV_ID}/honk/config -m \
   '{
    "command_topic": "'${TOPIC_ROOT}'/command",
    "device": {
