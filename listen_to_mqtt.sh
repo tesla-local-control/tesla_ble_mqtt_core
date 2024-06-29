@@ -2,7 +2,7 @@
 
 listen_to_mqtt() {
  # log_info "Listening to MQTT"
- mosquitto_sub --nodelay -E -c -i tesla_ble_mqtt -q 1 -h $MQTT_IP -p $MQTT_PORT -u "${MQTT_USER}" -P "${MQTT_PWD}" -t tesla_ble/+/+ -F "%t %p" | while read -r payload
+ eval $MOSQUITTO_SUB_BASE --nodelay -t tesla_ble/+/+ -F ""%t %p" -E -c -i tesla_ble_mqtt -q 1" | while read -r payload
   do
    topic=${payload%% *}
    msg=${payload#* }
@@ -135,7 +135,7 @@ listen_to_mqtt() {
 }
 
 listen_for_HA_start() {
- mosquitto_sub --nodelay -h $MQTT_IP -p $MQTT_PORT -u "${MQTT_USER}" -P "${MQTT_PWD}" -t homeassistant/status -F "%t %p" | while read -r payload
+ $MOSQUITTO_SUB_BASE --nodelay -t homeassistant/status -F "%t %p" | while read -r payload
   do
    topic=$(echo "$payload" | cut -d ' ' -f 1)
    msg=$(echo "$payload" | cut -d ' ' -f 2-)
