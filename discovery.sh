@@ -1,7 +1,7 @@
 #!/bin/ash
-vin=$1
 
 setup_auto_discovery() {
+ vin=$1
  log_notice "Setting up HA auto discovery for vin $vin"
 
  DEV_ID=tesla_ble_${vin}
