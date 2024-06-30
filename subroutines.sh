@@ -4,7 +4,7 @@ send_command() {
  vin=$1
  shift
  for i in $(seq 5); do
-  log_notice "Sending command $@ to $vin, attempt $i/5"
+  log_notice "Sending command $@ to vin $vin, attempt $i/5"
   set +e
   message=$(tesla-control -vin $vin -ble -key-name /share/tesla_ble_mqtt/${vin}_private.pem -key-file /share/tesla_ble_mqtt/${vin}_private.pem $@ 2>&1)
   EXIT_STATUS=$?
@@ -45,10 +45,11 @@ listen_to_ble() {
 }
 
 send_key() {
+ vin=$1
  for i in $(seq 5); do
   echo "Attempt $i/5"
   set +e
-  tesla-control -ble -vin $1 add-key-request /share/tesla_ble_mqtt/$1_public.pem owner cloud_key
+  tesla-control -ble -vin $vin add-key-request /share/tesla_ble_mqtt/${vin}_public.pem owner cloud_key
   EXIT_STATUS=$?
   set -e
   if [ $EXIT_STATUS -eq 0 ]; then

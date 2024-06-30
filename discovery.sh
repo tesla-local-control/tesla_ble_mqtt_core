@@ -1,12 +1,13 @@
 #!/bin/ash
+vin=$1
 
 setup_auto_discovery() {
- log_notice "Setting up HA auto discovery for $1"
+ log_notice "Setting up HA auto discovery for vin $vin"
 
- DEV_ID=tesla_ble_$1
- DEV_NAME=Tesla_BLE_$1
- 
- TOPIC_ROOT=tesla_ble/$1
+ DEV_ID=tesla_ble_${vin}
+ DEV_NAME=Tesla_BLE_${vin}
+
+ TOPIC_ROOT=tesla_ble/${vin}
 
  log_debug "DEV_ID=$DEV_ID"
  log_debug "DEV_NAME=$DEV_NAME"
