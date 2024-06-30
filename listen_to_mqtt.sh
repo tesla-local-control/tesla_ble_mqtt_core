@@ -43,6 +43,7 @@ listen_to_mqtt() {
       *)
        log_error "Invalid Configuration request. Topic: $topic Message: $msg";;
      esac
+	;;
 
     command)
      log_info "Command $msg requested"
@@ -98,7 +99,8 @@ listen_to_mqtt() {
        *)
         log_error "Invalid Command Request. Topic: $topic Message: $msg";;
       esac
-
+	;;
+	
     charging-amps)
      log_info "Set Charging Amps to $msg requested"
      # https://github.com/iainbullock/tesla_ble_mqtt_docker/issues/4
@@ -112,7 +114,8 @@ listen_to_mqtt() {
       log_notice "Second Amp set"
       send_command $vin "charging-set-amps $msg"
      fi
-
+	;;
+	
     auto-seat-and-climate)
      log_notice "Start Auto Seat and Climate"
      send_command $vin "auto-seat-and-climate LR on";;
@@ -167,6 +170,7 @@ listen_for_HA_start() {
        *)
         log_error "Invalid Command Request. Topic: $topic Message: $msg";;
      esac
+	;;
     *)
      log_error "Invalid MQTT topic. Topic: $topic Message: $msg";;
    esac
