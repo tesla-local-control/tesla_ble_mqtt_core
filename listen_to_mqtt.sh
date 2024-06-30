@@ -2,7 +2,7 @@
 
 listen_to_mqtt() {
  # log_info "Listening to MQTT"
- mosquitto_sub -h $MQTT_IP -p $MQTT_PORT -u "${MQTT_USER}" -P "${MQTT_PWD}" --nodelay -t tesla_ble/+/+ -F ""%t %p" -E -c -i tesla_ble_mqtt -q 1" \
+ mosquitto_sub -h $MQTT_IP -p $MQTT_PORT -u "${MQTT_USER}" -P "${MQTT_PWD}" --nodelay -t tesla_ble/+/+ -F "%t %p" -E -c -i tesla_ble_mqtt -q 1 \
       | while read -r payload
   do
    topic=${payload%% *}
