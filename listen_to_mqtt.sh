@@ -2,7 +2,7 @@
 
 listen_to_mqtt() {
  # log_info "Listening to MQTT"
- eval $MOSQUITTO_SUB_BASE --nodelay -t tesla_ble/+/+ -F ""%t %p" -E -c -i tesla_ble_mqtt -q 1" \
+ $MOSQUITTO_SUB_BASE --nodelay -t tesla_ble/+/+ -F ""%t %p" -E -c -i tesla_ble_mqtt -q 1" \
       | while read -r payload
   do
    topic=${payload%% *}
