@@ -144,6 +144,7 @@ scan_bluetooth(){
 }
 
 delete_legacies(){
+  vin=$1
 
   log_notice "Deleting Legacy MQTT Topics"
   eval $MOSQUITTO_SUB -t homeassistant/switch/tesla_ble/sw-heater/config -n
@@ -174,5 +175,11 @@ delete_legacies(){
   eval $MOSQUITTO_SUB -t homeassistant/button/tesla_ble/charge-port-close/config -n
   eval $MOSQUITTO_SUB -t homeassistant/button/tesla_ble/windows-close/config -n
   eval $MOSQUITTO_SUB -t homeassistant/button/tesla_ble/windows-vent/config -n
+
+  if [ -f /share/tesla_ble_mqtt/private.pem ]; then
+    log_notice "Renaming legacy keys"
+    mv /share/tesla_ble_mqtt/private.pem /share/tesla_ble_mqtt/${vin}_private.pem
+    mv /share/tesla_ble_mqtt/public.pem /share/tesla_ble_mqtt/${vin}_public.pem
+  fi
 
 }

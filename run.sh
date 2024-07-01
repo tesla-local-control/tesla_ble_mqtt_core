@@ -50,19 +50,6 @@ if [ -n "${HASSIO_TOKEN:-}" ]; then
   export VIN_LIST="$(bashio::config 'vin_list')"
 fi
 
-### HANDLE CONFIG CHANGE #############################################################################################
-if [ -f /share/tesla_ble_mqtt/private.pem ]; then
- log_error "Keys exist from a previous installation with single VIN which is deprecated"
- log_info "This module will try to migrate key files to attribute them to VIN1 and remove old MQTT entities"
- log_info "Please restart the docker image or HA addon. If if fails again:"
- log_info "1/ Check your configuration, you should explicitely specify VIN1/2/3"
- log_info "2/ Check that your have correctly renames the keys:"
- log_notice "/share/tesla_ble_mqtt/private.pem /share/tesla_ble_mqtt/[YOUR VIN]_private.pem"
- log_notice "/share/tesla_ble_mqtt/public.pem /share/tesla_ble_mqtt/[YOUR VIN]_public.pem"
- log_info "If you are supplying the keys from outside the container or addon, update them at source"
- delete_legacies
- exit 1
-fi
 
 ### INITIALIZE AND LOG CONFIG VARS ##################################################################################
 log_green "Configuration Options are:
@@ -90,6 +77,16 @@ while vin in $VIN_LIST; do
   BLE_LN${vin_count}=$(tesla_vin2ble_ln $vin)
   VIN${vin_count}=$vin
   log_debug "Adding $vin to the list, count $vin_count"
+
+  ################ HANDLE CONFIG CHANGE ##############
+  # TEMPORARY - Move original "vin" key to "vin{1}"
+  if [ -f /share/tesla_ble_mqtt/private.pem ] && [ $vin_count -eq 1 ]; then
+    log_notice "Keys exist from a previous installation with single VIN which is deprecated"
+    log_notice "This module migrates the key files to attribute them to $vin and remove old MQTT entities"
+    log_notice "/share/tesla_ble_mqtt/private.pem /share/tesla_ble_mqtt/${vin}_private.pem"
+    log_notice "/share/tesla_ble_mqtt/public.pem /share/tesla_ble_mqtt/${vin}_public.pem"
+    delete_legacies $vin
+  fi # END TEMPORARY
 done
 
 # Populate BLE_MACS "array" only if Presence Detection is enable
