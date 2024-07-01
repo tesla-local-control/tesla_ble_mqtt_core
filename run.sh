@@ -82,7 +82,6 @@ log_green "Configuration Options are:
   SEND_CMD_RETRY_DELAY=$SEND_CMD_RETRY_DELAY
   TESLA_VIN_LIST=$TESLA_VIN_LIST"
 
-
 export MOSQUITTO_PUB_BASE="mosquitto_pub -h $MQTT_IP -p $MQTT_PORT -u \"${MQTT_USER}\" -P \"${MQTT_PWD}\""
 export MOSQUITTO_SUB_BASE="mosquitto_sub -h $MQTT_IP -p $MQTT_PORT -u \"${MQTT_USER}\" -P \"${MQTT_PWD}\""
 
@@ -119,6 +118,7 @@ done
 
 log_info "Listening for Home Assistant Start (in background)"
 listen_for_HA_start &
+
 
 ### START MAIN PROGRAM LOOP ######################################################################################
 counter=0
