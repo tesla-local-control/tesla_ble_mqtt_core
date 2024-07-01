@@ -41,13 +41,13 @@ fi
 if [ -n "${HASSIO_TOKEN:-}" ]; then
   export BLE_MAC_LIST="$(bashio::config 'ble_mac3')"
   export DEBUG="$(bashio::config 'debug')"
-  export MQTT_IP="$(bashio::config 'mqtt_ip')"
+  export MQTT_SERVER="$(bashio::config 'mqtt_server')"
   export MQTT_PORT="$(bashio::config 'mqtt_port')"
-  export MQTT_PWD="$(bashio::config 'mqtt_pwd')"
-  export MQTT_USER="$(bashio::config 'mqtt_user')"
+  export MQTT_PASSWORD="$(bashio::config 'mqtt_password')"
+  export MQTT_USERNAME="$(bashio::config 'mqtt_username')"
   export PRESENCE_DETECTION_TTL="$(bashio::config 'presence_detection_ttl')"
-  export SEND_CMD_RETRY_DELAY="$(bashio::config 'send_cmd_retry_delay')"
-  export TESLA_VIN_LIST="$(bashio::config 'vin_list')"
+  export BLE_CMD_RETRY_DELAY="$(bashio::config 'ble_cmd_retry_delay')"
+  export VIN_LIST="$(bashio::config 'vin_list')"
 fi
 
 ### HANDLE CONFIG CHANGE #############################################################################################
@@ -64,40 +64,35 @@ if [ -f /share/tesla_ble_mqtt/private.pem ]; then
  exit 1
 fi
 
-if [ ! -z ${TESLA_VIN} ]; then
- log_fatal "Using deprecated configuration parameters --> Exiting."
- log_fatal "Fix config and restart. If you see this message again, please raise an issue"
- exit 1
-fi
-
 ### INITIALIZE AND LOG CONFIG VARS ##################################################################################
 log_green "Configuration Options are:
   BLE_MAC_LIST=$BLE_MAC_LIST
   DEBUG=$DEBUG
-  MQTT_IP=$MQTT_IP
+  MQTT_SERVER=$MQTT_SERVER
   MQTT_PORT=$MQTT_PORT
-  MQTT_PWD=Not Shown
-  MQTT_USER=$MQTT_USER
+  MQTT_PASSWORD=Not Shown
+  MQTT_USERNAME=$MQTT_USERNAME
   PRESENCE_DETECTION_TTL=$PRESENCE_DETECTION_TTL
-  SEND_CMD_RETRY_DELAY=$SEND_CMD_RETRY_DELAY
-  TESLA_VIN_LIST=$TESLA_VIN_LIST"
+  BLE_CMD_RETRY_DELAY=$BLE_CMD_RETRY_DELAY
+  VIN_LIST=$VIN_LIST"
 
-export MOSQUITTO_PUB_BASE="mosquitto_pub -h $MQTT_IP -p $MQTT_PORT -u \"${MQTT_USER}\" -P \"${MQTT_PWD}\""
-export MOSQUITTO_SUB_BASE="mosquitto_sub -h $MQTT_IP -p $MQTT_PORT -u \"${MQTT_USER}\" -P \"${MQTT_PWD}\""
+export MOSQUITTO_PUB_BASE="mosquitto_pub -h $MQTT_SERVER -p $MQTT_PORT -u \"${MQTT_USERNAME}\" -P \"${MQTT_PASSWORD}\""
+export MOSQUITTO_SUB_BASE="mosquitto_sub -h $MQTT_SERVER -p $MQTT_PORT -u \"${MQTT_USERNAME}\" -P \"${MQTT_PASSWORD}\""
 
 # Replace | with ' ' white space
 BLE_MAC_LIST=$(echo $BLE_MAC_LIST | sed -e 's/|/ /g')
-TESLA_VIN_LIST=$(echo $TESLA_VIN_LIST | sed -e 's/|/ /g')
+VIN_LIST=$(echo $VIN_LIST | sed -e 's/|/ /g')
 
 vin_count=0
-while vin in $TESLA_VIN_LIST; do
+while vin in $VIN_LIST; do
+  # Populate BLE Local Names and VINS "arrays"
   vin_count=$(expr $vin_count + 1)
   BLE_LN${vin_count}=$(tesla_vin2ble_ln $vin)
-  TESLA_VIN${vin_count}=$vin
+  VIN${vin_count}=$vin
   log_debug "Adding $vin to the list, count $vin_count"
 done
 
-# Populate BLE_MAC "array" only if Presence Detection is enable
+# Populate BLE_MACS "array" only if Presence Detection is enable
 if [ $PRESENCE_DETECTION_TTL -gt 0 ] ; then
   log_info "Presence detection is enable with a TTL of $PRESENCE_DETECTION_TTL seconds"
   ble_addr_count=0
@@ -121,9 +116,9 @@ fi
 
 
 # Setup HA auto discovery & Discard old MQTT messages
-while vin in $TESLA_VIN_LIST; do
+while vin in $VIN_LIST; do
   log_info "Setting up Home Assistant Auto Discovery for $vin"
-  setup_auto_discovery $TESLA_VIN1
+  setup_auto_discovery $vin
   log_info "Discarding any unread MQTT messages for $vin"
   eval $MOSQUITTO_SUB_BASE -E -i tesla_ble_mqtt -t tesla_ble_mqtt/$vin/+
 done
