@@ -85,13 +85,9 @@ log_green "Configuration Options are:
 export MOSQUITTO_PUB_BASE="mosquitto_pub -h $MQTT_IP -p $MQTT_PORT -u \"${MQTT_USER}\" -P \"${MQTT_PWD}\""
 export MOSQUITTO_SUB_BASE="mosquitto_sub -h $MQTT_IP -p $MQTT_PORT -u \"${MQTT_USER}\" -P \"${MQTT_PWD}\""
 
-ble_addr_count=0
-while ble_mac in $BLE_MAC_LIST; do
-  ble_addr_count=$(expr $ble_addr_count + 1)
-  BLE_MAC${ble_addr_count}=$ble_mac
-  PRESENCE_EXPIRE_TIME${ble_addr_count}=9999999999
-  log_debug "Adding $ble_mac to the list, count $ble_addr_count"
-done
+# Replace | with ' ' white space
+BLE_MAC_LIST=$(echo $BLE_MAC_LIST | sed -e 's/|/ /g')
+TESLA_VIN_LIST=$(echo $TESLA_VIN_LIST | sed -e 's/|/ /g')
 
 vin_count=0
 while vin in $TESLA_VIN_LIST; do
@@ -101,12 +97,28 @@ while vin in $TESLA_VIN_LIST; do
   log_debug "Adding $vin to the list, count $vin_count"
 done
 
-if [ $vin_count -eq $mac_addr_count ]; then
-  log_debug "Fantastic, we have $vin_count VIN(s) and $ble_addr_count BLE MAC Addr"
+# Populate BLE_MAC "array" only if Presence Detection is enable
+if [ $PRESENCE_DETECTION_TTL -gt 0 ] ; then
+  log_info "Presence detection is enable with a TTL of $PRESENCE_DETECTION_TTL seconds"
+  ble_addr_count=0
+  while ble_mac in $BLE_MAC_LIST; do
+    ble_addr_count=$(expr $ble_addr_count + 1)
+    BLE_MAC${ble_addr_count}=$ble_mac
+    PRESENCE_EXPIRE_TIME${ble_addr_count}=9999999999
+    log_debug "Adding $ble_mac to the list, count $ble_addr_count"
+  done
+
+  if [ $vin_count -eq $mac_addr_count ]; then
+    log_debug "Fantastic, we have $vin_count VIN(s) and $ble_addr_count BLE MAC Addr"
+  else
+    log_fotal "VIN count $vin_count differs from  BLE MAC Addr count $ble_addr_count!"
+    # should we exit fatal, things might not work as expected.
+    exit 10
+  fi
 else
-  log_error "VIN count $vin_count differs from  BLE MAC Addr count $ble_addr_count!"
-  # should we exit fatal, things might not work as expected.
+  log_info "Presence detection is not enable due to TTL of $PRESENCE_DETECTION_TTL seconds"
 fi
+
 
 # Setup HA auto discovery & Discard old MQTT messages
 while vin in $TESLA_VIN_LIST; do
