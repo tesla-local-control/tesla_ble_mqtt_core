@@ -63,8 +63,16 @@ log_green "Configuration Options are:
   BLE_CMD_RETRY_DELAY=$BLE_CMD_RETRY_DELAY
   VIN_LIST=$VIN_LIST"
 
-export MOSQUITTO_PUB_BASE="mosquitto_pub -h $MQTT_SERVER -p $MQTT_PORT -u \"${MQTT_USERNAME}\" -P \"${MQTT_PASSWORD}\""
-export MOSQUITTO_SUB_BASE="mosquitto_sub -h $MQTT_SERVER -p $MQTT_PORT -u \"${MQTT_USERNAME}\" -P \"${MQTT_PASSWORD}\""
+# MQTT clients anonymous or authentication mode
+if [ ! -z ${MQTT_USERNAME} ]; then
+  log_debug "Setting up MQTT clients with authentication is on; MQTT_USERNAME=$MQTT_USERNAME"
+  export MOSQUITTO_PUB_BASE="mosquitto_pub -h $MQTT_SERVER -p $MQTT_PORT -u \"${MQTT_USERNAME}\" -P \"${MQTT_PASSWORD}\""
+  export MOSQUITTO_SUB_BASE="mosquitto_sub -h $MQTT_SERVER -p $MQTT_PORT -u \"${MQTT_USERNAME}\" -P \"${MQTT_PASSWORD}\""
+else
+  log_notice "Setting up MQTT clients in anonymous"
+  export MOSQUITTO_PUB_BASE="mosquitto_pub -h $MQTT_SERVER -p $MQTT_PORT"
+  export MOSQUITTO_SUB_BASE="mosquitto_sub -h $MQTT_SERVER -p $MQTT_PORT"
+fi
 
 # Replace | with ' ' white space
 BLE_MAC_LIST=$(echo $BLE_MAC_LIST | sed -e 's/|/ /g')
