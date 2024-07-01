@@ -16,6 +16,14 @@ log_cyan "Inspiration by Raphael Murray https://github.com/raphmur"
 log_cyan "Instructions by Shankar Kumarasamy https://shankarkumarasamy.blog/2024/01/28/tesla-developer-api-guide-ble-key-pair-auth-and-vehicle-commands-part-3"
 
 
+###
+###
+### TODO
+### Add validation for input, specially for docker. Addon in config allows to specify
+### What's valid/needed or not.
+###
+###
+
 ### INITIALIZE VARIABLES AND FUNCTIONS TO MAKE THIS .sh RUN ALSO STANDALONE ##########################################
 # read options in case of HA addon. Otherwise, they will be sent as environment variables
 if [ -n "${HASSIO_TOKEN:-}" ]; then
@@ -25,7 +33,7 @@ if [ -n "${HASSIO_TOKEN:-}" ]; then
   export MQTT_PORT="$(bashio::config 'mqtt_port')"
   export MQTT_PWD="$(bashio::config 'mqtt_pwd')"
   export MQTT_USER="$(bashio::config 'mqtt_user')"
-  export PRESENCE_DETECTION="$(bashio::config 'presence_detection')"
+  export PRESENCE_DETECTION_TTL="$(bashio::config 'presence_detection_ttl')"
   export SEND_CMD_RETRY_DELAY="$(bashio::config 'send_cmd_retry_delay')"
   export TESLA_VIN_LIST="$(bashio::config 'vin_list')"
 fi
@@ -57,6 +65,7 @@ ble_addr_count=0
 while ble_mac in $BLE_MAC_LIST; do
   ble_addr_count=$(expr $ble_addr_count + 1)
   BLE_MAC${ble_addr_count}=$ble_mac
+  PRESENCE_EXPIRE_TIME${ble_addr_count}=9999999999
   log_debug "Adding $ble_mac to the list, count $ble_addr_count"
 done
 
@@ -83,7 +92,7 @@ log_green "Configuration Options are:
   MQTT_PORT=$MQTT_PORT
   MQTT_PWD=Not Shown
   MQTT_USER=$MQTT_USER
-  PRESENCE_DETECTION=$PRESENCE_DETECTION
+  PRESENCE_DETECTION_TTL=$PRESENCE_DETECTION_TTL
   SEND_CMD_RETRY_DELAY=$SEND_CMD_RETRY_DELAY
   TESLA_VIN=$TESLA_VIN"
 
@@ -125,7 +134,8 @@ do
  listen_to_mqtt
  ((counter++))
  if [[ $counter -gt 90 ]]; then
-  if [ "$PRESENCE_DETECTION" = true ] ; then
+  # Don't run presence detection is TTL is 0
+  if [ $PRESENCE_DETECTION_TTL -gt 0 ] ; then
    log_info "Reached 90 MQTT loops (~3min): Launch BLE scanning for car presence"
    listen_to_ble
   fi
