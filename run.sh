@@ -24,6 +24,18 @@ log_cyan "Instructions by Shankar Kumarasamy https://shankarkumarasamy.blog/2024
 ###
 ###
 
+
+
+### SETUP ENVIRONMENT ###########################################################################################
+if [ ! -d /share/tesla_ble_mqtt ]; then
+    log_info "Creating directory /share/tesla_ble_mqtt"
+    mkdir -p /share/tesla_ble_mqtt
+else
+    log_debug "/share/tesla_ble_mqtt already exists, existing keys can be reused"
+fi
+
+
+
 ### INITIALIZE VARIABLES AND FUNCTIONS TO MAKE THIS .sh RUN ALSO STANDALONE ##########################################
 # read options in case of HA addon. Otherwise, they will be sent as environment variables
 if [ -n "${HASSIO_TOKEN:-}" ]; then
@@ -38,9 +50,6 @@ if [ -n "${HASSIO_TOKEN:-}" ]; then
   export TESLA_VIN_LIST="$(bashio::config 'vin_list')"
 fi
 
-export MOSQUITTO_PUB_BASE="mosquitto_pub -h $MQTT_IP -p $MQTT_PORT -u \"${MQTT_USER}\" -P \"${MQTT_PWD}\""
-export MOSQUITTO_SUB_BASE="mosquitto_sub -h $MQTT_IP -p $MQTT_PORT -u \"${MQTT_USER}\" -P \"${MQTT_PWD}\""
-
 ### HANDLE CONFIG CHANGE #############################################################################################
 if [ -f /share/tesla_ble_mqtt/private.pem ]; then
  log_error "Keys exist from a previous installation with single VIN which is deprecated"
@@ -54,12 +63,28 @@ if [ -f /share/tesla_ble_mqtt/private.pem ]; then
  delete_legacies
  exit 1
 fi
+
 if [ ! -z ${TESLA_VIN} ]; then
  log_fatal "Using deprecated configuration parameters --> Exiting."
  log_fatal "Fix config and restart. If you see this message again, please raise an issue"
  exit 1
 fi
 
+### INITIALIZE AND LOG CONFIG VARS ##################################################################################
+log_green "Configuration Options are:
+  BLE_MAC_LIST=$BLE_MAC_LIST
+  DEBUG=$DEBUG
+  MQTT_IP=$MQTT_IP
+  MQTT_PORT=$MQTT_PORT
+  MQTT_PWD=Not Shown
+  MQTT_USER=$MQTT_USER
+  PRESENCE_DETECTION_TTL=$PRESENCE_DETECTION_TTL
+  SEND_CMD_RETRY_DELAY=$SEND_CMD_RETRY_DELAY
+  TESLA_VIN_LIST=$TESLA_VIN_LIST"
+
+
+export MOSQUITTO_PUB_BASE="mosquitto_pub -h $MQTT_IP -p $MQTT_PORT -u \"${MQTT_USER}\" -P \"${MQTT_PWD}\""
+export MOSQUITTO_SUB_BASE="mosquitto_sub -h $MQTT_IP -p $MQTT_PORT -u \"${MQTT_USER}\" -P \"${MQTT_PWD}\""
 
 ble_addr_count=0
 while ble_mac in $BLE_MAC_LIST; do
@@ -84,46 +109,16 @@ else
   # should we exit fatal, things might not work as expected.
 fi
 
-### INITIALIZE AND LOG CONFIG VARS ##################################################################################
-log_green "Configuration Options are:
-  BLE_MAC_LIST=$BLE_MAC_LIST
-  DEBUG=$DEBUG
-  MQTT_IP=$MQTT_IP
-  MQTT_PORT=$MQTT_PORT
-  MQTT_PWD=Not Shown
-  MQTT_USER=$MQTT_USER
-  PRESENCE_DETECTION_TTL=$PRESENCE_DETECTION_TTL
-  SEND_CMD_RETRY_DELAY=$SEND_CMD_RETRY_DELAY
-  TESLA_VIN=$TESLA_VIN"
-
-
-### SETUP ENVIRONMENT ###########################################################################################
-if [ ! -d /share/tesla_ble_mqtt ]; then
-    log_info "Creating directory /share/tesla_ble_mqtt"
-    mkdir -p /share/tesla_ble_mqtt
-else
-    log_debug "/share/tesla_ble_mqtt already exists, existing keys can be reused"
-fi
-
-
-log_info "Setting up auto discovery for Home Assistant"
-if [ "$TESLA_VIN1" ] && [ $TESLA_VIN1 != "00000000000000000" ]; then
+# Setup HA auto discovery & Discard old MQTT messages
+while vin in $TESLA_VIN_LIST; do
+  log_info "Setting up Home Assistant Auto Discovery for $vin"
   setup_auto_discovery $TESLA_VIN1
-fi
-if [ "$TESLA_VIN2" ] && [ $TESLA_VIN2 != "00000000000000000" ]; then
-  setup_auto_discovery $TESLA_VIN2
-fi
-if [ "$TESLA_VIN3" ] && [ $TESLA_VIN3 != "00000000000000000" ]; then
-  setup_auto_discovery $TESLA_VIN3
-fi
+  log_info "Discarding any unread MQTT messages for $vin"
+  eval $MOSQUITTO_SUB_BASE -E -i tesla_ble_mqtt -t tesla_ble_mqtt/$vin/+
+done
 
 log_info "Listening for Home Assistant Start (in background)"
 listen_for_HA_start &
-
-log_info "Discarding any unread MQTT messages"
-mosquitto_sub -h $MQTT_IP -p $MQTT_PORT -u "${MQTT_USER}" -P "${MQTT_PWD}" -E -i tesla_ble_mqtt -t tesla_ble_mqtt/$TESLA_VIN1/+
-mosquitto_sub -h $MQTT_IP -p $MQTT_PORT -u "${MQTT_USER}" -P "${MQTT_PWD}" -E -i tesla_ble_mqtt -t tesla_ble_mqtt/$TESLA_VIN2/+
-mosquitto_sub -h $MQTT_IP -p $MQTT_PORT -u "${MQTT_USER}" -P "${MQTT_PWD}" -E -i tesla_ble_mqtt -t tesla_ble_mqtt/$TESLA_VIN3/+
 
 ### START MAIN PROGRAM LOOP ######################################################################################
 counter=0
@@ -134,7 +129,7 @@ do
  listen_to_mqtt
  ((counter++))
  if [[ $counter -gt 90 ]]; then
-  # Don't run presence detection is TTL is 0
+  # Don't run presence detection if TTL is 0
   if [ $PRESENCE_DETECTION_TTL -gt 0 ] ; then
    log_info "Reached 90 MQTT loops (~3min): Launch BLE scanning for car presence"
    listen_to_ble
