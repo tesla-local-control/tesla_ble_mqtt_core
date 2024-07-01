@@ -19,19 +19,15 @@ log_cyan "Instructions by Shankar Kumarasamy https://shankarkumarasamy.blog/2024
 ### INITIALIZE VARIABLES AND FUNCTIONS TO MAKE THIS .sh RUN ALSO STANDALONE ##########################################
 # read options in case of HA addon. Otherwise, they will be sent as environment variables
 if [ -n "${HASSIO_TOKEN:-}" ]; then
-  export TESLA_VIN1="$(bashio::config 'vin1')"
-  export TESLA_VIN2="$(bashio::config 'vin2')"
-  export TESLA_VIN3="$(bashio::config 'vin3')"
-  export PRESENCE_DETECTION="$(bashio::config 'presence_detection')"
-  export BLE_MAC1="$(bashio::config 'ble_mac1')"
-  export BLE_MAC2="$(bashio::config 'ble_mac2')"
-  export BLE_MAC3="$(bashio::config 'ble_mac3')"
+  export BLE_MAC_LIST="$(bashio::config 'ble_mac3')"
+  export DEBUG="$(bashio::config 'debug')"
   export MQTT_IP="$(bashio::config 'mqtt_ip')"
   export MQTT_PORT="$(bashio::config 'mqtt_port')"
-  export MQTT_USER="$(bashio::config 'mqtt_user')"
   export MQTT_PWD="$(bashio::config 'mqtt_pwd')"
+  export MQTT_USER="$(bashio::config 'mqtt_user')"
+  export PRESENCE_DETECTION="$(bashio::config 'presence_detection')"
   export SEND_CMD_RETRY_DELAY="$(bashio::config 'send_cmd_retry_delay')"
-  export DEBUG="$(bashio::config 'debug')"
+  export TESLA_VIN_LIST="$(bashio::config 'vin_list')"
 fi
 
 export MOSQUITTO_PUB_BASE="mosquitto_pub -h $MQTT_IP -p $MQTT_PORT -u \"${MQTT_USER}\" -P \"${MQTT_PWD}\""
@@ -50,23 +46,46 @@ if [ -f /share/tesla_ble_mqtt/private.pem ]; then
  delete_legacies
  exit 1
 fi
-if [ ${TESLA_VIN-} ]; then
- log_error "Using depecated configuration parameters --> Exiting."
- log_error "Fix config and restart. If you see this message again, please raise an issue"
+if [ ! -z ${TESLA_VIN} ]; then
+ log_fatal "Using deprecated configuration parameters --> Exiting."
+ log_fatal "Fix config and restart. If you see this message again, please raise an issue"
  exit 1
+fi
+
+
+ble_addr_count=0
+while ble_mac in $BLE_MAC_LIST; do
+  ble_addr_count=$(expr $ble_addr_count + 1)
+  BLE_MAC${ble_addr_count}=$ble_mac
+  log_debug "Adding $ble_mac to the list, count $ble_addr_count"
+done
+
+vin_count=0
+while vin in $TESLA_VIN_LIST; do
+  vin_count=$(expr $vin_count + 1)
+  BLE_LN${vin_count}=$(tesla_vin2ble_ln $vin)
+  TESLA_VIN${vin_count}=$vin
+  log_debug "Adding $vin to the list, count $vin_count"
+done
+
+if [ $vin_count -eq $mac_addr_count ]; then
+  log_debug "Fantastic, we have $vin_count VIN(s) and $ble_addr_count BLE MAC Addr"
+else
+  log_error "VIN count $vin_count differs from  BLE MAC Addr count $ble_addr_count!"
+  # should we exit fatal, things might not work as expected.
 fi
 
 ### INITIALIZE AND LOG CONFIG VARS ##################################################################################
 log_green "Configuration Options are:
-  TESLA_VIN=$TESLA_VIN1; $TESLA_VIN2; $TESLA_VIN3
-  PRESENCE_DETECTION=$PRESENCE_DETECTION
-  BLE_MAC=$BLE_MAC1; $BLE_MAC2; $BLE_MAC3
+  BLE_MAC_LIST=$BLE_MAC_LIST
+  DEBUG=$DEBUG
   MQTT_IP=$MQTT_IP
   MQTT_PORT=$MQTT_PORT
-  MQTT_USER=$MQTT_USER
   MQTT_PWD=Not Shown
+  MQTT_USER=$MQTT_USER
+  PRESENCE_DETECTION=$PRESENCE_DETECTION
   SEND_CMD_RETRY_DELAY=$SEND_CMD_RETRY_DELAY
-  DEBUG=$DEBUG"
+  TESLA_VIN=$TESLA_VIN"
 
 
 ### SETUP ENVIRONMENT ###########################################################################################
