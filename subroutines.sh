@@ -6,20 +6,20 @@ send_command() {
   for i in $(seq 5); do
     log_notice "Sending command $@ to vin $vin, attempt $i/5"
     set +e
-    message=$(tesla-control -vin $vin -ble -key-name /share/tesla_ble_mqtt/${vin}_private.pem -key-file /share/tesla_ble_mqtt/${vin}_private.pem $@ 2>&1)
+    tesla_ctrl_out=$(tesla-control -vin $vin -ble -key-name /share/tesla_ble_mqtt/${vin}_private.pem -key-file /share/tesla_ble_mqtt/${vin}_private.pem $@ 2>&1)
     EXIT_STATUS=$?
     set -e
     if [ $EXIT_STATUS -eq 0 ]; then
       log_info "tesla-control send command succeeded"
       break
     else
-       if [[ $message == *"Failed to execute command: car could not execute command"* ]]; then
-        log_error $message
+       if [[ "$tesla_ctrl_out" == *"Failed to execute command: car could not execute command"* ]]; then
+        log_error "$tesla_ctrl_out"
         log_notice "Skipping command $@ to vin $vin"
         break
        else
          log_error "tesla-control send command failed exit status $EXIT_STATUS."
-         log_info $message
+         log_info "$tesla_ctrl_out"
          log_notice "Retrying in $BLE_CMD_RETRY_DELAY seconds"
        fi
        sleep $BLE_CMD_RETRY_DELAY
