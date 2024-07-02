@@ -1,47 +1,121 @@
 #!/bin/ash
 
 send_command() {
- vin=$1
- shift
- for i in $(seq 5); do
-  log_notice "Sending command $@ to vin $vin, attempt $i/5"
-  set +e
-  message=$(tesla-control -vin $vin -ble -key-name /share/tesla_ble_mqtt/${vin}_private.pem -key-file /share/tesla_ble_mqtt/${vin}_private.pem $@ 2>&1)
-  EXIT_STATUS=$?
-  set -e
-  if [ $EXIT_STATUS -eq 0 ]; then
-    log_info "tesla-control send command succeeded"
-    break
-  else
-	if [[ $message == *"Failed to execute command: car could not execute command"* ]]; then
-	 log_error $message
-	 log_notice "Skipping command $@ to vin $vin"
-	 break
-	else
-     log_error "tesla-control send command failed exit status $EXIT_STATUS."
-	 log_info $message
-	 log_notice "Retrying in $SEND_CMD_RETRY_DELAY seconds"
-	fi
-    sleep $SEND_CMD_RETRY_DELAY
-  fi
- done
+  vin=$1
+  shift
+  for i in $(seq 5); do
+    log_notice "Sending command $@ to vin $vin, attempt $i/5"
+    set +e
+    tesla_ctrl_out=$(tesla-control -vin $vin -ble -key-name /share/tesla_ble_mqtt/${vin}_private.pem -key-file /share/tesla_ble_mqtt/${vin}_private.pem $@ 2>&1)
+    EXIT_STATUS=$?
+    set -e
+    if [ $EXIT_STATUS -eq 0 ]; then
+      log_info "tesla-control send command succeeded"
+      break
+    else
+       if [[ "$tesla_ctrl_out" == *"Failed to execute command: car could not execute command"* ]]; then
+        log_error "$tesla_ctrl_out"
+        log_notice "Skipping command $@ to vin $vin"
+        break
+       else
+         log_error "tesla-control send command failed exit status $EXIT_STATUS."
+         log_info "$tesla_ctrl_out"
+         log_notice "Retrying in $BLE_CMD_RETRY_DELAY seconds"
+       fi
+       sleep $BLE_CMD_RETRY_DELAY
+    fi
+  done
+}
+
+# Tesla VIN to BLE Local Name
+tesla_vin2ble_ln() {
+  vin=$1
+  ble_ln=""
+
+  log_debug "Calculating BLE Local Name for Tesla VIN $vin"
+  VIN_HASH="$(echo -n ${vin} | sha1sum)"
+  # BLE Local Name
+  ble_ln="S${VIN_HASH:0:16}C"
+  log_debug "BLE Local Name for Tesla VIN $vin is $ble_ln"
+
+  echo $ble_ln
+
 }
 
 listen_to_ble() {
- log_notice "Listening to BLE for presence"
- log_warning "Needs updating for multi-car, only supports TESLA_VIN1 at this time. Doesn't support deprecated TESLA_VIN usage"
- PRESENCE_TIMEOUT=5
- set +e
- bluetoothctl --timeout $PRESENCE_TIMEOUT scan on | grep $BLE_MAC1
- EXIT_STATUS=$?
- set -e
- if [ $EXIT_STATUS -eq 0 ]; then
-   echo "$BLE_MAC1 presence detected"
-   eval $MOSQUITTO_SUB --nodelay -t tesla_ble_mqtt/$TESLA_VIN1/binary_sensor/presence -m ON
- else
-   echo "$BLE_MAC1 presence not detected"
-   eval $MOSQUITTO_SUB --nodelay -t tesla_ble_mqtt/$TESLA_VIN1/binary_sensor/presence -m OFF
- fi
+  n_cars={$1:-3}
+
+  log_notice "Listening to BLE for presence"
+  PRESENCE_TIMEOUT=10
+  set +e
+  BLTCTL_OUT=$(bluetoothctl --timeout $PRESENCE_TIMEOUT scan on | grep -v DEL | grep $BLE_MAC1 2>&1)
+  set -e
+  log_debug "${BLTCTL_OUT}"
+  for count in $(seq $n_cars); do
+    BLE_LN=$(eval echo "echo \$BLE_LN${count}")
+    BLE_MAC=$(eval "echo \$BLE_MAC${count}")
+    PRESENCE_EXPIRE_TIME=$(eval "echo \$PRESENCE_EXPIRE_TIME${count}")
+    VIN=$(eval "echo \$VIN${count}")
+
+    MQTT_TOPIC="tesla_ble_mqtt/$VIN/binary_sensor/presence"
+
+    if echo "$(BLTCTL_OUT)" | grep -q $BLE_MAC; then
+      log_info "BLE MAC $BLE_MAC presence detected"
+      EPOCH_TIME=$(date +%s)
+      # We need a function for mosquitto_pub w/ retry
+      if [ $EPOCH_TIMW < $PRESENCE_EXPIRE_TIME ]; then
+        log_info "Tesla VIN $VIN ($BLE_MAC) TTL expired, update mqtt topic with presence ON"
+        set +e
+        MQTT_OUT=$(eval $MOSQUITTO_SUB --nodelay -t "$MQTT_TOPIC" -m ON 2>&1)
+        EXIT_CODE=$?
+        set -e
+        [ $EXIT_CODE -ne 0 ] \
+          && log_error "$(MQTT_OUT)" \
+          && continue
+        log_info "mqtt topic "$MQTT_TOPIC" succesfully updated to ON"
+
+        # Updating Presence Expire Time in Epoch
+        EPOCH_TIMW=$(date +%s)
+        EPOCH_EXPIRE_TIME=$(expr EPOCH_TIME + $BLE_PRESENCE_TTL)
+        PRESENCE_EXPIRE_TIME${count}=$EPOCH_EXPIRE_TIME
+        log_debug "Tesla VIN $VIN ($BLE_MAC) update Presence Expire Time to $EPOCH_EXPIRE_TIME"
+      else
+        log_info "Tesla VIN $VIN ($BLE_MAC) TTL has not expires at $PRESENCE_EXPIRE_TIME"
+      fi
+    elif echo "$(BLTCTL_OUT)" | grep -q ${BLE_LN}; then
+      log_info "BLE_LN $BLE_LN presence detected"
+      EPOCH_TIME=$(date +%s)
+      # We need a function for mosquitto_pub w/ retry
+      if [ $EPOCH_TIMW < $PRESENCE_EXPIRE_TIME ]; then
+        log_info "TESLA VIN $VIN ($BLE_MAC) TTL expired, update mqtt topic with presence ON"
+        # We need a function for mosquitto_pub w/ retry
+        set +e
+        MQTT_OUT=$(eval $MOSQUITTO_SUB --nodelay -t "$MQTT_TOPIC" -m ON 2>&1)
+        EXIT_CODE=$?
+        set -e
+        [ $EXIT_CODE -ne 0 ] \
+          && log_error "$(MQTT_OUT)" \
+          && continue
+
+        # Updating Presence Expire Time in Epoch
+        EPOCH_TIMW=$(date +%s)
+        EPOCH_EXPIRE_TIME=$(expr EPOCH_TIME + $BLE_PRESENCE_TTL)
+        PRESENCE_EXPIRE_TIME${count}=$(expr EPOCH_TIME + $BLE_PRESENCE_TTL)
+        log_debug "Tesla VIN $VIN $BLE_MAC update Presence Expire Time to $EPOCH_EXPIRE_TIME"
+      else
+        log_info "Tesla VIN $VIN ($BLE_MAC) TTL has not expires at $PRESENCE_EXPIRE_TIME"
+      fi
+    else
+      log_info "Tesla VIN $VIN and MAC $BLE_MAC presence not detected, setting presence OFF"
+      set +e
+      MQTT_OUT=$(eval $MOSQUITTO_SUB --nodelay -t "$MQTT_TOPIC" -m OFF 2>&1)
+      set -e
+      [ $EXIT_CODE -ne 0 ] \
+        && log_error "$(MQTT_OUT)" \
+        && continue
+      log_info "mqtt topic "$MQTT_TOPIC" succesfully updated to OFF"
+    fi
+  done
 }
 
 send_key() {
@@ -57,14 +131,12 @@ send_key() {
     break
   else
     log_notice "COULD NOT SEND THE KEY. Is the car awake and sufficiently close to the bluetooth device?"
-    sleep $SEND_CMD_RETRY_DELAY
+    sleep $BLE_CMD_RETRY_DELAY
   fi
  done
 }
 
 scan_bluetooth(){
-  VIN_HASH=`echo -n ${TESLA_VIN} | sha1sum`
-  BLE_ADVERT=S${VIN_HASH:0:16}C
   log_notice "Calculating BLE Advert ${BLE_ADVERT} from VIN"
   log_notice "Scanning Bluetooth for $BLE_ADVERT, wait 10 secs"
   bluetoothctl --timeout 10 scan on | grep $BLE_ADVERT
@@ -72,6 +144,8 @@ scan_bluetooth(){
 }
 
 delete_legacies(){
+  vin=$1
+
   log_notice "Deleting Legacy MQTT Topics"
   eval $MOSQUITTO_SUB -t homeassistant/switch/tesla_ble/sw-heater/config -n
   eval $MOSQUITTO_SUB -t homeassistant/switch/tesla_ble/sentry-mode/config -n
@@ -104,8 +178,8 @@ delete_legacies(){
 
   if [ -f /share/tesla_ble_mqtt/private.pem ]; then
     log_notice "Renaming legacy keys"
-    mv /share/tesla_ble_mqtt/private.pem /share/tesla_ble_mqtt/${TESLA_VIN1}_private.pem
-    mv /share/tesla_ble_mqtt/public.pem /share/tesla_ble_mqtt/${TESLA_VIN1}_public.pem
+    mv /share/tesla_ble_mqtt/private.pem /share/tesla_ble_mqtt/${vin}_private.pem
+    mv /share/tesla_ble_mqtt/public.pem /share/tesla_ble_mqtt/${vin}_public.pem
   fi
 
 }

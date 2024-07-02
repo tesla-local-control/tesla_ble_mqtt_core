@@ -1,72 +1,36 @@
 #!/bin/ash
 # Note: shebang will be replaced automatically by the HA addon deployment script to #!/command/with-contenv bashio
 
-### LOAD COLORS ####################################################################################################
-export COLOR="true"
-. /app/libcolor.sh
-
 ### DEFINE FUNCTIONS ###############################################################################################
-log_notice "Load subroutines"
-. /app/subroutines.sh
-. /app/discovery.sh
-. /app/listen_to_mqtt.sh
 
+### Source required files
+#
+# Source product's library
+[ -f /app/libproduct.sh ] \
+  && log_info "Source libproduct.sh" \
+  && . /app/libproduct.sh
+
+log_info "Source /app/libcolor.sh"
+export COLOR="true" \
+  && . /app/libcolor.sh
+
+log_info "Source /app/subroutines.sh"
+. /app/subroutines.sh
+
+log_info "Source /app/discovery.sh"
+. /app/discovery.sh
+
+log_info "Source /app/listen_to_mqtt.sh"
+. /app/listen_to_mqtt.sh
+### END Source all required files
+
+
+### Credits Time
+#
 log_cyan "tesla_ble_mqtt_docker by Iain Bullock 2024 https://github.com/iainbullock/tesla_ble_mqtt_docker"
 log_cyan "Inspiration by Raphael Murray https://github.com/raphmur"
 log_cyan "Instructions by Shankar Kumarasamy https://shankarkumarasamy.blog/2024/01/28/tesla-developer-api-guide-ble-key-pair-auth-and-vehicle-commands-part-3"
-
-
-### INITIALIZE VARIABLES AND FUNCTIONS TO MAKE THIS .sh RUN ALSO STANDALONE ##########################################
-# read options in case of HA addon. Otherwise, they will be sent as environment variables
-if [ -n "${HASSIO_TOKEN:-}" ]; then
-  export TESLA_VIN1="$(bashio::config 'vin1')"
-  export TESLA_VIN2="$(bashio::config 'vin2')"
-  export TESLA_VIN3="$(bashio::config 'vin3')"
-  export PRESENCE_DETECTION="$(bashio::config 'presence_detection')"
-  export BLE_MAC1="$(bashio::config 'ble_mac1')"
-  export BLE_MAC2="$(bashio::config 'ble_mac2')"
-  export BLE_MAC3="$(bashio::config 'ble_mac3')"
-  export MQTT_IP="$(bashio::config 'mqtt_ip')"
-  export MQTT_PORT="$(bashio::config 'mqtt_port')"
-  export MQTT_USER="$(bashio::config 'mqtt_user')"
-  export MQTT_PWD="$(bashio::config 'mqtt_pwd')"
-  export SEND_CMD_RETRY_DELAY="$(bashio::config 'send_cmd_retry_delay')"
-  export DEBUG="$(bashio::config 'debug')"
-fi
-
-export MOSQUITTO_PUB_BASE="mosquitto_pub -h $MQTT_IP -p $MQTT_PORT -u '${MQTT_USER}' -P '${MQTT_PWD}'"
-export MOSQUITTO_SUB_BASE="mosquitto_sub -h $MQTT_IP -p $MQTT_PORT -u '${MQTT_USER}' -P '${MQTT_PWD}'"
-
-### HANDLE CONFIG CHANGE #############################################################################################
-if [ -f /share/tesla_ble_mqtt/private.pem ]; then
- log_error "Keys exist from a previous installation with single VIN which is deprecated"
- log_info "This module will try to migrate key files to attribute them to VIN1 and remove old MQTT entities"
- log_info "Please restart the docker image or HA addon. If if fails again:"
- log_info "1/ Check your configuration, you should explicitely specify VIN1/2/3"
- log_info "2/ Check that your have correctly renames the keys:"
- log_notice "/share/tesla_ble_mqtt/private.pem /share/tesla_ble_mqtt/[YOUR VIN]_private.pem"
- log_notice "/share/tesla_ble_mqtt/public.pem /share/tesla_ble_mqtt/[YOUR VIN]_public.pem"
- log_info "If you are supplying the keys from outside the container or addon, update them at source"
- delete_legacies
- exit 1
-fi
-if [ ${TESLA_VIN-} ]; then
- log_error "Using depecated configuration parameters --> Exiting."
- log_error "Fix config and restart. If you see this message again, please raise an issue"
- exit 1
-fi
-
-### INITIALIZE AND LOG CONFIG VARS ##################################################################################
-log_green "Configuration Options are:
-  TESLA_VIN=$TESLA_VIN1; $TESLA_VIN2; $TESLA_VIN3
-  PRESENCE_DETECTION=$PRESENCE_DETECTION
-  BLE_MAC=$BLE_MAC1; $BLE_MAC2; $BLE_MAC3
-  MQTT_IP=$MQTT_IP
-  MQTT_PORT=$MQTT_PORT
-  MQTT_USER=$MQTT_USER
-  MQTT_PWD=Not Shown
-  SEND_CMD_RETRY_DELAY=$SEND_CMD_RETRY_DELAY
-  DEBUG=$DEBUG"
+### END Credits Time
 
 
 ### SETUP ENVIRONMENT ###########################################################################################
@@ -78,24 +42,116 @@ else
 fi
 
 
-log_info "Setting up auto discovery for Home Assistant"
-if [ "$TESLA_VIN1" ] && [ $TESLA_VIN1 != "00000000000000000" ]; then
-  setup_auto_discovery $TESLA_VIN1
+### SETUP PRODUCT  ###########################################################################################
+# If it's a function, call productInit
+if type -f productInit > /dev/null; then
+  productInit
 fi
-if [ "$TESLA_VIN2" ] && [ $TESLA_VIN2 != "00000000000000000" ]; then
-  setup_auto_discovery $TESLA_VIN2
+
+
+### TODO : MOVE TO ADD-ON's libproduct; make it a function and name it "productInit()"
+### INITIALIZE VARIABLES AND FUNCTIONS TO MAKE THIS .sh RUN ALSO STANDALONE ##########################################
+# read options in case of HA addon. Otherwise, they will be sent as environment variables
+if [ -n "${HASSIO_TOKEN:-}" ]; then
+  export BLE_MAC_LIST="$(bashio::config 'ble_mac3')"
+  export DEBUG="$(bashio::config 'debug')"
+  export MQTT_SERVER="$(bashio::config 'mqtt_server')"
+  export MQTT_PORT="$(bashio::config 'mqtt_port')"
+  export MQTT_PASSWORD="$(bashio::config 'mqtt_password')"
+  export MQTT_USERNAME="$(bashio::config 'mqtt_username')"
+  export PRESENCE_DETECTION_TTL="$(bashio::config 'presence_detection_ttl')"
+  export BLE_CMD_RETRY_DELAY="$(bashio::config 'ble_cmd_retry_delay')"
+  export VIN_LIST="$(bashio::config 'vin_list')"
 fi
-if [ "$TESLA_VIN3" ] && [ $TESLA_VIN3 != "00000000000000000" ]; then
-  setup_auto_discovery $TESLA_VIN3
+
+
+### TODO : ADD VALIDATIONS IN DOCKER's libproduct; make it a function and name it "productInit()"
+### Docker Add validation for ly for docker. Addon in config allows to specify
+### What's valid/needed or not.
+###
+###
+
+
+### LOG CONFIG VARS ##################################################################################
+log_green "Configuration Options are:
+  BLE_MAC_LIST=$BLE_MAC_LIST
+  DEBUG=$DEBUG
+  MQTT_SERVER=$MQTT_SERVER
+  MQTT_PORT=$MQTT_PORT
+  MQTT_PASSWORD=Not Shown
+  MQTT_USERNAME=$MQTT_USERNAME
+  PRESENCE_DETECTION_TTL=$PRESENCE_DETECTION_TTL
+  BLE_CMD_RETRY_DELAY=$BLE_CMD_RETRY_DELAY
+  VIN_LIST=$VIN_LIST"
+
+# MQTT clients anonymous or authentication mode
+if [ ! -z ${MQTT_USERNAME} ]; then
+  log_debug "Setting up MQTT clients with authentication is on; MQTT_USERNAME=$MQTT_USERNAME"
+  export MOSQUITTO_PUB_BASE="mosquitto_pub -h $MQTT_SERVER -p $MQTT_PORT -u \"${MQTT_USERNAME}\" -P \"${MQTT_PASSWORD}\""
+  export MOSQUITTO_SUB_BASE="mosquitto_sub -h $MQTT_SERVER -p $MQTT_PORT -u \"${MQTT_USERNAME}\" -P \"${MQTT_PASSWORD}\""
+else
+  log_notice "Setting up MQTT clients in anonymous"
+  export MOSQUITTO_PUB_BASE="mosquitto_pub -h $MQTT_SERVER -p $MQTT_PORT"
+  export MOSQUITTO_SUB_BASE="mosquitto_sub -h $MQTT_SERVER -p $MQTT_PORT"
 fi
+
+# Replace | with ' ' white space
+BLE_MAC_LIST=$(echo $BLE_MAC_LIST | sed -e 's/|/ /g')
+VIN_LIST=$(echo $VIN_LIST | sed -e 's/|/ /g')
+
+vin_count=0
+while vin in $VIN_LIST; do
+  # Populate BLE Local Names and VINS "arrays"
+  vin_count=$(expr $vin_count + 1)
+  BLE_LN${vin_count}=$(tesla_vin2ble_ln $vin)
+  VIN${vin_count}=$vin
+  log_debug "Adding $vin to the list, count $vin_count"
+
+  ################ HANDLE CONFIG CHANGE ##############
+  # TEMPORARY - Move original "vin" key to "vin{1}"
+  if [ -f /share/tesla_ble_mqtt/private.pem ] && [ $vin_count -eq 1 ]; then
+    log_notice "Keys exist from a previous installation with single VIN which is deprecated"
+    log_notice "This module migrates the key files to attribute them to $vin and remove old MQTT entities"
+    log_notice "/share/tesla_ble_mqtt/private.pem /share/tesla_ble_mqtt/${vin}_private.pem"
+    log_notice "/share/tesla_ble_mqtt/public.pem /share/tesla_ble_mqtt/${vin}_public.pem"
+    delete_legacies $vin
+  fi # END TEMPORARY
+done
+
+# Populate BLE_MACS "array" only if Presence Detection is enable
+if [ $PRESENCE_DETECTION_TTL -gt 0 ] ; then
+  log_info "Presence detection is enable with a TTL of $PRESENCE_DETECTION_TTL seconds"
+  ble_addr_count=0
+  while ble_mac in $BLE_MAC_LIST; do
+    ble_addr_count=$(expr $ble_addr_count + 1)
+    BLE_MAC${ble_addr_count}=$ble_mac
+    PRESENCE_EXPIRE_TIME${ble_addr_count}=9999999999
+    log_debug "Adding $ble_mac to the list, count $ble_addr_count"
+  done
+
+  if [ $vin_count -eq $mac_addr_count ]; then
+    log_debug "Fantastic, we have $vin_count VIN(s) and $ble_addr_count BLE MAC Addr"
+  else
+    log_fotal "VIN count $vin_count differs from  BLE MAC Addr count $ble_addr_count!"
+    # should we exit fatal, things might not work as expected.
+    exit 10
+  fi
+else
+  log_info "Presence detection is not enable due to TTL of $PRESENCE_DETECTION_TTL seconds"
+fi
+
+
+# Setup HA auto discovery & Discard old MQTT messages
+while vin in $VIN_LIST; do
+  log_info "Setting up Home Assistant Auto Discovery for $vin"
+  setup_auto_discovery $vin
+  log_info "Discarding any unread MQTT messages for $vin"
+  eval $MOSQUITTO_SUB_BASE -E -i tesla_ble_mqtt -t tesla_ble_mqtt/$vin/+
+done
 
 log_info "Listening for Home Assistant Start (in background)"
 listen_for_HA_start &
 
-log_info "Discarding any unread MQTT messages"
-eval $MOSQUITTO_SUB -E -i tesla_ble_mqtt -t tesla_ble_mqtt/$TESLA_VIN1/+
-eval $MOSQUITTO_SUB -E -i tesla_ble_mqtt -t tesla_ble_mqtt/$TESLA_VIN2/+
-eval $MOSQUITTO_SUB -E -i tesla_ble_mqtt -t tesla_ble_mqtt/$TESLA_VIN3/+
 
 ### START MAIN PROGRAM LOOP ######################################################################################
 counter=0
@@ -106,7 +162,8 @@ do
  listen_to_mqtt
  ((counter++))
  if [[ $counter -gt 90 ]]; then
-  if [ "$PRESENCE_DETECTION" = true ] ; then
+  # Don't run presence detection if TTL is 0
+  if [ $PRESENCE_DETECTION_TTL -gt 0 ] ; then
    log_info "Reached 90 MQTT loops (~3min): Launch BLE scanning for car presence"
    listen_to_ble
   fi
