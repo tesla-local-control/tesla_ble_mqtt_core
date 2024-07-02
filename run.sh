@@ -1,29 +1,37 @@
 #!/bin/ash
 # Note: shebang will be replaced automatically by the HA addon deployment script to #!/command/with-contenv bashio
 
-### LOAD COLORS ####################################################################################################
-export COLOR="true"
-. /app/libcolor.sh
-
 ### DEFINE FUNCTIONS ###############################################################################################
-log_notice "Load subroutines"
-. /app/subroutines.sh
-. /app/discovery.sh
-. /app/listen_to_mqtt.sh
 
+### Source required files
+#
+# Source product's library
+log_info "Source required files to load our functions"
+[ -f /app/libproduct.sh ] \
+  && log_info "Source libproduct.sh" \
+  && . /app/libproduct.sh
+
+log_info "Source /app/libcolor.sh"
+export COLOR="true" \
+  && . /app/libcolor.sh
+
+log_info "Source /app/subroutines.sh"
+. /app/subroutines.sh
+
+log_info "Source /app/discovery.sh"
+. /app/discovery.sh
+
+log_info "Source /app/listen_to_mqtt.sh"
+. /app/listen_to_mqtt.sh
+### END Source all required files
+
+
+### Credits Time
+#
 log_cyan "tesla_ble_mqtt_docker by Iain Bullock 2024 https://github.com/iainbullock/tesla_ble_mqtt_docker"
 log_cyan "Inspiration by Raphael Murray https://github.com/raphmur"
 log_cyan "Instructions by Shankar Kumarasamy https://shankarkumarasamy.blog/2024/01/28/tesla-developer-api-guide-ble-key-pair-auth-and-vehicle-commands-part-3"
-
-
-###
-###
-### TODO
-### Add validation for input, specially for docker. Addon in config allows to specify
-### What's valid/needed or not.
-###
-###
-
+### END Credits Time
 
 
 ### SETUP ENVIRONMENT ###########################################################################################
@@ -35,7 +43,14 @@ else
 fi
 
 
+### SETUP PRODUCT  ###########################################################################################
+# If it's a function, call productInit
+if type -f productInit > /dev/null; then
+  productInit
+fi
 
+
+### TODO : MOVE TO ADD-ON's libproduct; make it a function and name it "productInit()"
 ### INITIALIZE VARIABLES AND FUNCTIONS TO MAKE THIS .sh RUN ALSO STANDALONE ##########################################
 # read options in case of HA addon. Otherwise, they will be sent as environment variables
 if [ -n "${HASSIO_TOKEN:-}" ]; then
@@ -51,7 +66,14 @@ if [ -n "${HASSIO_TOKEN:-}" ]; then
 fi
 
 
-### INITIALIZE AND LOG CONFIG VARS ##################################################################################
+### TODO : ADD VALIDATIONS IN DOCKER's libproduct; make it a function and name it "productInit()"
+### Docker Add validation for ly for docker. Addon in config allows to specify
+### What's valid/needed or not.
+###
+###
+
+
+### LOG CONFIG VARS ##################################################################################
 log_green "Configuration Options are:
   BLE_MAC_LIST=$BLE_MAC_LIST
   DEBUG=$DEBUG
