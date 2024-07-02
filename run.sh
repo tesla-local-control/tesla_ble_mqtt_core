@@ -66,7 +66,9 @@ if [ -n "${HASSIO_TOKEN:-}" ]; then
 fi
 
 
-### TODO : ADD VALIDATIONS IN DOCKER's libproduct; make it a function and name it "productInit()"
+### TODO - Move to Docker's libproduct otherwise this setting will show up for add-on
+export HA_BACKEND_DISABLE=${HA_BACKEND_DISABLE:=false}
+### TODO : Add validations in Docker's libproduct; make it a function and name it "productInit()"
 ### Docker Add validation for ly for docker. Addon in config allows to specify
 ### What's valid/needed or not.
 ###
@@ -84,6 +86,7 @@ log_green "Configuration Options are:
   PRESENCE_DETECTION_TTL=$PRESENCE_DETECTION_TTL
   BLE_CMD_RETRY_DELAY=$BLE_CMD_RETRY_DELAY
   VIN_LIST=$VIN_LIST"
+[ ! -z $HA_BACKEND_DISABLE ] && log_green "HA_BACKEND_DISABLE=$HA_BACKEND_DISABLE"
 
 # MQTT clients anonymous or authentication mode
 if [ ! -z ${MQTT_USERNAME} ]; then
@@ -142,16 +145,28 @@ else
 fi
 
 
-# Setup HA auto discovery & Discard old MQTT messages
+# Setup or skip HA auto discovery & Discard old MQTT messages
 while vin in $VIN_LIST; do
-  log_info "Setting up Home Assistant Auto Discovery for $vin"
-  setup_auto_discovery $vin
+
+  # IF HA backend is enable, setup HA autodiscovery otherwise don't
+  if [ "$HA_BACKEND_DISABLE" == "false" ]; then
+    log_info "Setting up Home Assistant Auto Discovery for $vin"
+    setup_auto_discovery $vin
+  else
+    log_info "HA backend is disable, skipping setup for HA Auto Discovery"
+  fi
+
   log_info "Discarding any unread MQTT messages for $vin"
   eval $MOSQUITTO_SUB_BASE -E -i tesla_ble_mqtt -t tesla_ble_mqtt/$vin/+
 done
 
-log_info "Listening for Home Assistant Start (in background)"
-listen_for_HA_start &
+# IF HA backend is enable, call listen_for_HA_start()
+if [ "$HA_BACKEND_DISABLE" == "false" ]; then
+  log_info "Listening for Home Assistant Start (in background)"
+  listen_for_HA_start &
+else
+  log_notice "HA backend is disable, not listening for Home Assistant Start"
+fi
 
 
 ### START MAIN PROGRAM LOOP ######################################################################################
@@ -159,16 +174,20 @@ counter=0
 log_info "Entering listening loop"
 while true
 do
- set +e
- listen_to_mqtt
- ((counter++))
- if [[ $counter -gt 90 ]]; then
+
+  # Call listen_to_mqtt()
+  log_debug "Calling listen_to_mqtt()"
+  set +e
+  listen_to_mqtt
+
   # Don't run presence detection if TTL is 0
   if [ $PRESENCE_DETECTION_TTL -gt 0 ] ; then
-   log_info "Reached 90 MQTT loops (~3min): Launch BLE scanning for car presence"
-   listen_to_ble
+    ((counter++))
+    if [[ $counter -gt 90 ]]; then
+      log_info "Reached 90 MQTT loops (~3min): Launch BLE scanning for car presence"
+      listen_to_ble
+    fi
+    counter=0
   fi
-  counter=0
- fi
- sleep 2
+  sleep 2
 done
