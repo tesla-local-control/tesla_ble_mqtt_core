@@ -19,7 +19,7 @@ send_command() {
 	 break
 	else
      log_error "tesla-control send command failed exit status $EXIT_STATUS."
-	 log_info $message
+	 log_error $message
 	 log_notice "Retrying in $SEND_CMD_RETRY_DELAY seconds"
 	fi
     sleep $SEND_CMD_RETRY_DELAY
