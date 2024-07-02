@@ -14,8 +14,8 @@ send_command() {
     break
   else
 	if [[ $message == *"Failed to execute command: car could not execute command"* ]]; then
-	 log_error $message
-	 log_notice "Skipping command $@ to vin $vin"
+	 log_warning $message
+	 log_warning "Skipping command $@ to vin $vin"
 	 break
 	else
      log_error "tesla-control send command failed exit status $EXIT_STATUS."
