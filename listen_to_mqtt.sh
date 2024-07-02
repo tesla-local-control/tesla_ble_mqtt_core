@@ -14,7 +14,6 @@ listen_to_mqtt() {
 
    case $cmnd in
     config)
-     log_info "Configuration $msg requested"
 
      case $msg in
       generate_keys)
@@ -46,7 +45,6 @@ listen_to_mqtt() {
 	;;
 
     command)
-     log_info "Command $msg requested"
      case $msg in
        wake)
         log_notice "Waking Car"
@@ -102,7 +100,6 @@ listen_to_mqtt() {
 	;;
 	
     charging-amps)
-     log_info "Set Charging Amps to $msg requested"
      # https://github.com/iainbullock/tesla_ble_mqtt_docker/issues/4
      if [ $msg -gt 4 ]; then
      log_notice "Set amps"
@@ -117,23 +114,18 @@ listen_to_mqtt() {
 	;;
 	
     auto-seat-and-climate)
-     log_notice "Start Auto Seat and Climate"
      send_command $vin "auto-seat-and-climate LR on";;
 
     charging-set-limit)
-     log_notice "Set Charging Limit to $msg"
      send_command $vin "charging-set-limit $msg";;
 
     climate-set-temp)
-     log_notice "Set Climate Temp to $msg"
      send_command $vin "climate-set-temp ${msg}C";;
 
     heated_seat_left)
-     log_notice "Set Seat heater to front-left $msg"
      send_command $vin "seat-heater front-left $msg";;
 
     heated_seat_right)
-     log_notice "Set Seat heater to front-right $msg"
      send_command $vin "seat-heater front-right $msg";;
 
     *)
