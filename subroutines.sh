@@ -6,7 +6,7 @@ send_command() {
   for i in $(seq 5); do
     log_notice "Sending command $@ to vin $vin, attempt $i/5"
     set +e
-    tesla_ctrl_out=$(tesla-control -vin $vin -ble -key-name /share/tesla_ble_mqtt/${vin}_private.pem -key-file /share/tesla_ble_mqtt/${vin}_private.pem $@ 2>&1)
+    tesla_ctrl_out=$(tesla-control -vin $vin -ble -key-name /share/tesla_blemqtt/${vin}_private.pem -key-file /share/tesla_ble_mqtt/${vin}_private.pem $@ 2>&1)
     EXIT_STATUS=$?
     set -e
     if [ $EXIT_STATUS -eq 0 ]; then
@@ -57,7 +57,7 @@ listen_to_ble() {
     PRESENCE_EXPIRE_TIME=$(eval "echo \$PRESENCE_EXPIRE_TIME${count}")
     VIN=$(eval "echo \$VIN${count}")
 
-    MQTT_TOPIC="tesla_ble_mqtt/$VIN/binary_sensor/presence"
+    MQTT_TOPIC="tesla_ble/$VIN/binary_sensor/presence"
 
     if echo "$(BLTCTL_OUT)" | grep -q $BLE_MAC; then
       log_info "BLE MAC $BLE_MAC presence detected"
