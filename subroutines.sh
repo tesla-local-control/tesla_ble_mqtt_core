@@ -66,7 +66,7 @@ listen_to_ble() {
       if [ $EPOCH_TIMW < $PRESENCE_EXPIRE_TIME ]; then
         log_info "Tesla VIN $VIN ($BLE_MAC) TTL expired, update mqtt topic with presence ON"
         set +e
-        MQTT_OUT=$(eval $MOSQUITTO_SUB --nodelay -t "$MQTT_TOPIC" -m ON 2>&1)
+        MQTT_OUT=$(eval $MOSQUITTO_PUB_BASE --nodelay -t "$MQTT_TOPIC" -m ON 2>&1)
         EXIT_CODE=$?
         set -e
         [ $EXIT_CODE -ne 0 ] \
@@ -90,7 +90,7 @@ listen_to_ble() {
         log_info "TESLA VIN $VIN ($BLE_MAC) TTL expired, update mqtt topic with presence ON"
         # We need a function for mosquitto_pub w/ retry
         set +e
-        MQTT_OUT=$(eval $MOSQUITTO_SUB --nodelay -t "$MQTT_TOPIC" -m ON 2>&1)
+        MQTT_OUT=$(eval $MOSQUITTO_PUB_BASE --nodelay -t "$MQTT_TOPIC" -m ON 2>&1)
         EXIT_CODE=$?
         set -e
         [ $EXIT_CODE -ne 0 ] \
@@ -108,7 +108,7 @@ listen_to_ble() {
     else
       log_info "Tesla VIN $VIN and MAC $BLE_MAC presence not detected, setting presence OFF"
       set +e
-      MQTT_OUT=$(eval $MOSQUITTO_SUB --nodelay -t "$MQTT_TOPIC" -m OFF 2>&1)
+      MQTT_OUT=$(eval $MOSQUITTO_PUB_BASE --nodelay -t "$MQTT_TOPIC" -m OFF 2>&1)
       set -e
       [ $EXIT_CODE -ne 0 ] \
         && log_error "$(MQTT_OUT)" \
@@ -147,34 +147,34 @@ delete_legacies(){
   vin=$1
 
   log_notice "Deleting Legacy MQTT Topics"
-  eval $MOSQUITTO_SUB -t homeassistant/switch/tesla_ble/sw-heater/config -n
-  eval $MOSQUITTO_SUB -t homeassistant/switch/tesla_ble/sentry-mode/config -n
-  eval $MOSQUITTO_SUB -t homeassistant/select/tesla_ble/heated_seat_left/config -n
-  eval $MOSQUITTO_SUB -t homeassistant/select/tesla_ble/heated_seat_right/config -n
-  eval $MOSQUITTO_SUB -t homeassistant/binary_sensor/tesla_ble/presence/config -n
-  eval $MOSQUITTO_SUB -t homeassistant/number/tesla_ble/charging-set-amps/config -n
-  eval $MOSQUITTO_SUB -t homeassistant/number/tesla_ble/charging-set-limit/config -n
-  eval $MOSQUITTO_SUB -t homeassistant/number/tesla_ble/climate-temp/config -n
-  eval $MOSQUITTO_SUB -t homeassistant/button/tesla_ble/generate_keys/config -n
-  eval $MOSQUITTO_SUB -t homeassistant/button/tesla_ble/deploy_key/config -n
-  eval $MOSQUITTO_SUB -t homeassistant/button/tesla_ble/scan_bluetooth/config -n
-  eval $MOSQUITTO_SUB -t homeassistant/button/tesla_ble/wake/config -n
-  eval $MOSQUITTO_SUB -t homeassistant/button/tesla_ble/flash-lights/config -n
-  eval $MOSQUITTO_SUB -t homeassistant/button/tesla_ble/honk/config -n
-  eval $MOSQUITTO_SUB -t homeassistant/button/tesla_ble/lock/config -n
-  eval $MOSQUITTO_SUB -t homeassistant/button/tesla_ble/unlock/config -n
-  eval $MOSQUITTO_SUB -t homeassistant/button/tesla_ble/auto-seat-climate/config -n
-  eval $MOSQUITTO_SUB -t homeassistant/button/tesla_ble/climate-on/config -n
-  eval $MOSQUITTO_SUB -t homeassistant/button/tesla_ble/climate-off/config -n
-  eval $MOSQUITTO_SUB -t homeassistant/button/tesla_ble/trunk-open/config -n
-  eval $MOSQUITTO_SUB -t homeassistant/button/tesla_ble/trunk-close/config -n
-  eval $MOSQUITTO_SUB -t homeassistant/button/tesla_ble/frunk-open/config -n
-  eval $MOSQUITTO_SUB -t homeassistant/button/tesla_ble/charging-start/config -n
-  eval $MOSQUITTO_SUB -t homeassistant/button/tesla_ble/charging-stop/config -n
-  eval $MOSQUITTO_SUB -t homeassistant/button/tesla_ble/charge-port-open/config -n
-  eval $MOSQUITTO_SUB -t homeassistant/button/tesla_ble/charge-port-close/config -n
-  eval $MOSQUITTO_SUB -t homeassistant/button/tesla_ble/windows-close/config -n
-  eval $MOSQUITTO_SUB -t homeassistant/button/tesla_ble/windows-vent/config -n
+  eval $MOSQUITTO_PUB_BASE -t homeassistant/switch/tesla_ble/sw-heater/config -n
+  eval $MOSQUITTO_PUB_BASE -t homeassistant/switch/tesla_ble/sentry-mode/config -n
+  eval $MOSQUITTO_PUB_BASE -t homeassistant/select/tesla_ble/heated_seat_left/config -n
+  eval $MOSQUITTO_PUB_BASE -t homeassistant/select/tesla_ble/heated_seat_right/config -n
+  eval $MOSQUITTO_PUB_BASE -t homeassistant/binary_sensor/tesla_ble/presence/config -n
+  eval $MOSQUITTO_PUB_BASE -t homeassistant/number/tesla_ble/charging-set-amps/config -n
+  eval $MOSQUITTO_PUB_BASE -t homeassistant/number/tesla_ble/charging-set-limit/config -n
+  eval $MOSQUITTO_PUB_BASE -t homeassistant/number/tesla_ble/climate-temp/config -n
+  eval $MOSQUITTO_PUB_BASE -t homeassistant/button/tesla_ble/generate_keys/config -n
+  eval $MOSQUITTO_PUB_BASE -t homeassistant/button/tesla_ble/deploy_key/config -n
+  eval $MOSQUITTO_PUB_BASE -t homeassistant/button/tesla_ble/scan_bluetooth/config -n
+  eval $MOSQUITTO_PUB_BASE -t homeassistant/button/tesla_ble/wake/config -n
+  eval $MOSQUITTO_PUB_BASE -t homeassistant/button/tesla_ble/flash-lights/config -n
+  eval $MOSQUITTO_PUB_BASE -t homeassistant/button/tesla_ble/honk/config -n
+  eval $MOSQUITTO_PUB_BASE -t homeassistant/button/tesla_ble/lock/config -n
+  eval $MOSQUITTO_PUB_BASE -t homeassistant/button/tesla_ble/unlock/config -n
+  eval $MOSQUITTO_PUB_BASE -t homeassistant/button/tesla_ble/auto-seat-climate/config -n
+  eval $MOSQUITTO_PUB_BASE -t homeassistant/button/tesla_ble/climate-on/config -n
+  eval $MOSQUITTO_PUB_BASE -t homeassistant/button/tesla_ble/climate-off/config -n
+  eval $MOSQUITTO_PUB_BASE -t homeassistant/button/tesla_ble/trunk-open/config -n
+  eval $MOSQUITTO_PUB_BASE -t homeassistant/button/tesla_ble/trunk-close/config -n
+  eval $MOSQUITTO_PUB_BASE -t homeassistant/button/tesla_ble/frunk-open/config -n
+  eval $MOSQUITTO_PUB_BASE -t homeassistant/button/tesla_ble/charging-start/config -n
+  eval $MOSQUITTO_PUB_BASE -t homeassistant/button/tesla_ble/charging-stop/config -n
+  eval $MOSQUITTO_PUB_BASE -t homeassistant/button/tesla_ble/charge-port-open/config -n
+  eval $MOSQUITTO_PUB_BASE -t homeassistant/button/tesla_ble/charge-port-close/config -n
+  eval $MOSQUITTO_PUB_BASE -t homeassistant/button/tesla_ble/windows-close/config -n
+  eval $MOSQUITTO_PUB_BASE -t homeassistant/button/tesla_ble/windows-vent/config -n
 
   if [ -f /share/tesla_ble_mqtt/private.pem ]; then
     log_notice "Renaming legacy keys"
