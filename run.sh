@@ -93,9 +93,9 @@ log_info "Listening for Home Assistant Start (in background)"
 listen_for_HA_start &
 
 log_info "Discarding any unread MQTT messages"
-eval $MOSQUITTO_SUB -E -i tesla_ble_mqtt -t tesla_ble_mqtt/$TESLA_VIN1/+
-eval $MOSQUITTO_SUB -E -i tesla_ble_mqtt -t tesla_ble_mqtt/$TESLA_VIN2/+
-eval $MOSQUITTO_SUB -E -i tesla_ble_mqtt -t tesla_ble_mqtt/$TESLA_VIN3/+
+eval $MOSQUITTO_SUB_BASE -E -i tesla_ble_mqtt -t tesla_ble_mqtt/$TESLA_VIN1/+
+eval $MOSQUITTO_SUB_BASE -E -i tesla_ble_mqtt -t tesla_ble_mqtt/$TESLA_VIN2/+
+eval $MOSQUITTO_SUB_BASE -E -i tesla_ble_mqtt -t tesla_ble_mqtt/$TESLA_VIN3/+
 
 ### START MAIN PROGRAM LOOP ######################################################################################
 counter=0
