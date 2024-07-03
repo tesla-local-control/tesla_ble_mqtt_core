@@ -48,7 +48,7 @@ listen_to_ble() {
   log_notice "Listening to BLE for presence"
   PRESENCE_TIMEOUT=10
   set +e
-  BLTCTL_OUT=$(bluetoothctl --timeout $PRESENCE_TIMEOUT scan on | grep -v DEL | grep $BLE_MAC1 2>&1)
+  BLTCTL_OUT=$(bluetoothctl --timeout $PRESENCE_TIMEOUT scan on | grep -v DEL 2>&1)
   set -e
   log_debug "${BLTCTL_OUT}"
   for count in $(seq $n_cars); do
