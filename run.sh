@@ -87,6 +87,7 @@ log_green "Configuration Options are:
   BLE_CMD_RETRY_DELAY=$BLE_CMD_RETRY_DELAY
   VIN_LIST=$VIN_LIST"
 [ ! -z $HA_BACKEND_DISABLE ] && log_green "HA_BACKEND_DISABLE=$HA_BACKEND_DISABLE"
+[ ! -z $BLECTL_FILE_INPUT ] && log_green "BLECTL_FILE_INPUT=$BLECTL_FILE_INPUT"
 
 # MQTT clients anonymous or authentication mode
 if [ ! -z ${MQTT_USERNAME} ]; then

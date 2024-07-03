@@ -45,12 +45,29 @@ tesla_vin2ble_ln() {
 listen_to_ble() {
   n_cars={$1:-3}
 
-  log_notice "Listening to BLE for presence"
-  PRESENCE_TIMEOUT=10
-  set +e
-  BLTCTL_OUT=$(bluetoothctl --timeout $PRESENCE_TIMEOUT scan on | grep -v DEL 2>&1)
-  set -e
+  # Read BLE data from bluetoothctl or an input file
+  if [ -z $BLECTL_FILE_INPUT ]; then
+    log_notice "Launching bluetoothctl to check for BLE presence"
+    PRESENCE_TIMEOUT=10
+    set +e
+    BLTCTL_OUT=$(bluetoothctl --timeout $PRESENCE_TIMEOUT scan on | grep -v DEL 2>&1)
+    set -e
+  else
+    [ ! -f $BLECTL_FILE_INPUT ] \
+      && log_fatal "blectl input file $BLECTL_FILE_INPUT not found" \
+      && exit 30
+    log_notice "Reading BLE presence data from file $BLECTL_FILE_INPUT"
+    nPickMin=0  # min number of lines to pick
+    nPickMax=50 # max number of lines to pick
+    nPick=$((RANDOM % (total_lines - nPickMax + nPickMin) + nPickMin))
+    finputTotalLines=$(wc -l < "$BLECTL_FILE_INPUT")
+    startLine=$((RANDOM % (finputTotalLines - nPick + 1) + 1)) # Random starting line
+
+    # Extract nPick lines starting from line startLine
+    BLTCTL_OUT=$(sed -n "${startLine},$((startLine + nPick - 1))p" "$BLECTL_FILE_INPUT")
+  fi
   log_debug "${BLTCTL_OUT}"
+
   for count in $(seq $n_cars); do
     BLE_LN=$(eval echo "echo \$BLE_LN${count}")
     BLE_MAC=$(eval "echo \$BLE_MAC${count}")
