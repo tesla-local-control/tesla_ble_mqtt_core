@@ -50,7 +50,7 @@ listen_to_ble() {
     log_notice "Launching bluetoothctl to check for BLE presence"
     PRESENCE_TIMEOUT=10
     set +e
-    BLTCTL_OUT=$(bluetoothctl --timeout $PRESENCE_TIMEOUT scan on | grep -v DEL 2>&1)
+    BLTCTL_OUT=$(bluetoothctl --timeout $PRESENCE_TIMEOUT scan on 2>&1 | grep -v DEL)
     set -e
   else
     [ ! -f $BLECTL_FILE_INPUT ] \
