@@ -158,26 +158,38 @@ else
   log_notice "HA backend is disable, not listening for Home Assistant Start"
 fi
 
+ble_scanning_loop() {
+  TESLA_PRESENCE_LOOP_DELAY=180
+
+  log_green "Entering BLE scanning loop, presence runs every $TESLA_PRESENCE_LOOP_DELAY seconds"
+
+  while : ; do
+    log_debug "Launching BLE scanning to check for car presence"
+    ble_scanning
+    sleep $TESLA_PRESENCE_LOOP_DELAY
+  done
+
+}
+
+# Run presence detection if TTL is greater than 0
+if [ $PRESENCE_DETECTION_TTL -gt 0 ] ; then
+  ble_scanning_loop &
+fi
+
 
 ### START MAIN PROGRAM LOOP ######################################################################################
-counter=0
-log_info "Entering listening loop"
-while true
-do
+log_info "Entering main MQTT listening loop"
+
+# TODO : How should we handle a MQTT restart or network failure to reach the service?
+#        The while loop below will restart listen_to_mqtt but for listen_for_HA_start,
+@        it will fail and nothing will restart it.
+#        If set probably set -e/+e , perhaps on MQTT restat we also want to restart?
+while : ; do
 
   # Call listen_to_mqtt()
   log_debug "Calling listen_to_mqtt()"
   set +e
   listen_to_mqtt
 
-  # Don't run presence detection if TTL is 0
-  if [ $PRESENCE_DETECTION_TTL -gt 0 ] ; then
-    ((counter++))
-    if [[ $counter -gt 90 ]]; then
-      log_info "Reached 90 MQTT loops (~3min): Launch BLE scanning for car presence"
-      listen_to_ble
-    fi
-    counter=0
-  fi
   sleep 2
 done

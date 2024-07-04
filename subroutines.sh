@@ -27,6 +27,7 @@ send_command() {
   done
 }
 
+
 # Tesla VIN to BLE Local Name
 tesla_vin2ble_ln() {
   vin=$1
@@ -42,7 +43,8 @@ tesla_vin2ble_ln() {
 
 }
 
-listen_to_ble() {
+
+ble_scanning() {
   n_cars={$1:-3}
 
   # Read BLE data from bluetoothctl or an input file
@@ -135,23 +137,27 @@ listen_to_ble() {
   done
 }
 
+
+
 send_key() {
- vin=$1
- for i in $(seq 5); do
-  echo "Attempt $i/5"
-  set +e
-  tesla-control -ble -vin $vin add-key-request /share/tesla_ble_mqtt/${vin}_public.pem owner cloud_key
-  EXIT_STATUS=$?
-  set -e
-  if [ $EXIT_STATUS -eq 0 ]; then
-    log_notice "KEY SENT TO VEHICLE: PLEASE CHECK YOU TESLA'S SCREEN AND ACCEPT WITH YOUR CARD"
-    break
-  else
-    log_notice "COULD NOT SEND THE KEY. Is the car awake and sufficiently close to the bluetooth device?"
-    sleep $BLE_CMD_RETRY_DELAY
-  fi
- done
+  vin=$1
+
+  for i in $(seq 5); do
+    echo "Attempt $i/5"
+    set +e
+    tesla-control -ble -vin $vin add-key-request /share/tesla_ble_mqtt/${vin}_public.pem owner cloud_key
+    EXIT_STATUS=$?
+    set -e
+    if [ $EXIT_STATUS -eq 0 ]; then
+      log_notice "KEY SENT TO VEHICLE: PLEASE CHECK YOU TESLA'S SCREEN AND ACCEPT WITH YOUR CARD"
+      break
+    else
+      log_notice "COULD NOT SEND THE KEY. Is the car awake and sufficiently close to the bluetooth device?"
+      sleep $BLE_CMD_RETRY_DELAY
+    fi
+  done
 }
+
 
 
 delete_legacies(){
