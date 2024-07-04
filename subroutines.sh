@@ -129,13 +129,20 @@ listen_to_ble() {
           && continue
         log_info "mqtt topic "$MQTT_TOPIC" succesfully updated to ON"
 
+### 1 & 2 & 3 & 4
         # Updating Presence Expire Time in Epoch
         EPOCH_TIME=$(date +%s)
         EPOCH_EXPIRE_TIME=$(expr $EPOCH_TIME + $PRESENCE_DETECTION_TTL)
         PRESENCE_EXPIRE_TIME_LIST=$(replace_value_at_position "$PRESENCE_EXPIRE_TIME_LIST" $position $EPOCH_EXPIRE_TIME)
-        log_debug "Tesla VIN $VIN ($BLE_MAC) update Presence Expire Time to $EPOCH_EXPIRE_TIME"
+        log_debug "Tesla VIN $VIN ($BLE_MAC) update presence expire time to $EPOCH_EXPIRE_TIME"
       else
-        log_info "Tesla VIN $VIN ($BLE_MAC) TTL has not expires at $PRESENCE_EXPIRE_TIME"
+### 1 & 2 & 3 & 4
+        log_info "Tesla VIN $VIN ($BLE_MAC) TTL expires at $PRESENCE_EXPIRE_TIME"
+        # Updating Presence Expire Time in Epoch
+        EPOCH_TIME=$(date +%s)
+        EPOCH_EXPIRE_TIME=$(expr $EPOCH_TIME + $PRESENCE_DETECTION_TTL)
+        PRESENCE_EXPIRE_TIME_LIST=$(replace_value_at_position "$PRESENCE_EXPIRE_TIME_LIST" $position $EPOCH_EXPIRE_TIME)
+        log_debug "Tesla VIN $VIN ($BLE_MAC) update presence expire time to $EPOCH_EXPIRE_TIME"
       fi
     elif echo "${BLTCTL_OUT}" | grep -q ${BLE_LN}; then
       log_info "BLE_LN $BLE_LN presence detected"
@@ -152,13 +159,20 @@ listen_to_ble() {
           && log_error "$(MQTT_OUT)" \
           && continue
 
+### 1 & 2 & 3 & 4
         # Updating Presence Expire Time in Epoch
         EPOCH_TIME=$(date +%s)
         EPOCH_EXPIRE_TIME=$(expr $EPOCH_TIME + $PRESENCE_DETECTION_TTL)
         PRESENCE_EXPIRE_TIME_LIST=$(replace_value_at_position "$PRESENCE_EXPIRE_TIME_LIST" $position $EPOCH_EXPIRE_TIME)
-        log_debug "Tesla VIN $VIN $BLE_MAC update Presence Expire Time to $EPOCH_EXPIRE_TIME"
+        log_debug "Tesla VIN $VIN $BLE_MAC update presence expire time to $EPOCH_EXPIRE_TIME"
       else
-        log_info "Tesla VIN $VIN ($BLE_MAC) TTL has not expires at $PRESENCE_EXPIRE_TIME"
+### 1 & 2 & 3 & 4
+        # Updating Presence Expire Time in Epoch
+        EPOCH_TIME=$(date +%s)
+        EPOCH_EXPIRE_TIME=$(expr $EPOCH_TIME + $PRESENCE_DETECTION_TTL)
+        PRESENCE_EXPIRE_TIME_LIST=$(replace_value_at_position "$PRESENCE_EXPIRE_TIME_LIST" $position $EPOCH_EXPIRE_TIME)
+        log_debug "Tesla VIN $VIN $BLE_MAC update presence expire time to $EPOCH_EXPIRE_TIME"
+        log_info "Tesla VIN $VIN ($BLE_MAC) TTL expires at $PRESENCE_EXPIRE_TIME"
       fi
     else
       log_info "Tesla VIN $VIN and MAC $BLE_MAC presence not detected, setting presence OFF"

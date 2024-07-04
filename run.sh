@@ -9,8 +9,8 @@ echo "Source required files to load required functions"
 #
 # Source libcolor
 echo "Source /app/libcolor.sh"
-export COLOR="true" \
-  && export DEBUG=false\
+export COLOR=${COLOR:true} \
+  && export DEBUG=${DEBUG:false}\
   && . /app/libcolor.sh
 
 # Source product's library
