@@ -42,6 +42,7 @@ tesla_vin2ble_ln() {
   ble_ln="S${VIN_HASH:0:16}C"
   log_debug "BLE Local Name for Tesla VIN $vin is $ble_ln"
 
+  # return result
   echo $ble_ln
 
 }
@@ -85,7 +86,7 @@ ble_scanning() {
 
     MQTT_TOPIC="tesla_ble/$VIN/binary_sensor/presence"
 
-    if echo "$(BLTCTL_OUT)" | grep -q $BLE_MAC; then
+    if echo "${BLTCTL_OUT}" | grep -q $BLE_MAC; then
       log_info "BLE MAC $BLE_MAC presence detected"
       EPOCH_TIME=$(date +%s)
       # We need a function for mosquitto_pub w/ retry
@@ -93,9 +94,9 @@ ble_scanning() {
         log_info "Tesla VIN $VIN ($BLE_MAC) TTL expired, update mqtt topic with presence ON"
         set +e
         MQTT_OUT=$(eval $MOSQUITTO_PUB_BASE --nodelay -t "$MQTT_TOPIC" -m ON 2>&1)
-        EXIT_CODE=$?
+        EXIT_STATUS=$?
         set -e
-        [ $EXIT_CODE -ne 0 ] \
+        [ $EXIT_STATUS -ne 0 ] \
           && log_error "$(MQTT_OUT)" \
           && continue
         log_info "mqtt topic "$MQTT_TOPIC" succesfully updated to ON"
@@ -108,7 +109,7 @@ ble_scanning() {
       else
         log_info "Tesla VIN $VIN ($BLE_MAC) TTL has not expires at $PRESENCE_EXPIRE_TIME"
       fi
-    elif echo "$(BLTCTL_OUT)" | grep -q ${BLE_LN}; then
+    elif echo "${BLTCTL_OUT}" | grep -q ${BLE_LN}; then
       log_info "BLE_LN $BLE_LN presence detected"
       EPOCH_TIME=$(date +%s)
       # We need a function for mosquitto_pub w/ retry
@@ -117,9 +118,9 @@ ble_scanning() {
         # We need a function for mosquitto_pub w/ retry
         set +e
         MQTT_OUT=$(eval $MOSQUITTO_PUB_BASE --nodelay -t "$MQTT_TOPIC" -m ON 2>&1)
-        EXIT_CODE=$?
+        EXIT_STATUS=$?
         set -e
-        [ $EXIT_CODE -ne 0 ] \
+        [ $EXIT_STATUS -ne 0 ] \
           && log_error "$(MQTT_OUT)" \
           && continue
 
@@ -135,8 +136,9 @@ ble_scanning() {
       log_info "Tesla VIN $VIN and MAC $BLE_MAC presence not detected, setting presence OFF"
       set +e
       MQTT_OUT=$(eval $MOSQUITTO_PUB_BASE --nodelay -t "$MQTT_TOPIC" -m OFF 2>&1)
+      EXIT_STATUS=$?
       set -e
-      [ $EXIT_CODE -ne 0 ] \
+      [ $EXIT_STATUS -ne 0 ] \
         && log_error "$(MQTT_OUT)" \
         && continue
       log_info "mqtt topic "$MQTT_TOPIC" succesfully updated to OFF"
