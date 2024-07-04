@@ -1,7 +1,7 @@
 #
 # listen_to_mqtt
 #
-listen_to_mqtt() {
+function listen_to_mqtt() {
  # log_info "Listening to MQTT"
  eval $MOSQUITTO_SUB_BASE --nodelay -t tesla_ble/+/+ -F \"%t %p\" -E -c -i tesla_ble_mqtt -q 1 \
  | while read -r payload
@@ -136,7 +136,7 @@ listen_to_mqtt() {
 }
 
 
-setup_auto_discovery_loop() {
+function setup_auto_discovery_loop() {
 
   discardMessages=$1
 
@@ -160,7 +160,7 @@ setup_auto_discovery_loop() {
 }
 
 
-listen_for_HA_start() {
+function listen_for_HA_start() {
   eval $MOSQUITTO_SUB_BASE --nodelay -t homeassistant/status -F \"%t %p\" \
   | while read -r payload; do
       topic=$(echo "$payload" | cut -d ' ' -f 1)
