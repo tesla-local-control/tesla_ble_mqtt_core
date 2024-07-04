@@ -1,10 +1,13 @@
-#!/bin/ash
-
+#
+# subroutines.sh
+#
 send_command() {
   vin=$1
   shift
-  for i in $(seq 5); do
-    log_notice "Sending command $@ to vin $vin, attempt $i/5"
+
+  max_retries=5
+  for count in $(seq $max_retries); do
+    log_notice "Sending command $@ to vin $vin, attempt $count/${max_retries}"
     set +e
     tesla_ctrl_out=$(tesla-control -vin $vin -ble -key-name /share/tesla_blemqtt/${vin}_private.pem -key-file /share/tesla_ble_mqtt/${vin}_private.pem $@ 2>&1)
     EXIT_STATUS=$?
@@ -43,7 +46,7 @@ tesla_vin2ble_ln() {
 }
 
 listen_to_ble() {
-  n_cars={$1:-3}
+  n_vins={$1:-3}
 
   log_notice "Listening to BLE for presence"
   PRESENCE_TIMEOUT=10
@@ -51,11 +54,15 @@ listen_to_ble() {
   BLTCTL_OUT=$(bluetoothctl --timeout $PRESENCE_TIMEOUT scan on | grep -v DEL 2>&1)
   set -e
   log_debug "${BLTCTL_OUT}"
-  for count in $(seq $n_cars); do
-    BLE_LN=$(eval echo "echo \$BLE_LN${count}")
-    BLE_MAC=$(eval "echo \$BLE_MAC${count}")
-    PRESENCE_EXPIRE_TIME=$(eval "echo \$PRESENCE_EXPIRE_TIME${count}")
-    VIN=$(eval "echo \$VIN${count}")
+  for count in $(seq $n_vins); do
+    set -- $BLE_LN_LIST
+    BLE_LN=$(eval "echo \$${count}")
+    set -- $BLE_MAC_LIST
+    BLE_MAC=$(eval "echo \$${count}")
+    set -- $PRESENCE_EXPIRE_TIME_LIST
+    PRESENCE_EXPIRE_TIME=$(eval "echo \$${count}")
+    set -- $VIN_LIST
+    VIN=$(eval "echo \$${count}")
 
     MQTT_TOPIC="tesla_ble/$VIN/binary_sensor/presence"
 
@@ -120,8 +127,11 @@ listen_to_ble() {
 
 send_key() {
  vin=$1
- for i in $(seq 5); do
-  echo "Attempt $i/5"
+
+ max_retries=5
+ for count in $(seq $max_retries); do
+  echo "Attempt $count/${max_retries}"
+  log_notice "Sending key to vin $vin, attempt $count/${max_retries}"
   set +e
   tesla-control -ble -vin $vin add-key-request /share/tesla_ble_mqtt/${vin}_public.pem owner cloud_key
   EXIT_STATUS=$?

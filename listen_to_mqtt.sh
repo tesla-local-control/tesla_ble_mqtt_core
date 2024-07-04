@@ -1,9 +1,10 @@
-#!/bin/ash
-
+#
+# listen_to_mqtt
+#
 listen_to_mqtt() {
  # log_info "Listening to MQTT"
- eval $MOSQUITTO_SUB_BASE --nodelay -t tesla_ble/+/+ -F "%t %p" -E -c -i tesla_ble_mqtt -q 1 \
-      | while read -r payload
+ eval $MOSQUITTO_SUB_BASE --nodelay -t tesla_ble/+/+ -F \"%t %p\" -E -c -i tesla_ble_mqtt -q 1 \
+ | while read -r payload
   do
    topic=${payload%% *}
    msg=${payload#* }
@@ -136,10 +137,11 @@ listen_to_mqtt() {
 
 
 setup_auto_discovery_loop() {
-  discardMessages = $1
+
+  discardMessages=$1
 
   # Setup or skip HA auto discovery & Discard old MQTT messages
-  while vin in $VIN_LIST; do
+  for vin in $VIN_LIST; do
 
     # IF HA backend is enable, setup HA autodiscovery otherwise don't
     if [ "$HA_BACKEND_DISABLE" == "false" ]; then
@@ -159,30 +161,30 @@ setup_auto_discovery_loop() {
 
 
 listen_for_HA_start() {
-  eval $MOSQUITTO_SUB_BASE --nodelay -t homeassistant/status -F "%t %p" | while read -r payload
-    do
+  eval $MOSQUITTO_SUB_BASE --nodelay -t homeassistant/status -F \"%t %p\" \
+  | while read -r payload; do
       topic=$(echo "$payload" | cut -d ' ' -f 1)
       msg=$(echo "$payload" | cut -d ' ' -f 2-)
       log_info "Received HA Status message: $topic $msg"
       case $topic in
-
-       homeassistant/status)
-        case $msg in
-          offline)
-            log_info "Home Assistant is stopping";;
-          online)
-            # https://github.com/iainbullock/tesla_ble_mqtt_docker/discussions/6
-            log_notice "Home Assistant is starting, re-running MQTT auto-discovery"
-            discardMessages=no
-            setup_auto_discovery_loop $discardMessages
+        homeassistant/status)
+          case $msg in
+            offline)
+              log_notice "Home Assistant is stopping";;
+            online)
+              # https://github.com/iainbullock/tesla_ble_mqtt_docker/discussions/6
+              log_notice "Home Assistant is starting, re-running MQTT auto-discovery"
+              discardMessages=no
+              setup_auto_discovery_loop $discardMessages
+              ;;
+            *)
+              log_error "Invalid command request; topic: $topic; message: $msg"
             ;;
-          *)
-           log_error "Invalid Command Request. Topic: $topic Message: $msg"
-           ;;
-        esac
+          esac
+          ;;
+        *)
+          log_error "Invalid MQTT topic; topic: $topic; message: $msg"
         ;;
-       *)
-        log_error "Invalid MQTT topic. Topic: $topic Message: $msg";;
-     esac
-   done
+      esac
+    done
 }
