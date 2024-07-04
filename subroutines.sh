@@ -1,10 +1,13 @@
-#!/bin/ash
-
+#
+# subroutines.sh
+#
 send_command() {
   vin=$1
   shift
-  for i in $(seq 5); do
-    log_notice "Sending command $@ to vin $vin, attempt $i/5"
+
+  max_retries=5
+  for count in $(seq $max_retries); do
+    log_notice "Sending command $@ to vin $vin, attempt $count/${max_retries}"
     set +e
     tesla_ctrl_out=$(tesla-control -vin $vin -ble -key-name /share/tesla_blemqtt/${vin}_private.pem -key-file /share/tesla_ble_mqtt/${vin}_private.pem $@ 2>&1)
     EXIT_STATUS=$?
@@ -43,7 +46,7 @@ tesla_vin2ble_ln() {
 }
 
 listen_to_ble() {
-  n_cars={$1:-3}
+  n_vins=$1
 
   # Read BLE data from bluetoothctl or an input file
   if [ -z $BLECTL_FILE_INPUT ]; then
@@ -68,15 +71,19 @@ listen_to_ble() {
   fi
   log_debug "${BLTCTL_OUT}"
 
-  for count in $(seq $n_cars); do
-    BLE_LN=$(eval echo "echo \$BLE_LN${count}")
-    BLE_MAC=$(eval "echo \$BLE_MAC${count}")
-    PRESENCE_EXPIRE_TIME=$(eval "echo \$PRESENCE_EXPIRE_TIME${count}")
-    VIN=$(eval "echo \$VIN${count}")
+  for count in $(seq $n_vins); do
+    set -- $BLE_LN_LIST
+    BLE_LN=$(eval "echo \$${count}")
+    set -- $BLE_MAC_LIST
+    BLE_MAC=$(eval "echo \$${count}")
+    set -- $PRESENCE_EXPIRE_TIME_LIST
+    PRESENCE_EXPIRE_TIME=$(eval "echo \$${count}")
+    set -- $VIN_LIST
+    VIN=$(eval "echo \$${count}")
 
     MQTT_TOPIC="tesla_ble/$VIN/binary_sensor/presence"
 
-    if echo "$(BLTCTL_OUT)" | grep -q $BLE_MAC; then
+    if echo "${BLTCTL_OUT}" | grep -q $BLE_MAC; then
       log_info "BLE MAC $BLE_MAC presence detected"
       EPOCH_TIME=$(date +%s)
       # We need a function for mosquitto_pub w/ retry
@@ -84,9 +91,9 @@ listen_to_ble() {
         log_info "Tesla VIN $VIN ($BLE_MAC) TTL expired, update mqtt topic with presence ON"
         set +e
         MQTT_OUT=$(eval $MOSQUITTO_PUB_BASE --nodelay -t "$MQTT_TOPIC" -m ON 2>&1)
-        EXIT_CODE=$?
+        EXIT_STATUS=$?
         set -e
-        [ $EXIT_CODE -ne 0 ] \
+        [ $EXIT_STATUS -ne 0 ] \
           && log_error "$(MQTT_OUT)" \
           && continue
         log_info "mqtt topic "$MQTT_TOPIC" succesfully updated to ON"
@@ -99,7 +106,7 @@ listen_to_ble() {
       else
         log_info "Tesla VIN $VIN ($BLE_MAC) TTL has not expires at $PRESENCE_EXPIRE_TIME"
       fi
-    elif echo "$(BLTCTL_OUT)" | grep -q ${BLE_LN}; then
+    elif echo "${BLTCTL_OUT}" | grep -q ${BLE_LN}; then
       log_info "BLE_LN $BLE_LN presence detected"
       EPOCH_TIME=$(date +%s)
       # We need a function for mosquitto_pub w/ retry
@@ -108,9 +115,9 @@ listen_to_ble() {
         # We need a function for mosquitto_pub w/ retry
         set +e
         MQTT_OUT=$(eval $MOSQUITTO_PUB_BASE --nodelay -t "$MQTT_TOPIC" -m ON 2>&1)
-        EXIT_CODE=$?
+        EXIT_STATUS=$?
         set -e
-        [ $EXIT_CODE -ne 0 ] \
+        [ $EXIT_STATUS -ne 0 ] \
           && log_error "$(MQTT_OUT)" \
           && continue
 
@@ -126,8 +133,9 @@ listen_to_ble() {
       log_info "Tesla VIN $VIN and MAC $BLE_MAC presence not detected, setting presence OFF"
       set +e
       MQTT_OUT=$(eval $MOSQUITTO_PUB_BASE --nodelay -t "$MQTT_TOPIC" -m OFF 2>&1)
+      EXIT_STATUS=$?
       set -e
-      [ $EXIT_CODE -ne 0 ] \
+      [ $EXIT_STATUS -ne 0 ] \
         && log_error "$(MQTT_OUT)" \
         && continue
       log_info "mqtt topic "$MQTT_TOPIC" succesfully updated to OFF"
@@ -137,8 +145,11 @@ listen_to_ble() {
 
 send_key() {
  vin=$1
- for i in $(seq 5); do
-  echo "Attempt $i/5"
+
+ max_retries=5
+ for count in $(seq $max_retries); do
+  echo "Attempt $count/${max_retries}"
+  log_notice "Sending key to vin $vin, attempt $count/${max_retries}"
   set +e
   tesla-control -ble -vin $vin add-key-request /share/tesla_ble_mqtt/${vin}_public.pem owner cloud_key
   EXIT_STATUS=$?
