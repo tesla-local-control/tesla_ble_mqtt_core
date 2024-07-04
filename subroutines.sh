@@ -1,7 +1,7 @@
 #
 # subroutines.sh
 #
-send_command() {
+function send_command() {
   vin=$1
   shift
 
@@ -16,42 +16,40 @@ send_command() {
       log_info "tesla-control send command succeeded"
       break
     else
-       if [[ "$tesla_ctrl_out" == *"Failed to execute command: car could not execute command"* ]]; then
+      if [[ "$tesla_ctrl_out" == *"Failed to execute command: car could not execute command"* ]]; then
         log_error "$tesla_ctrl_out"
         log_notice "Skipping command $@ to vin $vin"
         break
-       else
-         log_error "tesla-control send command failed exit status $EXIT_STATUS."
-         log_info "$tesla_ctrl_out"
-         log_notice "Retrying in $BLE_CMD_RETRY_DELAY seconds"
-       fi
-       sleep $BLE_CMD_RETRY_DELAY
+      else
+        log_error "tesla-control send command failed exit status $EXIT_STATUS."
+        log_info "$tesla_ctrl_out"
+        log_notice "Retrying in $BLE_CMD_RETRY_DELAY seconds"
+      fi
+      sleep $BLE_CMD_RETRY_DELAY
     fi
   done
 }
 
 
 # Tesla VIN to BLE Local Name
-tesla_vin2ble_ln() {
+function tesla_vin2ble_ln() {
   vin=$1
   ble_ln=""
 
-  log_debug "Calculating BLE Local Name for Tesla VIN $vin"
   VIN_HASH="$(echo -n ${vin} | sha1sum)"
   # BLE Local Name
   ble_ln="S${VIN_HASH:0:16}C"
-  log_debug "BLE Local Name for Tesla VIN $vin is $ble_ln"
 
   echo $ble_ln
 
 }
 
 
-replace_value_at_position() {
+function replace_value_at_position() {
 
-  original_list=$1
-  position=$2
-  new_value=$3
+  original_list="$1"
+  position=$(expr $2 - 1)
+  new_value="$3"
 
   # Split the list into positional parameters
   set -- $original_list
@@ -76,7 +74,56 @@ replace_value_at_position() {
 }
 
 
-listen_to_ble() {
+
+function check_presence() {
+  TYPE="$1" # BLE MAC, LN
+  MATCH="$2"
+
+  CURRENT_TIME_EPOCH=$(date +%s)
+
+  if echo "${BLTCTL_OUT}" | egrep -q "$MATCH"; then
+    log_info "VIN $VIN $TYPE $MATCH presence detected"
+
+    if [ $CURRENT_TIME_EPOCH -ge $PRESENCE_EXPIRE_TIME ]; then
+      log_info "VIN $VIN $MATCH TTL expired, refresh MQTT topic presence ON"
+      set +e
+      # We need a function for mosquitto_pub w/ retry
+      MQTT_OUT=$(eval $MOSQUITTO_PUB_BASE --nodelay -t "$MQTT_TOPIC" -m ON 2>&1)
+      EXIT_STATUS=$?
+      set -e
+      [ $EXIT_STATUS -ne 0 ] \
+        && log_error "$(MQTT_OUT)" \
+        && continue
+      log_info "mqtt topic "$MQTT_TOPIC" succesfully updated to ON"
+    fi
+
+    # Update presence expire time
+    EPOCH_EXPIRE_TIME=$(expr $CURRENT_TIME_EPOCH + $PRESENCE_DETECTION_TTL)
+    log_debug "VIN $VIN $MATCH update presence expire time to $EPOCH_EXPIRE_TIME"
+    PRESENCE_EXPIRE_TIME_LIST=$(replace_value_at_position "$PRESENCE_EXPIRE_TIME_LIST" \
+                                $position $EPOCH_EXPIRE_TIME)
+    # END if MATCH
+  else
+    log_notice "VIN $VIN $TYPE $MATCH presence not detected"
+    if [ $CURRENT_TIME_EPOCH -ge $PRESENCE_EXPIRE_TIME ]; then
+      log_info "VIN $VIN $TYPE $MATCH presence not detected, setting presence OFF"
+      set +e
+      MQTT_OUT=$(eval $MOSQUITTO_PUB_BASE --nodelay -t "$MQTT_TOPIC" -m OFF 2>&1)
+      EXIT_STATUS=$?
+      set -e
+      [ $EXIT_STATUS -ne 0 ] \
+        && log_error "$(MQTT_OUT)" \
+        && continue
+      log_info "mqtt topic "$MQTT_TOPIC" succesfully updated to OFF"
+    else
+      log_info "VIN $VIN $TYPE $MATCH presence not expired"
+    fi # END if expired time
+  fi # END if ! MATCH
+}
+
+
+
+function listen_to_ble() {
   n_vins=$1
 
   # Read BLE data from bluetoothctl or an input file
@@ -114,81 +161,15 @@ listen_to_ble() {
 
     MQTT_TOPIC="tesla_ble/$VIN/binary_sensor/presence"
 
-    if echo "${BLTCTL_OUT}" | grep -q $BLE_MAC; then
-      log_info "BLE MAC $BLE_MAC presence detected"
-      EPOCH_TIME=$(date +%s)
-      # We need a function for mosquitto_pub w/ retry
-      if [ $EPOCH_TIME -ge $PRESENCE_EXPIRE_TIME ]; then
-        log_info "Tesla VIN $VIN ($BLE_MAC) TTL expired, update mqtt topic with presence ON"
-        set +e
-        MQTT_OUT=$(eval $MOSQUITTO_PUB_BASE --nodelay -t "$MQTT_TOPIC" -m ON 2>&1)
-        EXIT_STATUS=$?
-        set -e
-        [ $EXIT_STATUS -ne 0 ] \
-          && log_error "$(MQTT_OUT)" \
-          && continue
-        log_info "mqtt topic "$MQTT_TOPIC" succesfully updated to ON"
+    # Check the presence using both MAC Addr and BLE Local Name
+    check_presence "BLE MAC & LN" "($BLE_MAC|$BLE_LN)"
 
-### 1 & 2 & 3 & 4
-        # Updating Presence Expire Time in Epoch
-        EPOCH_TIME=$(date +%s)
-        EPOCH_EXPIRE_TIME=$(expr $EPOCH_TIME + $PRESENCE_DETECTION_TTL)
-        PRESENCE_EXPIRE_TIME_LIST=$(replace_value_at_position "$PRESENCE_EXPIRE_TIME_LIST" $position $EPOCH_EXPIRE_TIME)
-        log_debug "Tesla VIN $VIN ($BLE_MAC) update presence expire time to $EPOCH_EXPIRE_TIME"
-      else
-### 1 & 2 & 3 & 4
-        log_info "Tesla VIN $VIN ($BLE_MAC) TTL expires at $PRESENCE_EXPIRE_TIME"
-        # Updating Presence Expire Time in Epoch
-        EPOCH_TIME=$(date +%s)
-        EPOCH_EXPIRE_TIME=$(expr $EPOCH_TIME + $PRESENCE_DETECTION_TTL)
-        PRESENCE_EXPIRE_TIME_LIST=$(replace_value_at_position "$PRESENCE_EXPIRE_TIME_LIST" $position $EPOCH_EXPIRE_TIME)
-        log_debug "Tesla VIN $VIN ($BLE_MAC) update presence expire time to $EPOCH_EXPIRE_TIME"
-      fi
-    elif echo "${BLTCTL_OUT}" | grep -q ${BLE_LN}; then
-      log_info "BLE_LN $BLE_LN presence detected"
-      EPOCH_TIME=$(date +%s)
-      # We need a function for mosquitto_pub w/ retry
-      if [ $EPOCH_TIME -ge $PRESENCE_EXPIRE_TIME ]; then
-        log_info "TESLA VIN $VIN ($BLE_MAC) TTL expired, update mqtt topic with presence ON"
-        # We need a function for mosquitto_pub w/ retry
-        set +e
-        MQTT_OUT=$(eval $MOSQUITTO_PUB_BASE --nodelay -t "$MQTT_TOPIC" -m ON 2>&1)
-        EXIT_STATUS=$?
-        set -e
-        [ $EXIT_STATUS -ne 0 ] \
-          && log_error "$(MQTT_OUT)" \
-          && continue
-
-### 1 & 2 & 3 & 4
-        # Updating Presence Expire Time in Epoch
-        EPOCH_TIME=$(date +%s)
-        EPOCH_EXPIRE_TIME=$(expr $EPOCH_TIME + $PRESENCE_DETECTION_TTL)
-        PRESENCE_EXPIRE_TIME_LIST=$(replace_value_at_position "$PRESENCE_EXPIRE_TIME_LIST" $position $EPOCH_EXPIRE_TIME)
-        log_debug "Tesla VIN $VIN $BLE_MAC update presence expire time to $EPOCH_EXPIRE_TIME"
-      else
-### 1 & 2 & 3 & 4
-        # Updating Presence Expire Time in Epoch
-        EPOCH_TIME=$(date +%s)
-        EPOCH_EXPIRE_TIME=$(expr $EPOCH_TIME + $PRESENCE_DETECTION_TTL)
-        PRESENCE_EXPIRE_TIME_LIST=$(replace_value_at_position "$PRESENCE_EXPIRE_TIME_LIST" $position $EPOCH_EXPIRE_TIME)
-        log_debug "Tesla VIN $VIN $BLE_MAC update presence expire time to $EPOCH_EXPIRE_TIME"
-        log_info "Tesla VIN $VIN ($BLE_MAC) TTL expires at $PRESENCE_EXPIRE_TIME"
-      fi
-    else
-      log_info "Tesla VIN $VIN and MAC $BLE_MAC presence not detected, setting presence OFF"
-      set +e
-      MQTT_OUT=$(eval $MOSQUITTO_PUB_BASE --nodelay -t "$MQTT_TOPIC" -m OFF 2>&1)
-      EXIT_STATUS=$?
-      set -e
-      [ $EXIT_STATUS -ne 0 ] \
-        && log_error "$(MQTT_OUT)" \
-        && continue
-      log_info "mqtt topic "$MQTT_TOPIC" succesfully updated to OFF"
-    fi
   done
 }
 
-send_key() {
+
+
+function send_key() {
  vin=$1
 
  max_retries=5
@@ -209,14 +190,9 @@ send_key() {
  done
 }
 
-scan_bluetooth(){
-  log_notice "Calculating BLE Advert ${BLE_ADVERT} from VIN"
-  log_notice "Scanning Bluetooth for $BLE_ADVERT, wait 10 secs"
-  bluetoothctl --timeout 10 scan on | grep $BLE_ADVERT
-  log_warning "More work needed on this"
-}
 
-delete_legacies(){
+
+function delete_legacies(){
   vin=$1
 
   log_notice "Deleting Legacy MQTT Topics"
