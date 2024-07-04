@@ -27,8 +27,7 @@ setup_auto_discovery() {
    "device_class": "presence",
    "name": "Presence",
    "unique_id": "'${DEV_ID}'_presence"
-  }
-  {
+  } {
    "command_topic": "'${TOPIC_ROOT}'/config",
    "device": {
     "identifiers": [
@@ -44,8 +43,7 @@ setup_auto_discovery() {
    "qos": 1,
    "unique_id": "'${DEV_ID}'_generate_keys",
    "entity_category": "config"
-  }
-  {
+  } {
    "command_topic": "'${TOPIC_ROOT}'/config",
    "device": {
     "identifiers": [
@@ -61,8 +59,7 @@ setup_auto_discovery() {
    "qos": 1,
    "unique_id": "'${DEV_ID}'_deploy_key",
    "entity_category": "config"
-  }
-  {
+  } {
    "command_topic": "'${TOPIC_ROOT}'/config",
    "device": {
     "identifiers": [
@@ -78,8 +75,7 @@ setup_auto_discovery() {
    "qos": 1,
    "unique_id": "'${DEV_ID}'_scan_bluetooth",
    "entity_category": "diagnostic"
-  }
-  {
+  } {
    "command_topic": "'${TOPIC_ROOT}'/command",
    "device": {
     "identifiers": [
@@ -93,8 +89,7 @@ setup_auto_discovery() {
    "payload_press": "wake",
    "qos": 1,
    "unique_id": "'${DEV_ID}'_wake"
-  }
-  {
+  } {
    "command_topic": "'${TOPIC_ROOT}'/command",
    "device": {
     "identifiers": [
@@ -108,8 +103,7 @@ setup_auto_discovery() {
    "payload_press": "flash-lights",
    "qos": 1,
    "unique_id": "'${DEV_ID}'_flash_lights"
-  }
-  {
+  } {
    "command_topic": "'${TOPIC_ROOT}'/command",
    "device": {
     "identifiers": [
@@ -123,8 +117,7 @@ setup_auto_discovery() {
    "payload_press": "honk",
    "qos": 1,
    "unique_id": "'${DEV_ID}'_honk"
-  }
-  {
+  } {
    "command_topic": "'${TOPIC_ROOT}'/command",
    "device": {
     "identifiers": [
@@ -138,8 +131,7 @@ setup_auto_discovery() {
    "payload_press": "lock",
    "qos": 1,
    "unique_id": "'${DEV_ID}'_lock"
-  }
-  {
+  } {
    "command_topic": "'${TOPIC_ROOT}'/command",
    "device": {
     "identifiers": [
@@ -153,8 +145,7 @@ setup_auto_discovery() {
    "payload_press": "unlock",
    "qos": 1,
    "unique_id": "'${DEV_ID}'_unlock"
-  }
-  {
+  } {
    "command_topic": "'${TOPIC_ROOT}'/auto-seat-and-climate",
    "device": {
     "identifiers": [
@@ -168,8 +159,7 @@ setup_auto_discovery() {
    "payload_press": "auto-seat-and-climate",
    "qos": 1,
    "unique_id": "'${DEV_ID}'_auto_seat-climate"
-  }
-  {
+  } {
    "command_topic": "'${TOPIC_ROOT}'/command",
    "device": {
     "identifiers": [
@@ -183,8 +173,7 @@ setup_auto_discovery() {
    "payload_press": "climate-off",
    "qos": 1,
    "unique_id": "'${DEV_ID}'_climate-off"
-  }
-  {
+  } {
    "command_topic": "'${TOPIC_ROOT}'/command",
    "device": {
     "identifiers": [
@@ -198,8 +187,7 @@ setup_auto_discovery() {
    "payload_press": "climate-on",
    "qos": 1,
    "unique_id": "'${DEV_ID}'_climate-on"
-  }
-  {
+  } {
    "command_topic": "'${TOPIC_ROOT}'/command",
    "device": {
     "identifiers": [
@@ -213,8 +201,7 @@ setup_auto_discovery() {
    "payload_press": "trunk-open",
    "qos": 1,
    "unique_id": "'${DEV_ID}'_trunk-open"
-  }
-  {
+  } {
    "command_topic": "'${TOPIC_ROOT}'/command",
    "device": {
     "identifiers": [
@@ -228,8 +215,7 @@ setup_auto_discovery() {
    "payload_press": "trunk-close",
    "qos": 1,
    "unique_id": "'${DEV_ID}'_trunk-close"
-  }
-  {
+  } {
    "command_topic": "'${TOPIC_ROOT}'/command",
    "device": {
     "identifiers": [
@@ -243,8 +229,7 @@ setup_auto_discovery() {
    "payload_press": "frunk-open",
    "qos": 1,
    "unique_id": "'${DEV_ID}'_frunk-open"
-  }
-  {
+  } {
    "command_topic": "'${TOPIC_ROOT}'/command",
    "device": {
     "identifiers": [
@@ -258,8 +243,7 @@ setup_auto_discovery() {
    "payload_press": "charging-start",
    "qos": 1,
    "unique_id": "'${DEV_ID}'_charging-start"
-  }
-  {
+  } {
    "command_topic": "'${TOPIC_ROOT}'/command",
    "device": {
     "identifiers": [
@@ -273,8 +257,7 @@ setup_auto_discovery() {
    "payload_press": "charging-stop",
    "qos": 1,
    "unique_id": "'${DEV_ID}'_charging-stop"
-  }
-  {
+  } {
    "command_topic": "'${TOPIC_ROOT}'/command",
    "device": {
     "identifiers": [
@@ -288,8 +271,7 @@ setup_auto_discovery() {
    "payload_press": "charge-port-open",
    "qos": 1,
    "unique_id": "'${DEV_ID}'_charge-port-open"
-  }
-  {
+  } {
    "command_topic": "'${TOPIC_ROOT}'/command",
    "device": {
     "identifiers": [
@@ -303,8 +285,7 @@ setup_auto_discovery() {
    "payload_press": "charge-port-close",
    "qos": 1,
    "unique_id": "'${DEV_ID}'_charge-port-close"
-  }
-  {
+  } {
    "command_topic": "'${TOPIC_ROOT}'/command",
    "device": {
     "identifiers": [
@@ -318,8 +299,7 @@ setup_auto_discovery() {
    "payload_press": "windows-close",
    "qos": 1,
    "unique_id": "'${DEV_ID}'_windows-close"
-  }
-  {
+  } {
    "command_topic": "'${TOPIC_ROOT}'/command",
    "device": {
     "identifiers": [
@@ -333,8 +313,7 @@ setup_auto_discovery() {
    "payload_press": "windows-vent",
    "qos": 1,
    "unique_id": "'${DEV_ID}'_windows-vent"
-  }
-  {
+  } {
    "command_topic": "'${TOPIC_ROOT}'/charging-amps",
    "device": {
     "identifiers": [
@@ -352,8 +331,7 @@ setup_auto_discovery() {
    "unit_of_measurement": "A",
    "qos": 1,
    "icon": "mdi:current-ac"
-  }
-  {
+  } {
    "command_topic": "'${TOPIC_ROOT}'/charging-set-limit",
    "device": {
     "identifiers": [
@@ -371,8 +349,7 @@ setup_auto_discovery() {
    "unit_of_measurement": "%",
    "qos": 1,
    "icon": "mdi:battery-90"
-  }
-  {
+  } {
    "command_topic": "'${TOPIC_ROOT}'/climate-set-temp",
    "device": {
     "identifiers": [
@@ -390,8 +367,7 @@ setup_auto_discovery() {
    "unit_of_measurement": "°C",
    "qos": 1,
    "icon": "mdi:temperature"
-  }
-  {
+  } {
    "command_topic": "'${TOPIC_ROOT}'/sw-heater",
    "device": {
     "identifiers": [
@@ -405,8 +381,7 @@ setup_auto_discovery() {
    "device_class": "switch",
    "qos": 1,
    "unique_id": "'${DEV_ID}'_sw_heater"
-  }
-  {
+  } {
    "command_topic": "'${TOPIC_ROOT}'/sentry-mode",
    "device": {
     "identifiers": [
@@ -420,8 +395,7 @@ setup_auto_discovery() {
    "device_class": "switch",
    "qos": 1,
    "unique_id": "'${DEV_ID}'_sentry-mode"
-  }
-  {
+  } {
    "command_topic": "'${TOPIC_ROOT}'/heated_seat_left",
    "device": {
     "identifiers": [
@@ -436,8 +410,7 @@ setup_auto_discovery() {
    "qos": 1,
    "icon": "mdi:car-seat-heater",
    "unique_id": "'${DEV_ID}'_heated_seat_left"
-  }
-  {
+  } {
    "command_topic": "'${TOPIC_ROOT}'/heated_seat_right",
    "device": {
     "identifiers": [
