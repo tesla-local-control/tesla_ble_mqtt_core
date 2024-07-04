@@ -3,17 +3,22 @@
 
 ### DEFINE FUNCTIONS ###############################################################################################
 
+echo "Source required files to load required functions"
+
+export BLECTL_FILE_INPUT=""
+
 ### Source required files
 #
+# Source libcolor
+echo "Source /app/libcolor.sh"
+export COLOR="true" \
+  && export DEBUG=false\
+  && . /app/libcolor.sh
+
 # Source product's library
-log_info "Source required files to load our functions"
 [ -f /app/libproduct.sh ] \
   && log_info "Source libproduct.sh" \
   && . /app/libproduct.sh
-
-log_info "Source /app/libcolor.sh"
-export COLOR="true" \
-  && . /app/libcolor.sh
 
 log_info "Source /app/subroutines.sh"
 . /app/subroutines.sh
@@ -104,13 +109,18 @@ fi
 BLE_MAC_LIST=$(echo $BLE_MAC_LIST | sed -e 's/|/ /g')
 VIN_LIST=$(echo $VIN_LIST | sed -e 's/|/ /g')
 
+#set -- $BLE_LN
+#set -- $VIN
+#set -- $BLE_MAC
+#set -- $PRESENCE_EXPIRE_TIME
+
 vin_count=0
-while vin in $VIN_LIST; do
-  # Populate BLE Local Names and VINS "arrays"
+for vin in $VIN_LIST; do
+  # Populate BLE Local Names list
   vin_count=$(expr $vin_count + 1)
-  BLE_LN${vin_count}=$(tesla_vin2ble_ln $vin)
-  VIN${vin_count}=$vin
-  log_debug "Adding $vin to the list, count $vin_count"
+  BLE_LN=$(eval tesla_vin2ble_ln $vin)
+  log_debug "Adding $BLE_LN to BLE_LN_LIST, count $vin_count"
+  BLE_LN_LIST="$BLE_LN_LIST $BLE_LN"
 
   ################ HANDLE CONFIG CHANGE ##############
   # TEMPORARY - Move original "vin" key to "vin{1}"
@@ -123,43 +133,23 @@ while vin in $VIN_LIST; do
   fi # END TEMPORARY
 done
 
-# Populate BLE_MACS "array" only if Presence Detection is enable
-if [ $PRESENCE_DETECTION_TTL -gt 0 ] ; then
+# Populate PRESENCE_EXPIRE_TIME_LIST only if Presence Detection is enable
+if [ "$PRESENCE_DETECTION_TTL" -gt 0 ] ; then
   log_info "Presence detection is enable with a TTL of $PRESENCE_DETECTION_TTL seconds"
-  ble_addr_count=0
-  while ble_mac in $BLE_MAC_LIST; do
-    ble_addr_count=$(expr $ble_addr_count + 1)
-    BLE_MAC${ble_addr_count}=$ble_mac
-    PRESENCE_EXPIRE_TIME${ble_addr_count}=9999999999
-    log_debug "Adding $ble_mac to the list, count $ble_addr_count"
+  ble_mac_addr_count=0
+  for ble_mac in $BLE_MAC_LIST; do
+    ble_mac_addr_count=$(expr $ble_mac_addr_count + 1)
+    log_debug "Adding 9999999999 to PRESENCE_EXPIRE_TIME_LIST, count $ble_mac_addr_count"
+    PRESENCE_EXPIRE_TIME_LIST="$PRESENCE_EXPIRE_TIME_LIST 9999999999"
   done
-
-  if [ $vin_count -eq $mac_addr_count ]; then
-    log_debug "Fantastic, we have $vin_count VIN(s) and $ble_addr_count BLE MAC Addr"
-  else
-    log_fotal "VIN count $vin_count differs from  BLE MAC Addr count $ble_addr_count!"
-    # should we exit fatal, things might not work as expected.
-    exit 10
-  fi
 else
   log_info "Presence detection is not enable due to TTL of $PRESENCE_DETECTION_TTL seconds"
 fi
 
 
-# Setup or skip HA auto discovery & Discard old MQTT messages
-while vin in $VIN_LIST; do
-
-  # IF HA backend is enable, setup HA autodiscovery otherwise don't
-  if [ "$HA_BACKEND_DISABLE" == "false" ]; then
-    log_info "Setting up Home Assistant Auto Discovery for $vin"
-    setup_auto_discovery $vin
-  else
-    log_info "HA backend is disable, skipping setup for HA Auto Discovery"
-  fi
-
-  log_info "Discarding any unread MQTT messages for $vin"
-  eval $MOSQUITTO_SUB_BASE -E -i tesla_ble_mqtt -t tesla_ble_mqtt/$vin/+
-done
+# Setup HA auto discovery, or skip if HA backend is disable, and discard old MQTT messages
+discardMessages=yes
+setup_auto_discovery_loop $discardMessages
 
 # IF HA backend is enable, call listen_for_HA_start()
 if [ "$HA_BACKEND_DISABLE" == "false" ]; then
@@ -171,6 +161,13 @@ fi
 
 
 ### START MAIN PROGRAM LOOP ######################################################################################
+log_info "Entering main MQTT listening loop"
+
+# TODO : How should we handle a MQTT restart or network failure to reach the service?
+#        The while loop below will restart listen_to_mqtt but for listen_for_HA_start,
+#        it will fail and nothing will restart it.
+#        If set probably set -e/+e , perhaps on MQTT restat we also want to restart?
+
 counter=0
 log_info "Entering listening loop"
 while true
@@ -183,10 +180,10 @@ do
 
   # Don't run presence detection if TTL is 0
   if [ $PRESENCE_DETECTION_TTL -gt 0 ] ; then
-    ((counter++))
+    counter=$(expr $counter + 1)
     if [[ $counter -gt 90 ]]; then
       log_info "Reached 90 MQTT loops (~3min): Launch BLE scanning for car presence"
-      listen_to_ble
+      listen_to_ble $vin_count
     fi
     counter=0
   fi
