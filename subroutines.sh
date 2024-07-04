@@ -48,9 +48,9 @@ listen_to_ble() {
   # Read BLE data from bluetoothctl or an input file
   if [ -z $BLECTL_FILE_INPUT ]; then
     log_notice "Launching bluetoothctl to check for BLE presence"
-    PRESENCE_TIMEOUT=10
+    BLECTL_TIMEOUT=11
     set +e
-    BLTCTL_OUT=$(bluetoothctl --timeout $PRESENCE_TIMEOUT scan on 2>&1 | grep -v DEL)
+    BLTCTL_OUT=$(bluetoothctl --timeout $BLECTL_TIMEOUT scan on 2>&1 | grep -v DEL)
     set -e
   else
     [ ! -f $BLECTL_FILE_INPUT ] \
@@ -153,12 +153,6 @@ send_key() {
  done
 }
 
-scan_bluetooth(){
-  log_notice "Calculating BLE Advert ${BLE_ADVERT} from VIN"
-  log_notice "Scanning Bluetooth for $BLE_ADVERT, wait 10 secs"
-  bluetoothctl --timeout 10 scan on | grep $BLE_ADVERT
-  log_warning "More work needed on this"
-}
 
 delete_legacies(){
   vin=$1
