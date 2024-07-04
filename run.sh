@@ -145,20 +145,9 @@ else
 fi
 
 
-# Setup or skip HA auto discovery & Discard old MQTT messages
-while vin in $VIN_LIST; do
-
-  # IF HA backend is enable, setup HA autodiscovery otherwise don't
-  if [ "$HA_BACKEND_DISABLE" == "false" ]; then
-    log_info "Setting up Home Assistant Auto Discovery for $vin"
-    setup_auto_discovery $vin
-  else
-    log_info "HA backend is disable, skipping setup for HA Auto Discovery"
-  fi
-
-  log_info "Discarding any unread MQTT messages for $vin"
-  eval $MOSQUITTO_SUB_BASE -E -i tesla_ble_mqtt -t tesla_ble_mqtt/$vin/+
-done
+# Setup HA auto discovery, or skip if HA backend is disable, and discard old MQTT messages
+discardMessages=yes
+setup_auto_discovery_loop $discardMessages
 
 # IF HA backend is enable, call listen_for_HA_start()
 if [ "$HA_BACKEND_DISABLE" == "false" ]; then
