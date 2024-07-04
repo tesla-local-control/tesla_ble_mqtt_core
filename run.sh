@@ -9,8 +9,8 @@ echo "Source required files to load required functions"
 #
 # Source libcolor
 echo "Source /app/libcolor.sh"
-export COLOR="true" \
-  && export DEBUG=false\
+export COLOR=${COLOR:true} \
+  && export DEBUG=${DEBUG:false}\
   && . /app/libcolor.sh
 
 # Source product's library
@@ -139,8 +139,8 @@ if [ $PRESENCE_DETECTION_TTL -gt 0 ] ; then
   ble_mac_addr_count=0
   for ble_mac in $BLE_MAC_LIST; do
     ble_mac_addr_count=$(expr $ble_mac_addr_count + 1)
-    log_debug "Adding 9999999999 to PRESENCE_EXPIRE_TIME_LIST, count $ble_mac_addr_count"
-    PRESENCE_EXPIRE_TIME_LIST="$PRESENCE_EXPIRE_TIME_LIST 9999999999"
+    log_debug "Adding 0 to PRESENCE_EXPIRE_TIME_LIST, count $ble_mac_addr_count"
+    PRESENCE_EXPIRE_TIME_LIST="$PRESENCE_EXPIRE_TIME_LIST 0"
   done
 else
   log_info "Presence detection is not enable due to TTL of $PRESENCE_DETECTION_TTL seconds"
