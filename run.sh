@@ -5,8 +5,6 @@
 
 echo "Source required files to load required functions"
 
-export BLECTL_FILE_INPUT=""
-
 ### Source required files
 #
 # Source libcolor
@@ -70,7 +68,6 @@ if [ -n "${HASSIO_TOKEN:-}" ]; then
   export VIN_LIST="$(bashio::config 'vin_list')"
 fi
 
-
 ### TODO - Move to Docker's libproduct otherwise this setting will show up for add-on
 export HA_BACKEND_DISABLE=${HA_BACKEND_DISABLE:=false}
 ### TODO : Add validations in Docker's libproduct; make it a function and name it "productInit()"
@@ -91,6 +88,9 @@ log_green "Configuration Options are:
   PRESENCE_DETECTION_TTL=$PRESENCE_DETECTION_TTL
   BLE_CMD_RETRY_DELAY=$BLE_CMD_RETRY_DELAY
   VIN_LIST=$VIN_LIST"
+
+export BLECTL_FILE_INPUT=${BLECTL_FILE_INPUT:-}
+
 [ ! -z $HA_BACKEND_DISABLE ] && log_green "HA_BACKEND_DISABLE=$HA_BACKEND_DISABLE"
 [ ! -z $BLECTL_FILE_INPUT ] && log_green "BLECTL_FILE_INPUT=$BLECTL_FILE_INPUT"
 
@@ -134,7 +134,7 @@ for vin in $VIN_LIST; do
 done
 
 # Populate PRESENCE_EXPIRE_TIME_LIST only if Presence Detection is enable
-if [ "$PRESENCE_DETECTION_TTL" -gt 0 ] ; then
+if [ $PRESENCE_DETECTION_TTL -gt 0 ] ; then
   log_info "Presence detection is enable with a TTL of $PRESENCE_DETECTION_TTL seconds"
   ble_mac_addr_count=0
   for ble_mac in $BLE_MAC_LIST; do
@@ -181,11 +181,11 @@ do
   # Don't run presence detection if TTL is 0
   if [ $PRESENCE_DETECTION_TTL -gt 0 ] ; then
     counter=$(expr $counter + 1)
-    if [[ $counter -gt 90 ]]; then
+    if [[ $counter -gt 5 ]]; then
       log_info "Reached 90 MQTT loops (~3min): Launch BLE scanning for car presence"
       listen_to_ble $vin_count
+      counter=0
     fi
-    counter=0
   fi
   sleep 2
 done
