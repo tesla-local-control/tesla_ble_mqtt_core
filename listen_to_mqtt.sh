@@ -1,9 +1,10 @@
-#!/bin/ash
-
-listen_to_mqtt() {
+#
+# listen_to_mqtt
+#
+function listen_to_mqtt() {
  # log_info "Listening to MQTT"
- eval $MOSQUITTO_SUB_BASE --nodelay -t tesla_ble/+/+ -F "%t %p" -E -c -i tesla_ble_mqtt -q 1 \
-      | while read -r payload
+ eval $MOSQUITTO_SUB_BASE --nodelay -t tesla_ble/+/+ -F \"%t %p\" -E -c -i tesla_ble_mqtt -q 1 \
+ | while read -r payload
   do
    topic=${payload%% *}
    msg=${payload#* }
@@ -14,7 +15,6 @@ listen_to_mqtt() {
 
    case $cmnd in
     config)
-     log_info "Configuration $msg requested"
 
      case $msg in
       generate_keys)
@@ -46,7 +46,6 @@ listen_to_mqtt() {
        ;;
 
     command)
-     log_info "Command $msg requested"
      case $msg in
        wake)
         log_notice "Waking Car"
@@ -102,7 +101,6 @@ listen_to_mqtt() {
         ;;
 
     charging-amps)
-     log_info "Set Charging Amps to $msg requested"
      # https://github.com/iainbullock/tesla_ble_mqtt_docker/issues/4
      if [ $msg -gt 4 ]; then
        log_notice "Set amps"
@@ -113,7 +111,7 @@ listen_to_mqtt() {
        sleep 1
        log_notice "Second Amp set"
        send_command $vin "charging-set-amps $msg"
-     fi
+     fi;;
 
     charging-amps-override)
       # command to send one single amps request. See: https://github.com/tesla-local-control/tesla_ble_mqtt_core/issues/19
@@ -122,23 +120,18 @@ listen_to_mqtt() {
       ;;
 
     auto-seat-and-climate)
-     log_notice "Start Auto Seat and Climate"
      send_command $vin "auto-seat-and-climate LR on";;
 
     charging-set-limit)
-     log_notice "Set Charging Limit to $msg"
      send_command $vin "charging-set-limit $msg";;
 
     climate-set-temp)
-     log_notice "Set Climate Temp to $msg"
      send_command $vin "climate-set-temp ${msg}C";;
 
     heated_seat_left)
-     log_notice "Set Seat heater to front-left $msg"
      send_command $vin "seat-heater front-left $msg";;
 
     heated_seat_right)
-     log_notice "Set Seat heater to front-right $msg"
      send_command $vin "seat-heater front-right $msg";;
 
     *)
@@ -147,37 +140,55 @@ listen_to_mqtt() {
   done
 }
 
-listen_for_HA_start() {
- eval $MOSQUITTO_SUB_BASE --nodelay -t homeassistant/status -F "%t %p" | while read -r payload
-  do
-   topic=$(echo "$payload" | cut -d ' ' -f 1)
-   msg=$(echo "$payload" | cut -d ' ' -f 2-)
-   log_info "Received HA Status message: $topic $msg"
-   case $topic in
 
-    homeassistant/status)
-     case $msg in
-       offline)
-        log_info "Home Assistant is stopping";;
-       online)
-        # https://github.com/iainbullock/tesla_ble_mqtt_docker/discussions/6
-        log_notice "Home Assistant is starting, re-running MQTT auto-discovery"
-        if [ "$TESLA_VIN1" ] && [ $TESLA_VIN1 != "00000000000000000" ]; then
-         setup_auto_discovery $TESLA_VIN1
-        fi
-        if [ "$TESLA_VIN2" ] && [ $TESLA_VIN2 != "00000000000000000" ]; then
-         setup_auto_discovery $TESLA_VIN2
-        fi
-        if [ "$TESLA_VIN3" ] && [ $TESLA_VIN3 != "00000000000000000" ]; then
-         setup_auto_discovery $TESLA_VIN3
-        fi
-        ;;
-       *)
-        log_error "Invalid Command Request. Topic: $topic Message: $msg";;
-     esac
-       ;;
-    *)
-     log_error "Invalid MQTT topic. Topic: $topic Message: $msg";;
-   esac
+function setup_auto_discovery_loop() {
+
+  discardMessages=$1
+
+  # Setup or skip HA auto discovery & Discard old MQTT messages
+  for vin in $VIN_LIST; do
+
+    # IF HA backend is enable, setup HA autodiscovery otherwise don't
+    if [ "$HA_BACKEND_DISABLE" == "false" ]; then
+      log_info "Setting up Home Assistant Auto Discovery for $vin"
+      setup_auto_discovery $vin
+    else
+      log_info "HA backend is disable, skipping setup for HA Auto Discovery"
+    fi
+
+    # Discard or not awaiting messages
+    if [ "$discardMessages" == "yes" ]; then
+      log_info "Discarding any unread MQTT messages for $vin"
+      eval $MOSQUITTO_SUB_BASE -E -i tesla_ble_mqtt -t tesla_ble_mqtt/$vin/+
+    fi
+  done
+}
+
+
+function listen_for_HA_start() {
+  eval $MOSQUITTO_SUB_BASE --nodelay -t homeassistant/status -F \"%t %p\" | \
+  while read -r payload; do
+    topic=$(echo "$payload" | cut -d ' ' -f 1)
+    msg=$(echo "$payload" | cut -d ' ' -f 2-)
+    log_info "Received HA Status message: $topic $msg"
+    case $topic in
+      homeassistant/status)
+        case $msg in
+          offline)
+            log_notice "Home Assistant is stopping";;
+          online)
+            # https://github.com/iainbullock/tesla_ble_mqtt_docker/discussions/6
+            log_notice "Home Assistant is starting, re-running MQTT auto-discovery"
+            discardMessages=no
+            setup_auto_discovery_loop $discardMessages
+            ;;
+          *)
+            log_error "Invalid command request; topic: $topic; message: $msg"
+          ;;
+        esac
+      *)
+        log_error "Invalid MQTT topic; topic: $topic; message: $msg"
+      ;;
+    esac
   done
 }
