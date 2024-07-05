@@ -142,10 +142,6 @@ function listen_to_mqtt() {
       # command to send one single amps request. See: https://github.com/tesla-local-control/tesla_ble_mqtt_core/issues/19
       log_info "Set Charging Amps to $msg requested"
       send_command $vin "charging-set-amps $msg"
-      sleep 1
-      log_notice "Second Amp set"
-      send_command $vin "charging-set-amps $msg"
-     fi
      ;;
 
     auto-seat-and-climate)
