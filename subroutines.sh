@@ -23,6 +23,8 @@ function send_command() {
       else
         log_error "tesla-control send command failed exit status $EXIT_STATUS."
         log_info "$tesla_ctrl_out"
+        # Don't continue if we've reached max retries
+        [ $max_retries -eq $count ] && break
         log_notice "Retrying in $BLE_CMD_RETRY_DELAY seconds"
       fi
       sleep $BLE_CMD_RETRY_DELAY
