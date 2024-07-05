@@ -26,14 +26,6 @@ log_info "Source /app/listen_to_mqtt.sh"
 ### END Source all required files
 
 
-### CREDITS TIME ###############################################################
-#
-log_cyan "tesla_ble_mqtt_docker by Iain Bullock 2024 https://github.com/iainbullock/tesla_ble_mqtt_docker"
-log_cyan "Inspiration by Raphael Murray https://github.com/raphmur"
-log_cyan "Instructions by Shankar Kumarasamy https://shankarkumarasamy.blog/2024/01/28/tesla-developer-api-guide-ble-key-pair-auth-and-vehicle-commands-part-3"
-### END Credits Time
-
-
 ### SETUP ENVIRONMENT #########################################################
 if [ ! -d /share/tesla_ble_mqtt ]; then
     log_info "Creating directory /share/tesla_ble_mqtt"
