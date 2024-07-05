@@ -1,22 +1,19 @@
 #!/bin/ash
 # Note: shebang will be replaced automatically by the HA addon deployment script to #!/command/with-contenv bashio
 
-### DEFINE FUNCTIONS ###############################################################################################
-
+### DEFINE FUNCTIONS ##########################################################
 echo "Source required files to load required functions"
-
 ### Source required files
 #
-# Source libcolor
-echo "Source /app/libcolor.sh"
-export COLOR=${COLOR:true} \
-  && export DEBUG=${DEBUG:false}\
-  && . /app/libcolor.sh
-
 # Source product's library
 [ -f /app/libproduct.sh ] \
-  && log_info "Source libproduct.sh" \
+  && echo "Source libproduct.sh" \
   && . /app/libproduct.sh
+
+# Source libcolor
+echo "Source /app/libcolor.sh"
+export COLOR=${COLOR:=true}
+. /app/libcolor.sh
 
 log_info "Source /app/subroutines.sh"
 . /app/subroutines.sh
@@ -29,7 +26,7 @@ log_info "Source /app/listen_to_mqtt.sh"
 ### END Source all required files
 
 
-### Credits Time
+### CREDITS TIME ###############################################################
 #
 log_cyan "tesla_ble_mqtt_docker by Iain Bullock 2024 https://github.com/iainbullock/tesla_ble_mqtt_docker"
 log_cyan "Inspiration by Raphael Murray https://github.com/raphmur"
@@ -37,7 +34,7 @@ log_cyan "Instructions by Shankar Kumarasamy https://shankarkumarasamy.blog/2024
 ### END Credits Time
 
 
-### SETUP ENVIRONMENT ###########################################################################################
+### SETUP ENVIRONMENT #########################################################
 if [ ! -d /share/tesla_ble_mqtt ]; then
     log_info "Creating directory /share/tesla_ble_mqtt"
     mkdir -p /share/tesla_ble_mqtt
@@ -46,27 +43,12 @@ else
 fi
 
 
-### SETUP PRODUCT  ###########################################################################################
+### SETUP PRODUCT  ############################################################
 # If it's a function, call productInit
-if type -f productInit > /dev/null; then
+if type productInit > /dev/null; then
   productInit
 fi
 
-
-### TODO : MOVE TO ADD-ON's libproduct; make it a function and name it "productInit()"
-### INITIALIZE VARIABLES AND FUNCTIONS TO MAKE THIS .sh RUN ALSO STANDALONE ##########################################
-# read options in case of HA addon. Otherwise, they will be sent as environment variables
-if [ -n "${HASSIO_TOKEN:-}" ]; then
-  export BLE_MAC_LIST="$(bashio::config 'ble_mac3')"
-  export DEBUG="$(bashio::config 'debug')"
-  export MQTT_SERVER="$(bashio::config 'mqtt_server')"
-  export MQTT_PORT="$(bashio::config 'mqtt_port')"
-  export MQTT_PASSWORD="$(bashio::config 'mqtt_password')"
-  export MQTT_USERNAME="$(bashio::config 'mqtt_username')"
-  export PRESENCE_DETECTION_TTL="$(bashio::config 'presence_detection_ttl')"
-  export BLE_CMD_RETRY_DELAY="$(bashio::config 'ble_cmd_retry_delay')"
-  export VIN_LIST="$(bashio::config 'vin_list')"
-fi
 
 ### TODO - Move to Docker's libproduct otherwise this setting will show up for add-on
 export HA_BACKEND_DISABLE=${HA_BACKEND_DISABLE:=false}
@@ -77,7 +59,7 @@ export HA_BACKEND_DISABLE=${HA_BACKEND_DISABLE:=false}
 ###
 
 
-### LOG CONFIG VARS ##################################################################################
+### LOG CONFIG VARS ###########################################################
 log_green "Configuration Options are:
   BLE_MAC_LIST=$BLE_MAC_LIST
   DEBUG=$DEBUG
@@ -109,11 +91,6 @@ fi
 BLE_MAC_LIST=$(echo $BLE_MAC_LIST | sed -e 's/|/ /g')
 VIN_LIST=$(echo $VIN_LIST | sed -e 's/|/ /g')
 
-#set -- $BLE_LN
-#set -- $VIN
-#set -- $BLE_MAC
-#set -- $PRESENCE_EXPIRE_TIME
-
 vin_count=0
 for vin in $VIN_LIST; do
   # Populate BLE Local Names list
@@ -122,7 +99,7 @@ for vin in $VIN_LIST; do
   log_debug "Adding $BLE_LN to BLE_LN_LIST, count $vin_count"
   BLE_LN_LIST="$BLE_LN_LIST $BLE_LN"
 
-  ################ HANDLE CONFIG CHANGE ##############
+  ################ HANDLE CONFIG CHANGE #######################################
   # TEMPORARY - Move original "vin" key to "vin{1}"
   if [ -f /share/tesla_ble_mqtt/private.pem ] && [ $vin_count -eq 1 ]; then
     log_notice "Keys exist from a previous installation with single VIN which is deprecated"
@@ -160,7 +137,7 @@ else
 fi
 
 
-### START MAIN PROGRAM LOOP ######################################################################################
+### START MAIN PROGRAM LOOP ###################################################
 log_info "Entering main MQTT listening loop"
 
 # TODO : How should we handle a MQTT restart or network failure to reach the service?
