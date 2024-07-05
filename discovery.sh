@@ -420,6 +420,29 @@ setup_auto_discovery() {
    "sw_version": "'${SW_VERSION}'"
    }'
 
+ eval $MOSQUITTO_PUB_BASE -t homeassistant/number/${DEV_ID}/charging-set-amps-override/config -m \
+  '{
+   "command_topic": "'${TOPIC_ROOT}'/charging-amps-override",
+   "device": {
+    "identifiers": [
+    "'${DEV_ID}'"
+    ],
+    "manufacturer": "tesla-local-control",
+    "model": "Tesla_BLE",
+    "name": "'${DEV_NAME}'"
+   },
+   "name": "Charging Current",
+   "unique_id": "'${DEV_ID}'_charging-set-amps-override",
+   "min": "0",
+   "max": "48",
+   "mode": "slider",
+   "unit_of_measurement": "A",
+   "qos": 1,
+   "icon": "mdi:current-ac",
+   "entity_category": "diagnostic",
+   "sw_version": "'${SW_VERSION}'"
+   }'
+
  eval $MOSQUITTO_PUB_BASE -t homeassistant/number/${DEV_ID}/charging-set-limit/config -m \
   '{
    "command_topic": "'${TOPIC_ROOT}'/charging-set-limit",
