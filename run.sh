@@ -80,8 +80,8 @@ else
 fi
 
 # Replace | with ' ' white space
-BLE_MAC_LIST=$(echo $BLE_MAC_LIST | sed -e 's/|/ /g')
-VIN_LIST=$(echo $VIN_LIST | sed -e 's/|/ /g')
+BLE_MAC_LIST=$(echo $BLE_MAC_LIST | sed -e 's/[|,;]/ /g')
+VIN_LIST=$(echo $VIN_LIST | sed -e 's/[|,;]/ /g')
 
 vin_count=0
 for vin in $VIN_LIST; do
