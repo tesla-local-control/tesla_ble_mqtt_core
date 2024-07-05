@@ -1,0 +1,12 @@
+The bluetoothctl.out file contains the following 2 cars:
+
+VIN               BLE LN             MAC Address
+5YJ3F1FB8JF147928 S349bfb360354921cC FF:EE:DD:CC:BB:AA
+5YJ3F1FB9JF147928 Sbf01d866288dd3f4C AA:BB:CC:DD:EE:FF
+
+# Environmental Variable
+export BLECTL_FILE_INPUT="/data/bluetoothctl.out"
+export BLE_MAC_LIST="AA:BB:CC:DD:EE:FF|FF:EE:DD:CC:BB:AA"
+export VIN_LIST="5YJ3F1FB8JF147928|5YJ3F1FB9JF147928"
+export DEBUG=true # or false
+

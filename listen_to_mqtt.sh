@@ -128,10 +128,19 @@ function listen_to_mqtt() {
     charging-amps)
      # https://github.com/iainbullock/tesla_ble_mqtt_docker/issues/4
      if [ $msg -gt 4 ]; then
-     log_notice "Set amps"
-      send_command $vin "charging-set-amps $msg"
+       log_notice "Set amps"
+       send_command $vin "charging-set-amps $msg"
      else
-      log_notice "First Amp set"
+       log_notice "First Amp set"
+       send_command $vin "charging-set-amps $msg"
+       sleep 1
+       log_notice "Second Amp set"
+       send_command $vin "charging-set-amps $msg"
+     fi;;
+
+    charging-amps-override)
+      # command to send one single amps request. See: https://github.com/tesla-local-control/tesla_ble_mqtt_core/issues/19
+      log_info "Set Charging Amps to $msg requested"
       send_command $vin "charging-set-amps $msg"
       sleep 1
       log_notice "Second Amp set"
@@ -206,7 +215,6 @@ function listen_for_HA_start() {
             log_error "Invalid command request; topic: $topic; message: $msg"
           ;;
         esac
-        ;;
       *)
         log_error "Invalid MQTT topic; topic: $topic; message: $msg"
       ;;
