@@ -161,30 +161,29 @@ function setup_auto_discovery_loop() {
 
 
 function listen_for_HA_start() {
-  eval $MOSQUITTO_SUB_BASE --nodelay -t homeassistant/status -F \"%t %p\" \
-  | while read -r payload; do
-      topic=$(echo "$payload" | cut -d ' ' -f 1)
-      msg=$(echo "$payload" | cut -d ' ' -f 2-)
-      log_info "Received HA Status message: $topic $msg"
-      case $topic in
-        homeassistant/status)
-          case $msg in
-            offline)
-              log_notice "Home Assistant is stopping";;
-            online)
-              # https://github.com/iainbullock/tesla_ble_mqtt_docker/discussions/6
-              log_notice "Home Assistant is starting, re-running MQTT auto-discovery"
-              discardMessages=no
-              setup_auto_discovery_loop $discardMessages
-              ;;
-            *)
-              log_error "Invalid command request; topic: $topic; message: $msg"
+  eval $MOSQUITTO_SUB_BASE --nodelay -t homeassistant/status -F \"%t %p\" | \
+  while read -r payload; do
+    topic=$(echo "$payload" | cut -d ' ' -f 1)
+    msg=$(echo "$payload" | cut -d ' ' -f 2-)
+    log_info "Received HA Status message: $topic $msg"
+    case $topic in
+      homeassistant/status)
+        case $msg in
+          offline)
+            log_notice "Home Assistant is stopping";;
+          online)
+            # https://github.com/iainbullock/tesla_ble_mqtt_docker/discussions/6
+            log_notice "Home Assistant is starting, re-running MQTT auto-discovery"
+            discardMessages=no
+            setup_auto_discovery_loop $discardMessages
             ;;
-          esac
+          *)
+            log_error "Invalid command request; topic: $topic; message: $msg"
           ;;
-        *)
-          log_error "Invalid MQTT topic; topic: $topic; message: $msg"
-        ;;
-      esac
-    done
+        esac
+      *)
+        log_error "Invalid MQTT topic; topic: $topic; message: $msg"
+      ;;
+    esac
+  done
 }
