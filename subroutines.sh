@@ -122,9 +122,7 @@ function check_presence() {
 }
 
 
-
-function listen_to_ble() {
-  n_vins=$1
+function bluetoothctl_read() {
 
   # Read BLE data from bluetoothctl or an input file
   if [ -z $BLECTL_FILE_INPUT ]; then
@@ -134,6 +132,10 @@ function listen_to_ble() {
     BLTCTL_OUT=$(bluetoothctl --timeout $PRESENCE_TIMEOUT scan on 2>&1 | grep -v DEL)
     set -e
   else
+    # Read from file, great for testing w/ no Bluetooth adapter
+    # When reading from a file, the logic reads a continous section:
+    #   - randomly pick a start line (startLine)
+    #   - randomly pick maximum number of line to read (nPick between 0 and nPickMax)
     [ ! -f $BLECTL_FILE_INPUT ] \
       && log_fatal "blectl input file $BLECTL_FILE_INPUT not found" \
       && exit 30
@@ -148,6 +150,14 @@ function listen_to_ble() {
     BLTCTL_OUT=$(sed -n "${startLine},$((startLine + nPick - 1))p" "$BLECTL_FILE_INPUT")
   fi
   log_debug "${BLTCTL_OUT}"
+}
+
+
+
+function listen_to_ble() {
+  n_vins=$1
+
+  bluetoothctl_read
 
   for position in $(seq $n_vins); do
     set -- $BLE_LN_LIST
