@@ -138,31 +138,25 @@ fi
 
 
 ### START MAIN PROGRAM LOOP ###################################################
-log_info "Entering main MQTT listening loop"
 
-# TODO : How should we handle a MQTT restart or network failure to reach the service?
-#        The while loop below will restart listen_to_mqtt but for listen_for_HA_start,
-#        it will fail and nothing will restart it.
-#        If set probably set -e/+e , perhaps on MQTT restat we also want to restart?
-
-counter=0
-log_info "Entering listening loop"
+log_info "Entering main loop..."
 while true
 do
 
-  # Call listen_to_mqtt()
-  log_debug "Calling listen_to_mqtt()"
-  set +e
-  listen_to_mqtt
-
+  # Launch listen_to_mqtt_loop in background
+  log_green "Lauching background listen_to_mqtt_loop..."
+  listen_to_mqtt_loop &
   # Don't run presence detection if TTL is 0
+
   if [ $PRESENCE_DETECTION_TTL -gt 0 ] ; then
-    counter=$(expr $counter + 1)
-    if [[ $counter -gt 90 ]]; then
-      log_info "Reached 90 MQTT loops (~3min): Launch BLE scanning for car presence"
-      listen_to_ble $vin_count
-      counter=0
-    fi
+    PRESENCE_DETECTION_DELAY=180
+    log_info "Launch BLE scanning for car presence every $PRESENCE_DETECTION_DELAY seconds"
+    listen_to_ble $vin_count
+    # Run listen_to_ble every 3m
+    sleep $PRESENCE_DETECTION_DELAY
+  else
+    # block here til the process dies
+    read
   fi
-  sleep 2
+
 done

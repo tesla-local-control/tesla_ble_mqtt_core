@@ -1,9 +1,34 @@
 #
 # listen_to_mqtt
 #
+
+
+###
+#
+# listen_to_mqtt_loop :
+#   - Main while loop
+#   - If listen_to_mqtt fails due to MQTT service restart, network or other conditions the
+#     loop will restart it.
+###
+function listen_to_mqtt_loop() {
+
+  log_green "Entering Listen to MQTT loop..."
+
+  while : ; do
+    log_green "Launching listen_to_mqtt"
+    listen_to_mqtt
+    [ $? -ne 0 ] \
+      && log_error "listen_to_mqtt stopped due to a failure; restarting the process in 10 seconds" \
+      && sleep 10
+    exit 0
+  done
+
+}
+
+
 function listen_to_mqtt() {
  # log_info "Listening to MQTT"
- eval $MOSQUITTO_SUB_BASE --nodelay -t tesla_ble/+/+ -F \"%t %p\" -E -c -i tesla_ble_mqtt -q 1 \
+ eval $MOSQUITTO_SUB_BASE --nodelay -t tesla_ble/+/+ -F \"%t %p\" -c -i tesla_ble_mqtt -q 1 \
  | while read -r payload
   do
    topic=${payload%% *}
@@ -181,6 +206,7 @@ function listen_for_HA_start() {
             log_error "Invalid command request; topic: $topic; message: $msg"
           ;;
         esac
+        ;;
       *)
         log_error "Invalid MQTT topic; topic: $topic; message: $msg"
       ;;
