@@ -1,4 +1,7 @@
 #!/bin/ash
+#
+# shellcheck shell=dash
+#
 # Note: shebang will be replaced automatically by the HA addon deployment script to #!/command/with-contenv bashio
 
 ### DEFINE FUNCTIONS ##########################################################
