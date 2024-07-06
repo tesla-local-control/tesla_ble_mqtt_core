@@ -62,9 +62,9 @@ function listen_to_mqtt() {
        log_notice "Trying to deploy the public key to vehicle..."
        send_key $vin;;
 
-      scan-tesla-bleln)
+      scan-bleln-macaddr)
        log_notice "Scanning for Tesla BLE Local Name and respective MAC addr..."
-       scan-tesla-bleln;;
+       scan-bleln-macaddr;;
 
       *)
        log_error "Invalid configuration request; topic:$topic vin:$vin msg:$msg";;
