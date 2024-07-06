@@ -208,20 +208,21 @@ listen_for_HA_start() {
       homeassistant/status)
         case $status in
           offline)
-            log_notice "Home Assistant is stopping";;
+            log_notice "Home Assistant is stopping"
+          ;;
           online)
             # https://github.com/iainbullock/tesla_ble_mqtt_docker/discussions/6
             log_notice "Home Assistant is now online, calling setup_auto_discovery_loop()"
             discardMessages=no
             setup_auto_discovery_loop $discardMessages
-            ;;
+          ;;
           *)
-            log_error "Invalid status; topic:$topic status:$status";;
+            log_error "Invalid status; topic:$topic status:$status"
           ;;
         esac
         ;;
       *)
-        log_error "Invalid request; topic:$topic status:$status";;
+        log_error "Invalid request; topic:$topic status:$status"
       ;;
     esac
   done
