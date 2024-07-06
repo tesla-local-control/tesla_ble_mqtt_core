@@ -134,6 +134,9 @@ function listen_to_mqtt() {
     heater-seat-front-right)
      send_command $vin "seat-heater front-right $msg";;
 
+    sw-heater)
+     send_command $vin "sw-heater $msg";;
+
     *)
      log_error "Invalid MQTT topic. Topic: $topic Message: $msg";;
    esac
