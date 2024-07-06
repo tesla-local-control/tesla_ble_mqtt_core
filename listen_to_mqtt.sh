@@ -17,10 +17,10 @@ function listen_to_mqtt_loop() {
 
   while : ; do
     log_green "Launching listen_to_mqtt"
-    listen_to_mqtt
-    [ $? -ne 0 ] \
-      && log_error "listen_to_mqtt stopped due to a failure; restarting the process in 10 seconds" \
-      && sleep 10
+    if ! listen_to_mqtt; then
+      log_error "listen_to_mqtt stopped due to a failure; restarting the process in 10 seconds"
+      sleep 10
+    fi
     exit 0
   done
 
@@ -168,6 +168,8 @@ function listen_to_mqtt() {
      log_error "Invalid request; topic:$topic vin:$vin msg:$msg";;
    esac
   done
+
+  return 1
 }
 
 
