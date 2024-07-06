@@ -1,9 +1,35 @@
+# shellcheck shell=dash
 #
 # listen_to_mqtt
 #
+
+
+###
+#
+# listen_to_mqtt_loop :
+#   - Main while loop
+#   - If listen_to_mqtt fails due to MQTT service restart, network or other conditions the
+#     loop will restart it.
+###
+function listen_to_mqtt_loop() {
+
+  log_green "Entering Listen to MQTT loop..."
+
+  while : ; do
+    log_green "Launching listen_to_mqtt"
+    listen_to_mqtt
+    [ $? -ne 0 ] \
+      && log_error "listen_to_mqtt stopped due to a failure; restarting the process in 10 seconds" \
+      && sleep 10
+    exit 0
+  done
+
+}
+
+
 function listen_to_mqtt() {
  # log_info "Listening to MQTT"
- eval $MOSQUITTO_SUB_BASE --nodelay -t tesla_ble/+/+ -F \"%t %p\" -E -c -i tesla_ble_mqtt -q 1 \
+ eval $MOSQUITTO_SUB_BASE --nodelay -t tesla_ble/+/+ -F \"%t %p\" -c -i tesla_ble_mqtt -q 0 \
  | while read -r payload
   do
    topic=${payload%% *}
@@ -145,7 +171,8 @@ function listen_to_mqtt() {
 }
 
 
-function setup_auto_discovery_loop() {
+# Function
+setup_auto_discovery_loop() {
 
   discardMessages=$1
 
@@ -161,7 +188,7 @@ function setup_auto_discovery_loop() {
     fi
 
     # Discard or not awaiting messages
-    if [ "$discardMessages" == "yes" ]; then
+    if [ "$discardMessages" = "yes" ]; then
       log_info "Discarding any unread MQTT messages for $vin"
       eval $MOSQUITTO_SUB_BASE -E -i tesla_ble_mqtt -t tesla_ble_mqtt/$vin/+
     fi
@@ -169,7 +196,8 @@ function setup_auto_discovery_loop() {
 }
 
 
-function listen_for_HA_start() {
+# Function
+listen_for_HA_start() {
   eval $MOSQUITTO_SUB_BASE --nodelay -t homeassistant/status -F \"%t %p\" | \
   while read -r payload; do
     topic=$(echo "$payload" | cut -d ' ' -f 1)
