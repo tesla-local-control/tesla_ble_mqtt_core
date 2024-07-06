@@ -214,7 +214,7 @@ listen_for_HA_start() {
             log_notice "Home Assistant is stopping"
           ;;
           online)
-            # https://github.com/iainbullock/tesla_ble_mqtt_docker/discussions/6
+            # Ref: https://github.com/iainbullock/tesla_ble_mqtt_docker/discussions/6
             log_notice "Home Assistant is now online, calling setup_auto_discovery_loop()"
             discardMessages=no
             setup_auto_discovery_loop $discardMessages
