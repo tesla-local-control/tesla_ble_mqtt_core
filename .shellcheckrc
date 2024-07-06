@@ -4,7 +4,7 @@ disable=SC3036
 # Allow if [[ ]]
 disable=SC3010
 
-# Allo if [ == ]
+# Allow if [ == ]
 disable=SC3014
 
 # Allow keyword function

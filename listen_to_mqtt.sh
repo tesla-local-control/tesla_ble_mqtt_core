@@ -17,7 +17,6 @@ function listen_to_mqtt_loop() {
 
   while : ; do
     log_green "Launching listen_to_mqtt"
-    listen_to_mqtt
     if ! listen_to_mqtt; then
       log_error "listen_to_mqtt stopped due to a failure; restarting the process in 10 seconds"
       sleep 10
@@ -39,24 +38,6 @@ function listen_to_mqtt() {
    vin=${topic_stripped%/*}
    cmd=${topic_stripped#*/}
    log_info "Received MQTT message; topic:$topic msg:$msg vin:$vin cmd:$cmd"
-
-   # Process binary_sensor/presence, do nothing for now.
-   case $topic in
-     *binary_sensor*presence)
-       case $msg in
-         ON)
-           :
-         ;;
-         OFF)
-           :
-         ;;
-       *)
-         log_error "Invalid request; topic:$topic msg:$msg"
-       ;;
-       esac
-       continue
-     ;;
-   esac
 
    case $cmd in
     config)
@@ -233,7 +214,7 @@ listen_for_HA_start() {
             log_notice "Home Assistant is stopping"
           ;;
           online)
-            # https://github.com/iainbullock/tesla_ble_mqtt_docker/discussions/6
+            # Ref: https://github.com/iainbullock/tesla_ble_mqtt_docker/discussions/6
             log_notice "Home Assistant is now online, calling setup_auto_discovery_loop()"
             discardMessages=no
             setup_auto_discovery_loop $discardMessages
