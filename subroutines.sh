@@ -144,10 +144,10 @@ function bluetoothctl_read() {
     log_notice "Reading BLE presence data from file $BLECTL_FILE_INPUT"
     nPickMin=0  # min number of lines to pick
     nPickMax=35 # max number of lines to pick
+    finputTotalLines=$(wc -l < "$BLECTL_FILE_INPUT")
     # nPick to be within the file line count and the nPickMax
     nPick=$((RANDOM % ((finputTotalLines < nPickMax ? \
       finputTotalLines : nPickMax) - nPickMin + 1) + nPickMin))
-    finputTotalLines=$(wc -l < "$BLECTL_FILE_INPUT")
     startLine=$((RANDOM % (finputTotalLines - nPick + 1) + 1)) # Random starting line
 
     # Extract nPick lines starting from line startLine
