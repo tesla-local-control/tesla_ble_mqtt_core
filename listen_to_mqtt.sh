@@ -1,7 +1,10 @@
+# shellcheck shell=dash
 #
 # listen_to_mqtt
 #
-function listen_to_mqtt() {
+
+# Function
+listen_to_mqtt() {
  # log_info "Listening to MQTT"
  eval $MOSQUITTO_SUB_BASE --nodelay -t tesla_ble/+/+ -F \"%t %p\" -E -c -i tesla_ble_mqtt -q 1 \
  | while read -r payload
@@ -17,7 +20,7 @@ function listen_to_mqtt() {
     config)
 
      case $msg in
-      generate_keys)
+      generate-keys)
        log_notice "Generating the private key"
        openssl ecparam -genkey -name prime256v1 -noout > /share/tesla_ble_mqtt/${vin}_private.pem
        log_debug "$(cat /share/tesla_ble_mqtt/${vin}_private.pem)"
@@ -32,11 +35,11 @@ function listen_to_mqtt() {
        3/ Push the button 'Deploy Key'"
       ;;
 
-      deploy_key)
+      deploy-key)
        log_notice "Deploying public key to vehicle"
        send_key $vin;;
 
-      scan_bluetooth)
+      scan-bluetooth)
        log_notice "Scanning Bluetooth"
        scan_bluetooth;;
 
@@ -98,9 +101,9 @@ function listen_to_mqtt() {
        *)
         log_error "Invalid Command Request. Topic: $topic Message: $msg";;
       esac
-        ;;
+        ;; ## END of command)
 
-    charging-amps)
+    charging-set-amps)
      # https://github.com/iainbullock/tesla_ble_mqtt_docker/issues/4
      if [ $msg -gt 4 ]; then
        log_notice "Set amps"
@@ -113,14 +116,11 @@ function listen_to_mqtt() {
        send_command $vin "charging-set-amps $msg"
      fi;;
 
-    charging-amps-override)
+    charging-set-amps-override)
       # command to send one single amps request. See: https://github.com/tesla-local-control/tesla_ble_mqtt_core/issues/19
       log_info "Set Charging Amps to $msg requested"
       send_command $vin "charging-set-amps $msg"
       ;;
-
-    auto-seat-and-climate)
-     send_command $vin "auto-seat-and-climate LR on";;
 
     charging-set-limit)
      send_command $vin "charging-set-limit $msg";;
@@ -128,11 +128,17 @@ function listen_to_mqtt() {
     climate-set-temp)
      send_command $vin "climate-set-temp ${msg}C";;
 
-    heated_seat_left)
+    auto-seat-and-climate)
+     send_command $vin "auto-seat-and-climate LR on";;
+
+    heater-seat-front-left)
      send_command $vin "seat-heater front-left $msg";;
 
-    heated_seat_right)
+    heater-seat-front-right)
      send_command $vin "seat-heater front-right $msg";;
+
+    sw-heater)
+     send_command $vin "sw-heater $msg";;
 
     *)
      log_error "Invalid MQTT topic. Topic: $topic Message: $msg";;
@@ -141,7 +147,8 @@ function listen_to_mqtt() {
 }
 
 
-function setup_auto_discovery_loop() {
+# Function
+setup_auto_discovery_loop() {
 
   discardMessages=$1
 
@@ -149,7 +156,7 @@ function setup_auto_discovery_loop() {
   for vin in $VIN_LIST; do
 
     # IF HA backend is enable, setup HA autodiscovery otherwise don't
-    if [ "$HA_BACKEND_DISABLE" == "false" ]; then
+    if [ "$HA_BACKEND_DISABLE" = "false" ]; then
       log_info "Setting up Home Assistant Auto Discovery for $vin"
       setup_auto_discovery $vin
     else
@@ -157,7 +164,7 @@ function setup_auto_discovery_loop() {
     fi
 
     # Discard or not awaiting messages
-    if [ "$discardMessages" == "yes" ]; then
+    if [ "$discardMessages" = "yes" ]; then
       log_info "Discarding any unread MQTT messages for $vin"
       eval $MOSQUITTO_SUB_BASE -E -i tesla_ble_mqtt -t tesla_ble_mqtt/$vin/+
     fi
@@ -165,7 +172,8 @@ function setup_auto_discovery_loop() {
 }
 
 
-function listen_for_HA_start() {
+# Function
+listen_for_HA_start() {
   eval $MOSQUITTO_SUB_BASE --nodelay -t homeassistant/status -F \"%t %p\" | \
   while read -r payload; do
     topic=$(echo "$payload" | cut -d ' ' -f 1)
