@@ -19,6 +19,8 @@ send_command() {
       log_info "tesla-control send command succeeded"
       break
     else
+      SC3010
+      # shellcheck disable=SC3010
       if [[ "$tesla_ctrl_out" == *"Failed to execute command: car could not execute command"* ]]; then
         log_error "$tesla_ctrl_out"
         log_notice "Skipping command $* to vin $vin"
