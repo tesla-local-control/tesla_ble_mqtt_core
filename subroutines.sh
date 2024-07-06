@@ -141,15 +141,16 @@ function bluetoothctl_read() {
     [ ! -f $BLECTL_FILE_INPUT ] \
       && log_fatal "blectl input file $BLECTL_FILE_INPUT not found" \
       && exit 30
+
     log_notice "Reading BLE presence data from file $BLECTL_FILE_INPUT"
     nPickMin=0  # min number of lines to pick
     nPickMax=50 # max number of lines to pick
-    nPick=$((RANDOM % (total_lines - nPickMax + nPickMin) + nPickMin))
     finputTotalLines=$(wc -l < "$BLECTL_FILE_INPUT")
+    nPick=$((RANDOM % (finputTotalLines - nPickMax + nPickMin) + nPickMin))
     startLine=$((RANDOM % (finputTotalLines - nPick + 1) + 1)) # Random starting line
 
     # Extract nPick lines starting from line startLine
-    BLTCTL_OUT=$(sed -n "${startLine},$((startLine + nPick - 1))p" "$BLECTL_FILE_INPUT")
+    Output=$(sed -n "${startLine},$((startLine + nPick - 1))p" "$BLECTL_FILE_INPUT")
   fi
   log_debug "${BLTCTL_OUT}"
 }
