@@ -205,6 +205,7 @@ listen_for_HA_start() {
     log_info "Received MQTT message: topic:$topic status:$status"
     case $topic in
       homeassistant/status)
+        # shellcheck disable=SC1073
         case $status in
           offline)
             log_notice "Home Assistant is stopping"
