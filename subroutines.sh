@@ -2,7 +2,9 @@
 #
 # subroutines.sh
 #
-function send_command() {
+
+# Function
+send_command() {
   vin=$1
   shift
 
@@ -34,8 +36,9 @@ function send_command() {
 }
 
 
+# Function
 # Tesla VIN to BLE Local Name
-function tesla_vin2ble_ln() {
+tesla_vin2ble_ln() {
   vin=$1
   ble_ln=""
 
@@ -47,7 +50,8 @@ function tesla_vin2ble_ln() {
 }
 
 
-function replace_value_at_position() {
+# Function
+replace_value_at_position() {
 
   original_list="$1"
   position=$(expr $2 - 1)
@@ -77,7 +81,8 @@ function replace_value_at_position() {
 
 
 
-function check_presence() {
+# Function
+check_presence() {
   TYPE="$1" # BLE MAC, LN
   MATCH="$2"
 
@@ -124,7 +129,8 @@ function check_presence() {
 }
 
 
-function bluetoothctl_read() {
+# Function
+bluetoothctl_read() {
 
   # Read BLE data from bluetoothctl or an input file
   if [ -z $BLECTL_FILE_INPUT ]; then
@@ -146,18 +152,21 @@ function bluetoothctl_read() {
     nPickMin=0  # min number of lines to pick
     nPickMax=50 # max number of lines to pick
     finputTotalLines=$(wc -l < "$BLECTL_FILE_INPUT")
+    # shellcheck disable=SC3028
     nPick=$((RANDOM % (finputTotalLines - nPickMax + nPickMin) + nPickMin))
+    # shellcheck disable=SC3028
     startLine=$((RANDOM % (finputTotalLines - nPick + 1) + 1)) # Random starting line
 
     # Extract nPick lines starting from line startLine
-    Output=$(sed -n "${startLine},$((startLine + nPick - 1))p" "$BLECTL_FILE_INPUT")
+    BLTCTL_OUT=$(sed -n "${startLine},$((startLine + nPick - 1))p" "$BLECTL_FILE_INPUT")
   fi
   log_debug "${BLTCTL_OUT}"
 }
 
 
 
-function listen_to_ble() {
+# Function
+listen_to_ble() {
   n_vins=$1
 
   bluetoothctl_read
@@ -182,7 +191,8 @@ function listen_to_ble() {
 
 
 
-function send_key() {
+# Function
+send_key() {
  vin=$1
 
  max_retries=5
@@ -205,7 +215,8 @@ function send_key() {
 
 
 
-function delete_legacies(){
+# Function
+delete_legacies(){
   vin=$1
 
   log_notice "Deleting Legacy MQTT Topics"
