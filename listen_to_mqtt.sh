@@ -3,10 +3,33 @@
 # listen_to_mqtt
 #
 
-# Function
-listen_to_mqtt() {
+
+###
+#
+# listen_to_mqtt_loop :
+#   - Main while loop
+#   - If listen_to_mqtt fails due to MQTT service restart, network or other conditions the
+#     loop will restart it.
+###
+function listen_to_mqtt_loop() {
+
+  log_green "Entering Listen to MQTT loop..."
+
+  while : ; do
+    log_green "Launching listen_to_mqtt"
+    listen_to_mqtt
+    [ $? -ne 0 ] \
+      && log_error "listen_to_mqtt stopped due to a failure; restarting the process in 10 seconds" \
+      && sleep 10
+    exit 0
+  done
+
+}
+
+
+function listen_to_mqtt() {
  # log_info "Listening to MQTT"
- eval $MOSQUITTO_SUB_BASE --nodelay -t tesla_ble/+/+ -F \"%t %p\" -E -c -i tesla_ble_mqtt -q 1 \
+ eval $MOSQUITTO_SUB_BASE --nodelay -t tesla_ble/+/+ -F \"%t %p\" -c -i tesla_ble_mqtt -q 0 \
  | while read -r payload
   do
    topic=${payload%% *}
@@ -20,7 +43,7 @@ listen_to_mqtt() {
     config)
 
      case $msg in
-      generate_keys)
+      generate-keys)
        log_notice "Generating the private key"
        openssl ecparam -genkey -name prime256v1 -noout > /share/tesla_ble_mqtt/${vin}_private.pem
        log_debug "$(cat /share/tesla_ble_mqtt/${vin}_private.pem)"
@@ -35,11 +58,11 @@ listen_to_mqtt() {
        3/ Push the button 'Deploy Key'"
       ;;
 
-      deploy_key)
+      deploy-key)
        log_notice "Deploying public key to vehicle"
        send_key $vin;;
 
-      scan_bluetooth)
+      scan-bluetooth)
        log_notice "Scanning Bluetooth"
        scan_bluetooth;;
 
@@ -101,9 +124,9 @@ listen_to_mqtt() {
        *)
         log_error "Invalid Command Request. Topic: $topic Message: $msg";;
       esac
-        ;;
+        ;; ## END of command)
 
-    charging-amps)
+    charging-set-amps)
      # https://github.com/iainbullock/tesla_ble_mqtt_docker/issues/4
      if [ $msg -gt 4 ]; then
        log_notice "Set amps"
@@ -116,14 +139,11 @@ listen_to_mqtt() {
        send_command $vin "charging-set-amps $msg"
      fi;;
 
-    charging-amps-override)
+    charging-set-amps-override)
       # command to send one single amps request. See: https://github.com/tesla-local-control/tesla_ble_mqtt_core/issues/19
       log_info "Set Charging Amps to $msg requested"
       send_command $vin "charging-set-amps $msg"
-      ;;
-
-    auto-seat-and-climate)
-     send_command $vin "auto-seat-and-climate LR on";;
+     ;;
 
     charging-set-limit)
      send_command $vin "charging-set-limit $msg";;
@@ -131,11 +151,17 @@ listen_to_mqtt() {
     climate-set-temp)
      send_command $vin "climate-set-temp ${msg}C";;
 
-    heated_seat_left)
+    auto-seat-and-climate)
+     send_command $vin "auto-seat-and-climate LR on";;
+
+    heater-seat-front-left)
      send_command $vin "seat-heater front-left $msg";;
 
-    heated_seat_right)
+    heater-seat-front-right)
      send_command $vin "seat-heater front-right $msg";;
+
+    sw-heater)
+     send_command $vin "sw-heater $msg";;
 
     *)
      log_error "Invalid MQTT topic. Topic: $topic Message: $msg";;

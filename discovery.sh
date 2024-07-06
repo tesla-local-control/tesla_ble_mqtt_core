@@ -2,7 +2,8 @@
 #
 # discovery.sh
 #
-setup_auto_discovery() {
+
+function setup_auto_discovery() {
  vin=$1
  log_notice "Setting up HA auto discovery for vin $vin"
 
@@ -44,12 +45,12 @@ setup_auto_discovery() {
    },
    "device_class": "update",
    "name": "Generate Keys",
-   "payload_press": "generate_keys",
+   "payload_press": "generate-keys",
    "qos": 1,
-   "unique_id": "'${DEV_ID}'_generate_keys",
+   "unique_id": "'${DEV_ID}'_generate-keys",
    "entity_category": "config",
    "sw_version": "'${SW_VERSION}'"
-  }' | eval $MOSQUITTO_PUB_BASE -t homeassistant/button/${DEV_ID}/generate_keys/config -l
+  }' | eval $MOSQUITTO_PUB_BASE -t homeassistant/button/${DEV_ID}/generate-keys/config -l
 
   echo '{
    "command_topic": "'${TOPIC_ROOT}'/config",
@@ -63,12 +64,12 @@ setup_auto_discovery() {
    },
    "device_class": "update",
    "name": "Deploy Key",
-   "payload_press": "deploy_key",
+   "payload_press": "deploy-key",
    "qos": 1,
-   "unique_id": "'${DEV_ID}'_deploy_key",
+   "unique_id": "'${DEV_ID}'_deploy-key",
    "entity_category": "config",
    "sw_version": "'${SW_VERSION}'"
-  }' | eval $MOSQUITTO_PUB_BASE -t homeassistant/button/${DEV_ID}/deploy_key/config -l
+  }' | eval $MOSQUITTO_PUB_BASE -t homeassistant/button/${DEV_ID}/deploy-key/config -l
 
   echo '{
    "command_topic": "'${TOPIC_ROOT}'/config",
@@ -82,12 +83,12 @@ setup_auto_discovery() {
    },
    "device_class": "update",
    "name": "Scan Bluetooth",
-   "payload_press": "scan_bluetooth",
+   "payload_press": "scan-bluetooth",
    "qos": 1,
-   "unique_id": "'${DEV_ID}'_scan_bluetooth",
+   "unique_id": "'${DEV_ID}'_scan-bluetooth",
    "entity_category": "diagnostic",
    "sw_version": "'${SW_VERSION}'"
-  }' | eval $MOSQUITTO_PUB_BASE -t homeassistant/button/${DEV_ID}/scan_bluetooth/config -l
+  }' | eval $MOSQUITTO_PUB_BASE -t homeassistant/button/${DEV_ID}/scan-bluetooth/config -l
 
   echo '{
    "command_topic": "'${TOPIC_ROOT}'/command",
@@ -119,7 +120,7 @@ setup_auto_discovery() {
    "name": "Flash Lights",
    "payload_press": "flash-lights",
    "qos": 1,
-   "unique_id": "'${DEV_ID}'_flash_lights",
+   "unique_id": "'${DEV_ID}'_flash-lights",
    "sw_version": "'${SW_VERSION}'"
   }' | eval $MOSQUITTO_PUB_BASE -t homeassistant/button/${DEV_ID}/flash-lights/config -l
 
@@ -175,7 +176,7 @@ setup_auto_discovery() {
    }' | eval $MOSQUITTO_PUB_BASE -t homeassistant/button/${DEV_ID}/unlock/config -l
 
   echo '{
-   "command_topic": "'${TOPIC_ROOT}'/auto-seat-and-climate",
+   "command_topic": "'${TOPIC_ROOT}'/command",
    "device": {
     "identifiers": [
     "'${DEV_ID}'"
@@ -187,9 +188,9 @@ setup_auto_discovery() {
    "name": "Auto Seat & Climate",
    "payload_press": "auto-seat-and-climate",
    "qos": 1,
-   "unique_id": "'${DEV_ID}'_auto_seat-climate",
+   "unique_id": "'${DEV_ID}'-auto-seat-and-climate",
    "sw_version": "'${SW_VERSION}'"
-   }' | eval $MOSQUITTO_PUB_BASE -t homeassistant/button/${DEV_ID}/auto-seat-climate/config -l
+   }' | eval $MOSQUITTO_PUB_BASE -t homeassistant/button/${DEV_ID}/auto-seat-and-climate/config -l
 
   echo '{
    "command_topic": "'${TOPIC_ROOT}'/command",
@@ -379,7 +380,7 @@ setup_auto_discovery() {
    }' | eval $MOSQUITTO_PUB_BASE -t homeassistant/button/${DEV_ID}/windows-vent/config -l
 
   echo '{
-   "command_topic": "'${TOPIC_ROOT}'/charging-amps",
+   "command_topic": "'${TOPIC_ROOT}'/charging-set-amps",
    "device": {
     "identifiers": [
     "'${DEV_ID}'"
@@ -400,7 +401,7 @@ setup_auto_discovery() {
    }' | eval $MOSQUITTO_PUB_BASE -t homeassistant/number/${DEV_ID}/charging-set-amps/config -l
 
   echo '{
-   "command_topic": "'${TOPIC_ROOT}'/charging-amps-override",
+   "command_topic": "'${TOPIC_ROOT}'/charging-set-amps-override",
    "device": {
     "identifiers": [
     "'${DEV_ID}'"
@@ -476,7 +477,7 @@ setup_auto_discovery() {
    "name": "Steering Wheel Heater",
    "device_class": "switch",
    "qos": 1,
-   "unique_id": "'${DEV_ID}'_sw_heater",
+   "unique_id": "'${DEV_ID}'_sw-heater",
    "sw_version": "'${SW_VERSION}'"
    }' | eval $MOSQUITTO_PUB_BASE -t homeassistant/switch/${DEV_ID}/sw-heater/config -l
 
@@ -498,7 +499,7 @@ setup_auto_discovery() {
    }' | eval $MOSQUITTO_PUB_BASE -t homeassistant/switch/${DEV_ID}/sentry-mode/config -l
 
   echo '{
-   "command_topic": "'${TOPIC_ROOT}'/heated_seat_left",
+   "command_topic": "'${TOPIC_ROOT}'/heater-seat-front-left",
    "device": {
     "identifiers": [
     "'${DEV_ID}'"
@@ -507,16 +508,16 @@ setup_auto_discovery() {
     "model": "Tesla_BLE",
     "name": "'${DEV_NAME}'"
    },
-   "name": "Heated Seat Left",
+   "name": "Heated Seat Front Left",
    "options": ["off", "low", "medium", "high"],
    "qos": 1,
    "icon": "mdi:car-seat-heater",
-   "unique_id": "'${DEV_ID}'_heated_seat_left",
+   "unique_id": "'${DEV_ID}'_heater-seat-front-left",
    "sw_version": "'${SW_VERSION}'"
-   }' | eval $MOSQUITTO_PUB_BASE -t homeassistant/select/${DEV_ID}/heated_seat_left/config -l
+   }' | eval $MOSQUITTO_PUB_BASE -t homeassistant/select/${DEV_ID}/heater-seat-front-left/config -l
 
   echo '{
-   "command_topic": "'${TOPIC_ROOT}'/heated_seat_right",
+   "command_topic": "'${TOPIC_ROOT}'/heater-seat-front-right",
    "device": {
     "identifiers": [
     "'${DEV_ID}'"
@@ -525,12 +526,12 @@ setup_auto_discovery() {
     "model": "Tesla_BLE",
     "name": "'${DEV_NAME}'"
    },
-   "name": "Heated Seat Right",
+   "name": "Heated Seat Front Right",
    "options": ["off", "low", "medium", "high"],
    "qos": 1,
    "icon": "mdi:car-seat-heater",
-   "unique_id": "'${DEV_ID}'_heated_seat_right",
+   "unique_id": "'${DEV_ID}'_heater-seat-front-right",
    "sw_version": "'${SW_VERSION}'"
-   }' | eval $MOSQUITTO_PUB_BASE -t homeassistant/select/${DEV_ID}/heated_seat_right/config -l
+   }' | eval $MOSQUITTO_PUB_BASE -t homeassistant/select/${DEV_ID}/heater-seat-front-right/config -l
 
 }

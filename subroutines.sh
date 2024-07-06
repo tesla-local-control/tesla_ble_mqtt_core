@@ -150,11 +150,11 @@ bluetoothctl_read() {
 
     log_notice "Reading BLE presence data from file $BLECTL_FILE_INPUT"
     nPickMin=0  # min number of lines to pick
-    nPickMax=50 # max number of lines to pick
+    nPickMax=35 # max number of lines to pick
     finputTotalLines=$(wc -l < "$BLECTL_FILE_INPUT")
-    # shellcheck disable=SC3028
-    nPick=$((RANDOM % (finputTotalLines - nPickMax + nPickMin) + nPickMin))
-    # shellcheck disable=SC3028
+    # nPick to be within the file line count and the nPickMax
+    nPick=$((RANDOM % ((finputTotalLines < nPickMax ? \
+      finputTotalLines : nPickMax) - nPickMin + 1) + nPickMin))
     startLine=$((RANDOM % (finputTotalLines - nPick + 1) + 1)) # Random starting line
 
     # Extract nPick lines starting from line startLine
@@ -169,23 +169,26 @@ bluetoothctl_read() {
 listen_to_ble() {
   n_vins=$1
 
-  bluetoothctl_read
+  while :; do
+    bluetoothctl_read
 
-  for position in $(seq $n_vins); do
-    set -- $BLE_LN_LIST
-    BLE_LN=$(eval "echo \$${position}")
-    set -- $BLE_MAC_LIST
-    BLE_MAC=$(eval "echo \$${position}")
-    set -- $PRESENCE_EXPIRE_TIME_LIST
-    PRESENCE_EXPIRE_TIME=$(eval "echo \$${position}")
-    set -- $VIN_LIST
-    VIN=$(eval "echo \$${position}")
+    for position in $(seq $n_vins); do
+      set -- $BLE_LN_LIST
+      BLE_LN=$(eval "echo \$${position}")
+      set -- $BLE_MAC_LIST
+      BLE_MAC=$(eval "echo \$${position}")
+      set -- $PRESENCE_EXPIRE_TIME_LIST
+      PRESENCE_EXPIRE_TIME=$(eval "echo \$${position}")
+      set -- $VIN_LIST
+      VIN=$(eval "echo \$${position}")
 
-    MQTT_TOPIC="tesla_ble/$VIN/binary_sensor/presence"
+      MQTT_TOPIC="tesla_ble/$VIN/binary_sensor/presence"
 
-    # Check the presence using both MAC Addr and BLE Local Name
-    check_presence "BLE MAC & LN" "($BLE_MAC|$BLE_LN)"
+      # Check the presence using both MAC Addr and BLE Local Name
+      check_presence "BLE MAC & LN" "($BLE_MAC|$BLE_LN)"
 
+    done
+    sleep $LISTEN_TO_BLE_SLEEP
   done
 }
 
