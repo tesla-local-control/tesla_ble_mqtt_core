@@ -186,6 +186,7 @@ function listen_for_HA_start() {
             log_error "Invalid command request; topic: $topic; message: $msg"
           ;;
         esac
+        ;;
       *)
         log_error "Invalid MQTT topic; topic: $topic; message: $msg"
       ;;
