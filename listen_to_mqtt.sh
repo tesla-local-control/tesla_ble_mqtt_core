@@ -13,6 +13,24 @@ function listen_to_mqtt() {
    cmnd=${topic_stripped#*/}
    log_info "Received MQTT message $topic $msg VIN: $vin COMMAND: $cmnd"
 
+   # Process binary_sensor/presence, do nothing for now.
+   case $topic in
+     *binary_sensor*presence)
+       case $msg in
+         ON)
+           :
+         ;;
+         OFF)
+           :
+         ;;
+       *)
+         log_error "Invalid request; topic:$topic msg:$msg"
+       ;;
+       esac
+       continue
+     ;;
+   esac
+
    case $cmnd in
     config)
 
