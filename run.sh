@@ -73,11 +73,11 @@ export BLECTL_FILE_INPUT=${BLECTL_FILE_INPUT:-}
 
 # MQTT clients anonymous or authentication mode
 if [ -n "$MQTT_USERNAME" ]; then
-  log_debug "Setting up MQTT clients with authentication is on; MQTT_USERNAME=$MQTT_USERNAME"
+  log_debug "Setting up MQTT clients with authentication"
   export MOSQUITTO_PUB_BASE="mosquitto_pub -h $MQTT_SERVER -p $MQTT_PORT -u \"${MQTT_USERNAME}\" -P \"${MQTT_PASSWORD}\""
   export MOSQUITTO_SUB_BASE="mosquitto_sub -h $MQTT_SERVER -p $MQTT_PORT -u \"${MQTT_USERNAME}\" -P \"${MQTT_PASSWORD}\""
 else
-  log_notice "Setting up MQTT clients in anonymous"
+  log_notice "Setting up MQTT clients using anonymous mode"
   export MOSQUITTO_PUB_BASE="mosquitto_pub -h $MQTT_SERVER -p $MQTT_PORT"
   export MOSQUITTO_SUB_BASE="mosquitto_sub -h $MQTT_SERVER -p $MQTT_PORT"
 fi
