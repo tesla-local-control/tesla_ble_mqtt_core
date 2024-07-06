@@ -47,8 +47,8 @@ function listen_to_mqtt() {
 
     command)
      case $msg in
-       wake)
-        log_notice "Waking Car"
+       wake-up)
+        log_notice "Waking Up"
         send_command $vin "-domain vcsec $msg";;
        trunk-open)
         log_notice "Opening Trunk"
