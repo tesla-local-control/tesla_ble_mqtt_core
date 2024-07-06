@@ -88,7 +88,7 @@ check_presence() {
 
   CURRENT_TIME_EPOCH=$(date +%s)
 
-  if echo "${BLTCTL_OUT}" | grep -eq "$MATCH"; then
+  if echo "${BLTCTL_OUT}" | grep -qe "$MATCH"; then
     log_info "VIN $VIN $TYPE $MATCH presence detected"
 
     if [ $CURRENT_TIME_EPOCH -ge $PRESENCE_EXPIRE_TIME ]; then
