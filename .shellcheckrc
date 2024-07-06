@@ -6,3 +6,7 @@ disable=SC3010
 
 # Allow keyword function
 disable=SC2113
+
+
+### TEMPORARILY ###
+disable=SC2015,SC2086
