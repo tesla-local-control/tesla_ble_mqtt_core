@@ -68,11 +68,11 @@ log_green "Configuration Options are:
 
 export BLECTL_FILE_INPUT=${BLECTL_FILE_INPUT:-}
 
-[ -n $HA_BACKEND_DISABLE ] && log_green "HA_BACKEND_DISABLE=$HA_BACKEND_DISABLE"
-[ -n $BLECTL_FILE_INPUT ] && log_green "BLECTL_FILE_INPUT=$BLECTL_FILE_INPUT"
+[ -n "$HA_BACKEND_DISABLE" ] && log_green "HA_BACKEND_DISABLE=$HA_BACKEND_DISABLE"
+[ -n "$BLECTL_FILE_INPUT" ] && log_green "BLECTL_FILE_INPUT=$BLECTL_FILE_INPUT"
 
 # MQTT clients anonymous or authentication mode
-if [ -n ${MQTT_USERNAME} ]; then
+if [ -n "$MQTT_USERNAME" ]; then
   log_debug "Setting up MQTT clients with authentication is on; MQTT_USERNAME=$MQTT_USERNAME"
   export MOSQUITTO_PUB_BASE="mosquitto_pub -h $MQTT_SERVER -p $MQTT_PORT -u \"${MQTT_USERNAME}\" -P \"${MQTT_PASSWORD}\""
   export MOSQUITTO_SUB_BASE="mosquitto_sub -h $MQTT_SERVER -p $MQTT_PORT -u \"${MQTT_USERNAME}\" -P \"${MQTT_PASSWORD}\""
