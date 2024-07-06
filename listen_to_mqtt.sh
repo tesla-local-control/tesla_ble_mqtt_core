@@ -17,7 +17,7 @@ function listen_to_mqtt() {
     config)
 
      case $msg in
-      generate_keys)
+      generate-keys)
        log_notice "Generating the private key"
        openssl ecparam -genkey -name prime256v1 -noout > /share/tesla_ble_mqtt/${vin}_private.pem
        log_debug "$(cat /share/tesla_ble_mqtt/${vin}_private.pem)"
@@ -32,11 +32,11 @@ function listen_to_mqtt() {
        3/ Push the button 'Deploy Key'"
       ;;
 
-      deploy_key)
+      deploy-key)
        log_notice "Deploying public key to vehicle"
        send_key $vin;;
 
-      scan_bluetooth)
+      scan-bluetooth)
        log_notice "Scanning Bluetooth"
        scan_bluetooth;;
 
@@ -98,7 +98,7 @@ function listen_to_mqtt() {
        *)
         log_error "Invalid Command Request. Topic: $topic Message: $msg";;
       esac
-        ;;
+        ;; ## END of command)
 
     charging-amps)
      # https://github.com/iainbullock/tesla_ble_mqtt_docker/issues/4
@@ -128,10 +128,10 @@ function listen_to_mqtt() {
     climate-set-temp)
      send_command $vin "climate-set-temp ${msg}C";;
 
-    heated_seat_left)
+    heated-seat-front-left)
      send_command $vin "seat-heater front-left $msg";;
 
-    heated_seat_right)
+    heated-seat-front-right)
      send_command $vin "seat-heater front-right $msg";;
 
     *)
