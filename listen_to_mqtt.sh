@@ -167,6 +167,11 @@ function listen_to_mqtt() {
      log_error "Invalid MQTT topic. Topic: $topic Message: $msg";;
    esac
   done
+
+
+  # When mosquitto_sub dies, return an error for the loop to restart it
+  return 1
+
 }
 
 
