@@ -203,8 +203,8 @@ listen_for_HA_start() {
     topic=$(echo "$payload" | cut -d ' ' -f 1)
     status=$(echo "$payload" | cut -d ' ' -f 2-)
     log_info "Received MQTT message: topic:$topic status:$status"
+    # shellcheck disable=SC1009
     case $topic in
-      # shellcheck disable=SC1009
       homeassistant/status)
         # shellcheck disable=SC1073
         case $status in
@@ -218,12 +218,12 @@ listen_for_HA_start() {
             setup_auto_discovery_loop $discardMessages
           ;;
           *)
-            log_error "Invalid status; topic:$topic status:$status";;
+            log_error "Invalid status; topic:$topic status:$status"
           ;;
         esac
         ;;
       *)
-        log_error "Invalid request; topic:$topic status:$status";;
+        log_error "Invalid request; topic:$topic status:$status"
       ;;
     esac
   done
