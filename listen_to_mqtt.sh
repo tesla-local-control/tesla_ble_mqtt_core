@@ -58,7 +58,7 @@ function listen_to_mqtt() {
      ;;
    esac
 
-   case $cmnd in
+   case $cmd in
     config)
 
      case $msg in
