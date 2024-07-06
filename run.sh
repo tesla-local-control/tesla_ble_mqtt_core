@@ -154,7 +154,7 @@ do
     sleep $PRESENCE_DETECTION_DELAY
   else
     # block here til the process dies
-    read
+    read -r
   fi
 
 done
