@@ -1,6 +1,7 @@
 #!/bin/ash
 # Note: shebang will be replaced automatically by the HA addon deployment script to #!/command/with-contenv bashio
 
+
 ### DEFINE FUNCTIONS ##########################################################
 echo "Source required files to load required functions"
 ### Source required files
@@ -64,6 +65,7 @@ log_green "Configuration Options are:
   VIN_LIST=$VIN_LIST"
 
 export BLECTL_FILE_INPUT=${BLECTL_FILE_INPUT:-}
+export LISTEN_TO_BLE_SLEEP=${LISTEN_TO_BLE_SLEEP:-180}
 
 [ ! -z $HA_BACKEND_DISABLE ] && log_green "HA_BACKEND_DISABLE=$HA_BACKEND_DISABLE"
 [ ! -z $BLECTL_FILE_INPUT ] && log_green "BLECTL_FILE_INPUT=$BLECTL_FILE_INPUT"

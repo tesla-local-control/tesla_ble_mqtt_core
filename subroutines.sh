@@ -159,23 +159,26 @@ function bluetoothctl_read() {
 function listen_to_ble() {
   n_vins=$1
 
-  bluetoothctl_read
+  while :; do
+    bluetoothctl_read
 
-  for position in $(seq $n_vins); do
-    set -- $BLE_LN_LIST
-    BLE_LN=$(eval "echo \$${position}")
-    set -- $BLE_MAC_LIST
-    BLE_MAC=$(eval "echo \$${position}")
-    set -- $PRESENCE_EXPIRE_TIME_LIST
-    PRESENCE_EXPIRE_TIME=$(eval "echo \$${position}")
-    set -- $VIN_LIST
-    VIN=$(eval "echo \$${position}")
+    for position in $(seq $n_vins); do
+      set -- $BLE_LN_LIST
+      BLE_LN=$(eval "echo \$${position}")
+      set -- $BLE_MAC_LIST
+      BLE_MAC=$(eval "echo \$${position}")
+      set -- $PRESENCE_EXPIRE_TIME_LIST
+      PRESENCE_EXPIRE_TIME=$(eval "echo \$${position}")
+      set -- $VIN_LIST
+      VIN=$(eval "echo \$${position}")
 
-    MQTT_TOPIC="tesla_ble/$VIN/binary_sensor/presence"
+      MQTT_TOPIC="tesla_ble/$VIN/binary_sensor/presence"
 
-    # Check the presence using both MAC Addr and BLE Local Name
-    check_presence "BLE MAC & LN" "($BLE_MAC|$BLE_LN)"
+      # Check the presence using both MAC Addr and BLE Local Name
+      check_presence "BLE MAC & LN" "($BLE_MAC|$BLE_LN)"
 
+    done
+    sleep $LISTEN_TO_BLE_SLEEP
   done
 }
 
