@@ -378,7 +378,7 @@ setup_auto_discovery() {
    }' | eval $MOSQUITTO_PUB_BASE -t homeassistant/button/${DEV_ID}/windows-vent/config -l
 
   echo '{
-   "command_topic": "'${TOPIC_ROOT}'/charging-amps",
+   "command_topic": "'${TOPIC_ROOT}'/charging-set-amps",
    "device": {
     "identifiers": [
     "'${DEV_ID}'"
@@ -399,7 +399,7 @@ setup_auto_discovery() {
    }' | eval $MOSQUITTO_PUB_BASE -t homeassistant/number/${DEV_ID}/charging-set-amps/config -l
 
   echo '{
-   "command_topic": "'${TOPIC_ROOT}'/charging-amps-override",
+   "command_topic": "'${TOPIC_ROOT}'/charging-set-amps-override",
    "device": {
     "identifiers": [
     "'${DEV_ID}'"
@@ -497,7 +497,7 @@ setup_auto_discovery() {
    }' | eval $MOSQUITTO_PUB_BASE -t homeassistant/switch/${DEV_ID}/sentry-mode/config -l
 
   echo '{
-   "command_topic": "'${TOPIC_ROOT}'/heated-seat-front-left",
+   "command_topic": "'${TOPIC_ROOT}'/heater-seat-front-left",
    "device": {
     "identifiers": [
     "'${DEV_ID}'"
@@ -510,12 +510,12 @@ setup_auto_discovery() {
    "options": ["off", "low", "medium", "high"],
    "qos": 1,
    "icon": "mdi:car-seat-heater",
-   "unique_id": "'${DEV_ID}'_heated-seat-front-left",
+   "unique_id": "'${DEV_ID}'_heater-seat-front-left",
    "sw_version": "'${SW_VERSION}'"
-   }' | eval $MOSQUITTO_PUB_BASE -t homeassistant/select/${DEV_ID}/heated-seat-front-left/config -l
+   }' | eval $MOSQUITTO_PUB_BASE -t homeassistant/select/${DEV_ID}/heater-seat-front-left/config -l
 
   echo '{
-   "command_topic": "'${TOPIC_ROOT}'/heated-seat-front-right",
+   "command_topic": "'${TOPIC_ROOT}'/heater-seat-front-right",
    "device": {
     "identifiers": [
     "'${DEV_ID}'"
@@ -528,8 +528,8 @@ setup_auto_discovery() {
    "options": ["off", "low", "medium", "high"],
    "qos": 1,
    "icon": "mdi:car-seat-heater",
-   "unique_id": "'${DEV_ID}'_heated-seat-front-right",
+   "unique_id": "'${DEV_ID}'_heater-seat-front-right",
    "sw_version": "'${SW_VERSION}'"
-   }' | eval $MOSQUITTO_PUB_BASE -t homeassistant/select/${DEV_ID}/heated-seat-front-right/config -l
+   }' | eval $MOSQUITTO_PUB_BASE -t homeassistant/select/${DEV_ID}/heater-seat-front-right/config -l
 
 }

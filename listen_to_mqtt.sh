@@ -100,7 +100,7 @@ function listen_to_mqtt() {
       esac
         ;; ## END of command)
 
-    charging-amps)
+    charging-set-amps)
      # https://github.com/iainbullock/tesla_ble_mqtt_docker/issues/4
      if [ $msg -gt 4 ]; then
        log_notice "Set amps"
@@ -113,14 +113,11 @@ function listen_to_mqtt() {
        send_command $vin "charging-set-amps $msg"
      fi;;
 
-    charging-amps-override)
+    charging-set-amps-override)
       # command to send one single amps request. See: https://github.com/tesla-local-control/tesla_ble_mqtt_core/issues/19
       log_info "Set Charging Amps to $msg requested"
       send_command $vin "charging-set-amps $msg"
       ;;
-
-    auto-seat-and-climate)
-     send_command $vin "auto-seat-and-climate LR on";;
 
     charging-set-limit)
      send_command $vin "charging-set-limit $msg";;
@@ -128,10 +125,13 @@ function listen_to_mqtt() {
     climate-set-temp)
      send_command $vin "climate-set-temp ${msg}C";;
 
-    heated-seat-front-left)
+    auto-seat-and-climate)
+     send_command $vin "auto-seat-and-climate LR on";;
+
+    heater-seat-front-left)
      send_command $vin "seat-heater front-left $msg";;
 
-    heated-seat-front-right)
+    heater-seat-front-right)
      send_command $vin "seat-heater front-right $msg";;
 
     *)
