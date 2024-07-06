@@ -2,7 +2,8 @@
 #
 # discovery.sh
 #
-setup_auto_discovery() {
+
+function setup_auto_discovery() {
  vin=$1
  log_notice "Setting up HA auto discovery for vin $vin"
 
@@ -100,9 +101,9 @@ setup_auto_discovery() {
     "name": "'${DEV_NAME}'"
    },
    "name": "Wake Car",
-   "payload_press": "wake",
+   "payload_press": "wake-up",
    "qos": 1,
-   "unique_id": "'${DEV_ID}'_wake",
+   "unique_id": "'${DEV_ID}'_wake-up",
    "sw_version": "'${SW_VERSION}'"
   }' | eval $MOSQUITTO_PUB_BASE -t homeassistant/button/${DEV_ID}/wake/config -l
 
