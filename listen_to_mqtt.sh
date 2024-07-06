@@ -206,15 +206,17 @@ listen_for_HA_start() {
     case $topic in
       # shellcheck disable=SC1009
       homeassistant/status)
+        # shellcheck disable=SC1073
         case $status in
           offline)
-            log_notice "Home Assistant is stopping";;
+            log_notice "Home Assistant is stopping"
+          ;;
           online)
             # https://github.com/iainbullock/tesla_ble_mqtt_docker/discussions/6
             log_notice "Home Assistant is now online, calling setup_auto_discovery_loop()"
             discardMessages=no
             setup_auto_discovery_loop $discardMessages
-            ;;
+          ;;
           *)
             log_error "Invalid status; topic:$topic status:$status";;
           ;;
