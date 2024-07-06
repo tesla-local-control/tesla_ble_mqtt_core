@@ -1,15 +1,18 @@
+# shellcheck shell=dash
 #
 # subroutines.sh
 #
-function send_command() {
+
+# Function
+send_command() {
   vin=$1
   shift
 
   max_retries=5
   for count in $(seq $max_retries); do
-    log_notice "Sending command $@ to vin $vin, attempt $count/${max_retries}"
+    log_notice "Sending command $* to vin $vin, attempt $count/${max_retries}"
     set +e
-    tesla_ctrl_out=$(tesla-control -vin $vin -ble -key-name /share/tesla_blemqtt/${vin}_private.pem -key-file /share/tesla_ble_mqtt/${vin}_private.pem $@ 2>&1)
+    tesla_ctrl_out=$(tesla-control -vin $vin -ble -key-name /share/tesla_blemqtt/${vin}_private.pem -key-file /share/tesla_ble_mqtt/${vin}_private.pem "$@" 2>&1)
     EXIT_STATUS=$?
     set -e
     if [ $EXIT_STATUS -eq 0 ]; then
@@ -18,7 +21,7 @@ function send_command() {
     else
       if [[ "$tesla_ctrl_out" == *"Failed to execute command: car could not execute command"* ]]; then
         log_error "$tesla_ctrl_out"
-        log_notice "Skipping command $@ to vin $vin"
+        log_notice "Skipping command $* to vin $vin"
         break
       else
         log_error "tesla-control send command failed exit status $EXIT_STATUS."
@@ -33,24 +36,25 @@ function send_command() {
 }
 
 
+# Function
 # Tesla VIN to BLE Local Name
-function tesla_vin2ble_ln() {
+tesla_vin2ble_ln() {
   vin=$1
   ble_ln=""
 
-  VIN_HASH="$(echo -n ${vin} | sha1sum)"
   # BLE Local Name
-  ble_ln="S${VIN_HASH:0:16}C"
+  ble_ln="S$(echo -n ${vin} | sha1sum | cut -c 1-16)C"
 
   echo $ble_ln
 
 }
 
 
-function replace_value_at_position() {
+# Function
+replace_value_at_position() {
 
   original_list="$1"
-  position=$(expr $2 - 1)
+  position=$(($2 - 1))
   new_value="$3"
 
   # Split the list into positional parameters
@@ -77,13 +81,14 @@ function replace_value_at_position() {
 
 
 
-function check_presence() {
+# Function
+check_presence() {
   TYPE="$1" # BLE MAC, LN
   MATCH="$2"
 
   CURRENT_TIME_EPOCH=$(date +%s)
 
-  if echo "${BLTCTL_OUT}" | egrep -q "$MATCH"; then
+  if echo "${BLTCTL_OUT}" | grep -Eq "$MATCH"; then
     log_info "VIN $VIN $TYPE $MATCH presence detected"
 
     if [ $CURRENT_TIME_EPOCH -ge $PRESENCE_EXPIRE_TIME ]; then
@@ -95,12 +100,12 @@ function check_presence() {
       set -e
       [ $EXIT_STATUS -ne 0 ] \
         && log_error "$(MQTT_OUT)" \
-        && continue
-      log_info "mqtt topic "$MQTT_TOPIC" succesfully updated to ON"
+        && return
+      log_info "mqtt topic $MQTT_TOPIC succesfully updated to ON"
     fi
 
     # Update presence expire time
-    EPOCH_EXPIRE_TIME=$(expr $CURRENT_TIME_EPOCH + $PRESENCE_DETECTION_TTL)
+    EPOCH_EXPIRE_TIME=$((CURRENT_TIME_EPOCH + PRESENCE_DETECTION_TTL))
     log_debug "VIN $VIN $MATCH update presence expire time to $EPOCH_EXPIRE_TIME"
     PRESENCE_EXPIRE_TIME_LIST=$(replace_value_at_position "$PRESENCE_EXPIRE_TIME_LIST" \
                                 $position $EPOCH_EXPIRE_TIME)
@@ -114,9 +119,9 @@ function check_presence() {
       EXIT_STATUS=$?
       set -e
       [ $EXIT_STATUS -ne 0 ] \
-        && log_error "$(MQTT_OUT)" \
-        && continue
-      log_info "mqtt topic "$MQTT_TOPIC" succesfully updated to OFF"
+        && log_error "$MQTT_OUT" \
+        && return
+      log_info "mqtt topic $MQTT_TOPIC succesfully updated to OFF"
     else
       log_info "VIN $VIN $TYPE $MATCH presence not expired"
     fi # END if expired time
@@ -124,7 +129,8 @@ function check_presence() {
 }
 
 
-function bluetoothctl_read() {
+# Function
+bluetoothctl_read() {
 
   # Read BLE data from bluetoothctl or an input file
   if [ -z $BLECTL_FILE_INPUT ]; then
@@ -141,11 +147,14 @@ function bluetoothctl_read() {
     [ ! -f $BLECTL_FILE_INPUT ] \
       && log_fatal "blectl input file $BLECTL_FILE_INPUT not found" \
       && exit 30
+
     log_notice "Reading BLE presence data from file $BLECTL_FILE_INPUT"
     nPickMin=0  # min number of lines to pick
-    nPickMax=50 # max number of lines to pick
-    nPick=$((RANDOM % (total_lines - nPickMax + nPickMin) + nPickMin))
+    nPickMax=35 # max number of lines to pick
     finputTotalLines=$(wc -l < "$BLECTL_FILE_INPUT")
+    # nPick to be within the file line count and the nPickMax
+    nPick=$((RANDOM % ((finputTotalLines < nPickMax ? \
+      finputTotalLines : nPickMax) - nPickMin + 1) + nPickMin))
     startLine=$((RANDOM % (finputTotalLines - nPick + 1) + 1)) # Random starting line
 
     # Extract nPick lines starting from line startLine
@@ -156,32 +165,37 @@ function bluetoothctl_read() {
 
 
 
-function listen_to_ble() {
+# Function
+listen_to_ble() {
   n_vins=$1
 
-  bluetoothctl_read
+  while :; do
+    bluetoothctl_read
 
-  for position in $(seq $n_vins); do
-    set -- $BLE_LN_LIST
-    BLE_LN=$(eval "echo \$${position}")
-    set -- $BLE_MAC_LIST
-    BLE_MAC=$(eval "echo \$${position}")
-    set -- $PRESENCE_EXPIRE_TIME_LIST
-    PRESENCE_EXPIRE_TIME=$(eval "echo \$${position}")
-    set -- $VIN_LIST
-    VIN=$(eval "echo \$${position}")
+    for position in $(seq $n_vins); do
+      set -- $BLE_LN_LIST
+      BLE_LN=$(eval "echo \$${position}")
+      set -- $BLE_MAC_LIST
+      BLE_MAC=$(eval "echo \$${position}")
+      set -- $PRESENCE_EXPIRE_TIME_LIST
+      PRESENCE_EXPIRE_TIME=$(eval "echo \$${position}")
+      set -- $VIN_LIST
+      VIN=$(eval "echo \$${position}")
 
-    MQTT_TOPIC="tesla_ble/$VIN/binary_sensor/presence"
+      MQTT_TOPIC="tesla_ble/$VIN/binary_sensor/presence"
 
-    # Check the presence using both MAC Addr and BLE Local Name
-    check_presence "BLE MAC & LN" "($BLE_MAC|$BLE_LN)"
+      # Check the presence using both MAC Addr and BLE Local Name
+      check_presence "BLE MAC & LN" "($BLE_MAC|$BLE_LN)"
 
+    done
+    sleep $LISTEN_TO_BLE_SLEEP
   done
 }
 
 
 
-function send_key() {
+# Function
+send_key() {
  vin=$1
 
  max_retries=5
@@ -204,7 +218,8 @@ function send_key() {
 
 
 
-function delete_legacies(){
+# Function
+delete_legacies(){
   vin=$1
 
   log_notice "Deleting Legacy MQTT Topics"

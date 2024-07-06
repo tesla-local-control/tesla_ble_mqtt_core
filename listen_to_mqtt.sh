@@ -1,54 +1,99 @@
+# shellcheck shell=dash
 #
 # listen_to_mqtt
 #
+
+
+###
+#
+# listen_to_mqtt_loop :
+#   - Main while loop
+#   - If listen_to_mqtt fails due to MQTT service restart, network or other conditions the
+#     loop will restart it.
+###
+function listen_to_mqtt_loop() {
+
+  log_green "Entering Listen to MQTT loop..."
+
+  while : ; do
+    log_green "Launching listen_to_mqtt"
+    listen_to_mqtt
+    if ! listen_to_mqtt; then
+      log_error "listen_to_mqtt stopped due to a failure; restarting the process in 10 seconds"
+      sleep 10
+    fi
+    exit 0
+  done
+
+}
+
+
 function listen_to_mqtt() {
  # log_info "Listening to MQTT"
- eval $MOSQUITTO_SUB_BASE --nodelay -t tesla_ble/+/+ -F \"%t %p\" -E -c -i tesla_ble_mqtt -q 1 \
+ eval $MOSQUITTO_SUB_BASE --nodelay -t tesla_ble/+/+ -F \"%t %p\" -c -i tesla_ble_mqtt -q 0 \
  | while read -r payload
   do
    topic=${payload%% *}
    msg=${payload#* }
    topic_stripped=${topic#*/}
    vin=${topic_stripped%/*}
-   cmnd=${topic_stripped#*/}
-   log_info "Received MQTT message $topic $msg VIN: $vin COMMAND: $cmnd"
+   cmd=${topic_stripped#*/}
+   log_info "Received MQTT message; topic:$topic msg:$msg vin:$vin cmd:$cmd"
 
-   case $cmnd in
+   # Process binary_sensor/presence, do nothing for now.
+   case $topic in
+     *binary_sensor*presence)
+       case $msg in
+         ON)
+           :
+         ;;
+         OFF)
+           :
+         ;;
+       *)
+         log_error "Invalid request; topic:$topic msg:$msg"
+       ;;
+       esac
+       continue
+     ;;
+   esac
+
+   case $cmd in
     config)
 
      case $msg in
-      generate_keys)
-       log_notice "Generating the private key"
+      generate-keys)
+       log_notice "Generating the private key..."
        openssl ecparam -genkey -name prime256v1 -noout > /share/tesla_ble_mqtt/${vin}_private.pem
        log_debug "$(cat /share/tesla_ble_mqtt/${vin}_private.pem)"
        [ "$DEBUG" != "true" ] \
          && log_notice "The private key is shown only in debug mode"
-       log_notice "Generating the public key"
+       log_notice "Generating the public key..."
        openssl ec -in /share/tesla_ble_mqtt/${vin}_private.pem -pubout > /share/tesla_ble_mqtt/${vin}_public.pem
        log_notice "$(cat /share/tesla_ble_mqtt/${vin}_public.pem)"
-       log_notice "KEYS GENERATED. Next:
+       log_warning "Private and Public keys were generated; Next:
        1/ Remove any previously deployed BLE keys from vehicle before deploying this one
        2/ Wake the car up with your Tesla App
        3/ Push the button 'Deploy Key'"
       ;;
 
-      deploy_key)
-       log_notice "Deploying public key to vehicle"
+      deploy-key)
+       log_notice "Trying to deploy the public key to vehicle..."
        send_key $vin;;
 
-      scan_bluetooth)
-       log_notice "Scanning Bluetooth"
+      scan-tesla-bleln)
+       log_notice "Scanning for Tesla BLE Local Name and respective MAC addr..."
        scan_bluetooth;;
 
       *)
-       log_error "Invalid Configuration request. Topic: $topic Message: $msg";;
+       log_error "Invalid configuration request; topic:$topic vin:$vin msg:$msg";;
      esac
        ;;
 
     command)
      case $msg in
-       wake)
-        log_notice "Waking Car"
+       wake-up)
+        log_notice "Waking Up"
         send_command $vin "-domain vcsec $msg";;
        trunk-open)
         log_notice "Opening Trunk"
@@ -96,11 +141,11 @@ function listen_to_mqtt() {
         log_notice "Vent Windows"
         send_command $vin $msg;;
        *)
-        log_error "Invalid Command Request. Topic: $topic Message: $msg";;
+        log_error "Invalid command request; topic:$topic msg:$msg";;
       esac
-        ;;
+        ;; ## END of command)
 
-    charging-amps)
+    charging-set-amps)
      # https://github.com/iainbullock/tesla_ble_mqtt_docker/issues/4
      if [ $msg -gt 4 ]; then
        log_notice "Set amps"
@@ -113,14 +158,12 @@ function listen_to_mqtt() {
        send_command $vin "charging-set-amps $msg"
      fi;;
 
-    charging-amps-override)
-      # command to send one single amps request. See: https://github.com/tesla-local-control/tesla_ble_mqtt_core/issues/19
-      log_info "Set Charging Amps to $msg requested"
+    charging-set-amps-override)
+      # Command to send a single Amps request
+      # Ref: https://github.com/tesla-local-control/tesla_ble_mqtt_core/issues/19
+      log_info "Set charging Amps to $msg"
       send_command $vin "charging-set-amps $msg"
       ;;
-
-    auto-seat-and-climate)
-     send_command $vin "auto-seat-and-climate LR on";;
 
     charging-set-limit)
      send_command $vin "charging-set-limit $msg";;
@@ -128,27 +171,36 @@ function listen_to_mqtt() {
     climate-set-temp)
      send_command $vin "climate-set-temp ${msg}C";;
 
-    heated_seat_left)
+    auto-seat-and-climate)
+     send_command $vin "auto-seat-and-climate LR on";;
+
+    heater-seat-front-left)
      send_command $vin "seat-heater front-left $msg";;
 
-    heated_seat_right)
+    heater-seat-front-right)
      send_command $vin "seat-heater front-right $msg";;
 
+    sw-heater)
+     send_command $vin "sw-heater $msg";;
+
     *)
-     log_error "Invalid MQTT topic. Topic: $topic Message: $msg";;
+     log_error "Invalid request; topic:$topic vin:$vin msg:$msg";;
    esac
   done
+
+  return 1
 }
 
 
-function setup_auto_discovery_loop() {
+# Function
+setup_auto_discovery_loop() {
 
   discardMessages=$1
 
   # Setup or skip HA auto discovery & Discard old MQTT messages
   for vin in $VIN_LIST; do
 
-    # IF HA backend is enable, setup HA autodiscovery otherwise don't
+    # IF HA backend is enable, setup HA Auto Discover
     if [ "$HA_BACKEND_DISABLE" == "false" ]; then
       log_info "Setting up Home Assistant Auto Discovery for $vin"
       setup_auto_discovery $vin
@@ -157,7 +209,7 @@ function setup_auto_discovery_loop() {
     fi
 
     # Discard or not awaiting messages
-    if [ "$discardMessages" == "yes" ]; then
+    if [ "$discardMessages" = "yes" ]; then
       log_info "Discarding any unread MQTT messages for $vin"
       eval $MOSQUITTO_SUB_BASE -E -i tesla_ble_mqtt -t tesla_ble_mqtt/$vin/+
     fi
@@ -165,30 +217,34 @@ function setup_auto_discovery_loop() {
 }
 
 
-function listen_for_HA_start() {
+# Function
+listen_for_HA_start() {
   eval $MOSQUITTO_SUB_BASE --nodelay -t homeassistant/status -F \"%t %p\" | \
   while read -r payload; do
     topic=$(echo "$payload" | cut -d ' ' -f 1)
-    msg=$(echo "$payload" | cut -d ' ' -f 2-)
-    log_info "Received HA Status message: $topic $msg"
+    status=$(echo "$payload" | cut -d ' ' -f 2-)
+    log_info "Received MQTT message: topic:$topic status:$status"
+    # shellcheck disable=SC1009
     case $topic in
       homeassistant/status)
-        case $msg in
+        # shellcheck disable=SC1073
+        case $status in
           offline)
-            log_notice "Home Assistant is stopping";;
+            log_notice "Home Assistant is stopping"
+          ;;
           online)
             # https://github.com/iainbullock/tesla_ble_mqtt_docker/discussions/6
-            log_notice "Home Assistant is starting, re-running MQTT auto-discovery"
+            log_notice "Home Assistant is now online, calling setup_auto_discovery_loop()"
             discardMessages=no
             setup_auto_discovery_loop $discardMessages
-            ;;
+          ;;
           *)
-            log_error "Invalid command request; topic: $topic; message: $msg"
+            log_error "Invalid status; topic:$topic status:$status"
           ;;
         esac
         ;;
       *)
-        log_error "Invalid MQTT topic; topic: $topic; message: $msg"
+        log_error "Invalid request; topic:$topic status:$status"
       ;;
     esac
   done
