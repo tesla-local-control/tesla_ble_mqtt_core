@@ -218,12 +218,12 @@ listen_for_HA_start() {
             setup_auto_discovery_loop $discardMessages
           ;;
           *)
-            log_error "Invalid status; topic:$topic status:$status";;
+            log_error "Invalid status; topic:$topic status:$status"
           ;;
         esac
         ;;
       *)
-        log_error "Invalid request; topic:$topic status:$status";;
+        log_error "Invalid request; topic:$topic status:$status"
       ;;
     esac
   done
