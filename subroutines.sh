@@ -97,7 +97,7 @@ function check_presence() {
       [ $EXIT_STATUS -ne 0 ] \
         && log_error "$(MQTT_OUT)" \
         && return
-      log_info "mqtt topic "$MQTT_TOPIC" succesfully updated to ON"
+      log_info "mqtt topic $MQTT_TOPIC succesfully updated to ON"
     fi
 
     # Update presence expire time
