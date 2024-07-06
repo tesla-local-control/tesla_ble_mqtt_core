@@ -1,3 +1,4 @@
+# shellcheck shell=dash
 #
 # discovery.sh
 #

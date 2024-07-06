@@ -1,3 +1,4 @@
+# shellcheck shell=dash
 #
 # functions for colored output
 #

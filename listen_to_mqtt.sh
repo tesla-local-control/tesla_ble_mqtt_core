@@ -1,3 +1,4 @@
+# shellcheck shell=dash
 #
 # listen_to_mqtt
 #
