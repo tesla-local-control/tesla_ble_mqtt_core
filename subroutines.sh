@@ -105,7 +105,7 @@ check_presence() {
     fi
 
     # Update presence expire time
-    EPOCH_EXPIRE_TIME=$(($CURRENT_TIME_EPOCH + $PRESENCE_DETECTION_TTL))
+    EPOCH_EXPIRE_TIME=$((CURRENT_TIME_EPOCH + PRESENCE_DETECTION_TTL))
     log_debug "VIN $VIN $MATCH update presence expire time to $EPOCH_EXPIRE_TIME"
     PRESENCE_EXPIRE_TIME_LIST=$(replace_value_at_position "$PRESENCE_EXPIRE_TIME_LIST" \
                                 $position $EPOCH_EXPIRE_TIME)
