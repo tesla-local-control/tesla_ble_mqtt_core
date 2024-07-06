@@ -135,9 +135,9 @@ bluetoothctl_read() {
   # Read BLE data from bluetoothctl or an input file
   if [ -z $BLECTL_FILE_INPUT ]; then
     log_notice "Launching bluetoothctl to check for BLE presence"
-    PRESENCE_TIMEOUT=10
+    BLECTL_TIMEOUT=11
     set +e
-    BLTCTL_OUT=$(bluetoothctl --timeout $PRESENCE_TIMEOUT scan on 2>&1 | grep -v DEL)
+    BLTCTL_OUT=$(bluetoothctl --timeout $BLECTL_TIMEOUT scan on 2>&1 | grep -v DEL)
     set -e
   else
     # Read from file, great for testing w/ no Bluetooth adapter
