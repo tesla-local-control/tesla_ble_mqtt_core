@@ -96,7 +96,7 @@ function check_presence() {
       [ $EXIT_STATUS -ne 0 ] \
         && log_error "$(MQTT_OUT)" \
         && continue
-      log_info "mqtt topic "$MQTT_TOPIC" succesfully updated to ON"
+      log_info "mqtt topic $MQTT_TOPIC successfully updated to ON"
     fi
 
     # Update presence expire time
@@ -116,7 +116,7 @@ function check_presence() {
       [ $EXIT_STATUS -ne 0 ] \
         && log_error "$(MQTT_OUT)" \
         && continue
-      log_info "mqtt topic "$MQTT_TOPIC" succesfully updated to OFF"
+      log_info "mqtt topic $MQTT_TOPIC successfully updated to OFF"
     else
       log_info "VIN $VIN $TYPE $MATCH presence not expired"
     fi # END if expired time
