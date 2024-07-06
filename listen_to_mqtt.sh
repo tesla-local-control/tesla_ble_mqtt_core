@@ -64,7 +64,7 @@ function listen_to_mqtt() {
 
       scan-tesla-bleln)
        log_notice "Scanning for Tesla BLE Local Name and respective MAC addr..."
-       scan_bluetooth;;
+       scan-tesla-bleln;;
 
       *)
        log_error "Invalid configuration request; topic:$topic vin:$vin msg:$msg";;
@@ -169,7 +169,9 @@ function listen_to_mqtt() {
    esac
   done
 
+  # If mosquitto_sub dies, return an error for the loop to restart it
   return 1
+
 }
 
 
