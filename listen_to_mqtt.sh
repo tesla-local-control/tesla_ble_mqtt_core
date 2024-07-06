@@ -2,7 +2,9 @@
 #
 # listen_to_mqtt
 #
-function listen_to_mqtt() {
+
+# Function
+listen_to_mqtt() {
  # log_info "Listening to MQTT"
  eval $MOSQUITTO_SUB_BASE --nodelay -t tesla_ble/+/+ -F \"%t %p\" -E -c -i tesla_ble_mqtt -q 1 \
  | while read -r payload
@@ -142,7 +144,8 @@ function listen_to_mqtt() {
 }
 
 
-function setup_auto_discovery_loop() {
+# Function
+setup_auto_discovery_loop() {
 
   discardMessages=$1
 
@@ -150,7 +153,7 @@ function setup_auto_discovery_loop() {
   for vin in $VIN_LIST; do
 
     # IF HA backend is enable, setup HA autodiscovery otherwise don't
-    if [ "$HA_BACKEND_DISABLE" == "false" ]; then
+    if [ "$HA_BACKEND_DISABLE" = "false" ]; then
       log_info "Setting up Home Assistant Auto Discovery for $vin"
       setup_auto_discovery $vin
     else
@@ -158,7 +161,7 @@ function setup_auto_discovery_loop() {
     fi
 
     # Discard or not awaiting messages
-    if [ "$discardMessages" == "yes" ]; then
+    if [ "$discardMessages" = "yes" ]; then
       log_info "Discarding any unread MQTT messages for $vin"
       eval $MOSQUITTO_SUB_BASE -E -i tesla_ble_mqtt -t tesla_ble_mqtt/$vin/+
     fi
@@ -166,7 +169,8 @@ function setup_auto_discovery_loop() {
 }
 
 
-function listen_for_HA_start() {
+# Function
+listen_for_HA_start() {
   eval $MOSQUITTO_SUB_BASE --nodelay -t homeassistant/status -F \"%t %p\" | \
   while read -r payload; do
     topic=$(echo "$payload" | cut -d ' ' -f 1)
