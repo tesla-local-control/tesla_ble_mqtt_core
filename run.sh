@@ -1,4 +1,7 @@
 #!/bin/ash
+#
+# shellcheck shell=dash
+#
 # Note: shebang will be replaced automatically by the HA addon deployment script to #!/command/with-contenv bashio
 
 
@@ -67,16 +70,16 @@ log_green "Configuration Options are:
 export BLECTL_FILE_INPUT=${BLECTL_FILE_INPUT:-}
 export LISTEN_TO_BLE_SLEEP=${LISTEN_TO_BLE_SLEEP:-180}
 
-[ ! -z $HA_BACKEND_DISABLE ] && log_green "HA_BACKEND_DISABLE=$HA_BACKEND_DISABLE"
-[ ! -z $BLECTL_FILE_INPUT ] && log_green "BLECTL_FILE_INPUT=$BLECTL_FILE_INPUT"
+[ -n "$HA_BACKEND_DISABLE" ] && log_green "HA_BACKEND_DISABLE=$HA_BACKEND_DISABLE"
+[ -n "$BLECTL_FILE_INPUT" ] && log_green "BLECTL_FILE_INPUT=$BLECTL_FILE_INPUT"
 
 # MQTT clients anonymous or authentication mode
-if [ ! -z ${MQTT_USERNAME} ]; then
-  log_debug "Setting up MQTT clients with authentication is on; MQTT_USERNAME=$MQTT_USERNAME"
+if [ -n "$MQTT_USERNAME" ]; then
+  log_debug "Setting up MQTT clients with authentication"
   export MOSQUITTO_PUB_BASE="mosquitto_pub -h $MQTT_SERVER -p $MQTT_PORT -u '${MQTT_USERNAME}' -P '${MQTT_PASSWORD}'"
   export MOSQUITTO_SUB_BASE="mosquitto_sub -h $MQTT_SERVER -p $MQTT_PORT -u '${MQTT_USERNAME}' -P '${MQTT_PASSWORD}'"
 else
-  log_notice "Setting up MQTT clients in anonymous"
+  log_notice "Setting up MQTT clients using anonymous mode"
   export MOSQUITTO_PUB_BASE="mosquitto_pub -h $MQTT_SERVER -p $MQTT_PORT"
   export MOSQUITTO_SUB_BASE="mosquitto_sub -h $MQTT_SERVER -p $MQTT_PORT"
 fi
@@ -88,7 +91,7 @@ VIN_LIST=$(echo $VIN_LIST | sed -e 's/[|,;]/ /g')
 vin_count=0
 for vin in $VIN_LIST; do
   # Populate BLE Local Names list
-  vin_count=$(expr $vin_count + 1)
+  vin_count=$((vin_count + 1))
   BLE_LN=$(eval tesla_vin2ble_ln $vin)
   log_debug "Adding $BLE_LN to BLE_LN_LIST, count $vin_count"
   BLE_LN_LIST="$BLE_LN_LIST $BLE_LN"
@@ -108,8 +111,9 @@ done
 if [ $PRESENCE_DETECTION_TTL -gt 0 ] ; then
   log_info "Presence detection is enable with a TTL of $PRESENCE_DETECTION_TTL seconds"
   ble_mac_addr_count=0
+  # shellcheck disable=SC2034
   for ble_mac in $BLE_MAC_LIST; do
-    ble_mac_addr_count=$(expr $ble_mac_addr_count + 1)
+    ble_mac_addr_count=$((ble_mac_addr_count + 1))
     log_debug "Adding 0 to PRESENCE_EXPIRE_TIME_LIST, count $ble_mac_addr_count"
     PRESENCE_EXPIRE_TIME_LIST="$PRESENCE_EXPIRE_TIME_LIST 0"
   done
@@ -123,7 +127,7 @@ discardMessages=yes
 setup_auto_discovery_loop $discardMessages
 
 # IF HA backend is enable, call listen_for_HA_start()
-if [ "$HA_BACKEND_DISABLE" == "false" ]; then
+if [ "$HA_BACKEND_DISABLE" = "false" ]; then
   log_info "Listening for Home Assistant Start (in background)"
   listen_for_HA_start &
 else
