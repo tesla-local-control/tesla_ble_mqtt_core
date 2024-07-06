@@ -10,7 +10,7 @@ function send_command() {
   for count in $(seq $max_retries); do
     log_notice "Sending command $* to vin $vin, attempt $count/${max_retries}"
     set +e
-    tesla_ctrl_out=$(tesla-control -vin $vin -ble -key-name /share/tesla_blemqtt/${vin}_private.pem -key-file /share/tesla_ble_mqtt/${vin}_private.pem $* 2>&1)
+    tesla_ctrl_out=$(tesla-control -vin $vin -ble -key-name /share/tesla_blemqtt/${vin}_private.pem -key-file /share/tesla_ble_mqtt/${vin}_private.pem "$@" 2>&1)
     EXIT_STATUS=$?
     set -e
     if [ $EXIT_STATUS -eq 0 ]; then
