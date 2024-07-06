@@ -39,9 +39,8 @@ function tesla_vin2ble_ln() {
   vin=$1
   ble_ln=""
 
-  VIN_HASH="$(echo -n ${vin} | sha1sum)"
   # BLE Local Name
-  ble_ln="S${VIN_HASH:0:16}C"
+  ble_ln="S$(echo -n ${vin} | sha1sum | cut -c 1-16)C"
 
   echo $ble_ln
 
