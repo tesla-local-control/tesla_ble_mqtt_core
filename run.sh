@@ -121,7 +121,7 @@ discardMessages=yes
 setup_auto_discovery_loop $discardMessages
 
 # IF HA backend is enable, call listen_for_HA_start()
-if [ "$HA_BACKEND_DISABLE" == "false" ]; then
+if [ "$HA_BACKEND_DISABLE" = "false" ]; then
   log_info "Listening for Home Assistant Start (in background)"
   listen_for_HA_start &
 else
@@ -150,7 +150,7 @@ do
   # Don't run presence detection if TTL is 0
   if [ $PRESENCE_DETECTION_TTL -gt 0 ] ; then
     counter=$(expr $counter + 1)
-    if [[ $counter -gt 90 ]]; then
+    if [ $counter -gt 90 ]; then
       log_info "Reached 90 MQTT loops (~3min): Launch BLE scanning for car presence"
       listen_to_ble $vin_count
       counter=0
