@@ -83,12 +83,12 @@ function setup_auto_discovery() {
    },
    "device_class": "update",
    "name": "Scan Bluetooth",
-   "payload_press": "scan-bluetooth",
+   "payload_press": "scan-bleln-macaddr",
    "qos": 1,
-   "unique_id": "'${DEV_ID}'_scan-bluetooth",
+   "unique_id": "'${DEV_ID}'_scan-bleln-macaddr",
    "entity_category": "diagnostic",
    "sw_version": "'${SW_VERSION}'"
-  }' | eval $MOSQUITTO_PUB_BASE -t homeassistant/button/${DEV_ID}/scan-bluetooth/config -l
+  }' | eval $MOSQUITTO_PUB_BASE -t homeassistant/button/${DEV_ID}/scan-bleln-macaddr/config -l
 
   echo '{
    "command_topic": "'${TOPIC_ROOT}'/command",
@@ -105,7 +105,7 @@ function setup_auto_discovery() {
    "qos": 1,
    "unique_id": "'${DEV_ID}'_wake-up",
    "sw_version": "'${SW_VERSION}'"
-  }' | eval $MOSQUITTO_PUB_BASE -t homeassistant/button/${DEV_ID}/wake/config -l
+  }' | eval $MOSQUITTO_PUB_BASE -t homeassistant/button/${DEV_ID}/wake-up/config -l
 
   echo '{
    "command_topic": "'${TOPIC_ROOT}'/command",
