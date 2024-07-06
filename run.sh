@@ -109,6 +109,7 @@ done
 if [ $PRESENCE_DETECTION_TTL -gt 0 ] ; then
   log_info "Presence detection is enable with a TTL of $PRESENCE_DETECTION_TTL seconds"
   ble_mac_addr_count=0
+  # shellcheck disable=SC2034
   for ble_mac in $BLE_MAC_LIST; do
     ble_mac_addr_count=$(expr $ble_mac_addr_count + 1)
     log_debug "Adding 0 to PRESENCE_EXPIRE_TIME_LIST, count $ble_mac_addr_count"
