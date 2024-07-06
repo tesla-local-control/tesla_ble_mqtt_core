@@ -2,136 +2,142 @@
 # listen_to_mqtt
 #
 function listen_to_mqtt() {
- # log_info "Listening to MQTT"
- eval $MOSQUITTO_SUB_BASE --nodelay -t tesla_ble/+/+ -F \"%t %p\" -c -i tesla_ble_mqtt -q 1 \
- | while read -r payload
-  do
-   topic=${payload%% *}
-   msg=${payload#* }
-   topic_stripped=${topic#*/}
-   vin=${topic_stripped%/*}
-   cmnd=${topic_stripped#*/}
-   log_info "Received MQTT message $topic $msg VIN: $vin COMMAND: $cmnd"
+  # log_info "Listening to MQTT"
+  eval $MOSQUITTO_SUB_BASE --nodelay -t tesla_ble/+/+ -F \"%t %p\" -c -i tesla_ble_mqtt -q 0 \
+  | while read -r payload; do
 
-   case $cmnd in
-    config)
+    topic=${payload%% *}
+    msg=${payload#* }
+    topic_stripped=${topic#*/}
+    vin=${topic_stripped%/*}
+    cmnd=${topic_stripped#*/}
+    log_info "Received MQTT message $topic $msg VIN: $vin COMMAND: $cmnd"
 
-     case $msg in
-      generate_keys)
-       log_notice "Generating the private key"
-       openssl ecparam -genkey -name prime256v1 -noout > /share/tesla_ble_mqtt/${vin}_private.pem
-       log_debug "$(cat /share/tesla_ble_mqtt/${vin}_private.pem)"
-       [ "$DEBUG" != "true" ] \
-         && log_notice "The private key is shown only in debug mode"
-       log_notice "Generating the public key"
-       openssl ec -in /share/tesla_ble_mqtt/${vin}_private.pem -pubout > /share/tesla_ble_mqtt/${vin}_public.pem
-       log_notice "$(cat /share/tesla_ble_mqtt/${vin}_public.pem)"
-       log_notice "KEYS GENERATED. Next:
-       1/ Remove any previously deployed BLE keys from vehicle before deploying this one
-       2/ Wake the car up with your Tesla App
-       3/ Push the button 'Deploy Key'"
-      ;;
+    case $cmnd in
+      config)
 
-      deploy_key)
-       log_notice "Deploying public key to vehicle"
-       send_key $vin;;
+        case $msg in
+          generate_keys)
+            log_notice "Generating the private key"
+            openssl ecparam -genkey -name prime256v1 -noout > /share/tesla_ble_mqtt/${vin}_private.pem
+            log_debug "$(cat /share/tesla_ble_mqtt/${vin}_private.pem)"
+            [ "$DEBUG" != "true" ] \
+              && log_notice "The private key is shown only in debug mode"
+            log_notice "Generating the public key"
+            openssl ec -in /share/tesla_ble_mqtt/${vin}_private.pem -pubout > /share/tesla_ble_mqtt/${vin}_public.pem
+            log_notice "$(cat /share/tesla_ble_mqtt/${vin}_public.pem)"
+            log_notice "KEYS GENERATED. Next:
+            1/ Remove any previously deployed BLE keys from vehicle before deploying this one
+            2/ Wake the car up with your Tesla App
+            3/ Push the button 'Deploy Key'"
+          ;;
 
-      scan_bluetooth)
-       log_notice "Scanning Bluetooth"
-       scan_bluetooth;;
+          deploy_key)
+            log_notice "Deploying public key to vehicle"
+            send_key $vin
+          ;;
 
-      *)
-       log_error "Invalid Configuration request. Topic: $topic Message: $msg";;
-     esac
-       ;;
+          scan_bluetooth)
+            log_notice "Scanning Bluetooth"
+            scan_bluetooth
+          ;;
 
-    command)
-     case $msg in
-       wake)
-        log_notice "Waking Car"
-        send_command $vin "-domain vcsec $msg";;
-       trunk-open)
-        log_notice "Opening Trunk"
-        send_command $vin $msg;;
-       trunk-close)
-        log_notice "Closing Trunk"
-        send_command $vin $msg;;
-       charging-start)
-        log_notice "Start Charging"
-        send_command $vin $msg;;
-       charging-stop)
-        log_notice "Stop Charging"
-        send_command $vin $msg;;
-       charge-port-open)
-        log_notice "Open Charge Port"
-        send_command $vin $msg;;
-       charge-port-close)
-        log_notice "Close Charge Port"
-        send_command $vin $msg;;
-       climate-on)
-        log_notice "Start Climate"
-        send_command $vin $msg;;
-       climate-off)
-        log_notice "Stop Climate"
-        send_command $vin $msg;;
-       flash-lights)
-        log_notice "Flash Lights"
-        send_command $vin $msg;;
-       frunk-open)
-        log_notice "Open Frunk"
-        send_command $vin $msg;;
-       honk)
-        log_notice "Honk Horn"
-        send_command $vin $msg;;
-       lock)
-        log_notice "Lock Car"
-        send_command $vin $msg;;
-       unlock)
-        log_notice "Unlock Car"
-        send_command $vin $msg;;
-       windows-close)
-        log_notice "Close Windows"
-        send_command $vin $msg;;
-       windows-vent)
-        log_notice "Vent Windows"
-        send_command $vin $msg;;
-       *)
-        log_error "Invalid Command Request. Topic: $topic Message: $msg";;
-      esac
+          *)
+            log_error "Invalid Configuration request. Topic: $topic Message: $msg"
+          ;;
+        esac # END case $msg
+      ;; # END case config
+
+      command)
+        case $msg in
+          wake)
+            log_notice "Waking Car"
+            send_command $vin "-domain vcsec $msg";;
+          trunk-open)
+            log_notice "Opening Trunk"
+            send_command $vin $msg;;
+          trunk-close)
+            log_notice "Closing Trunk"
+            send_command $vin $msg;;
+          charging-start)
+            log_notice "Start Charging"
+            send_command $vin $msg;;
+          charging-stop)
+            log_notice "Stop Charging"
+            send_command $vin $msg;;
+          charge-port-open)
+            log_notice "Open Charge Port"
+            send_command $vin $msg;;
+          charge-port-close)
+            log_notice "Close Charge Port"
+            send_command $vin $msg;;
+          climate-on)
+            log_notice "Start Climate"
+            send_command $vin $msg;;
+          climate-off)
+            log_notice "Stop Climate"
+            send_command $vin $msg;;
+          flash-lights)
+            log_notice "Flash Lights"
+            send_command $vin $msg;;
+          frunk-open)
+            log_notice "Open Frunk"
+            send_command $vin $msg;;
+          honk)
+            log_notice "Honk Horn"
+            send_command $vin $msg;;
+          lock)
+            log_notice "Lock Car"
+            send_command $vin $msg;;
+          unlock)
+            log_notice "Unlock Car"
+            send_command $vin $msg;;
+          windows-close)
+            log_notice "Close Windows"
+            send_command $vin $msg;;
+          windows-vent)
+            log_notice "Vent Windows"
+            send_command $vin $msg;;
+          *)
+            log_error "Invalid Command Request. Topic: $topic Message: $msg";;
+        esac # END case $msg
         ;;
 
-    charging-amps)
-     # https://github.com/iainbullock/tesla_ble_mqtt_docker/issues/4
-     if [ $msg -gt 4 ]; then
-     log_notice "Set amps"
-      send_command $vin "charging-set-amps $msg"
-     else
-      log_notice "First Amp set"
-      send_command $vin "charging-set-amps $msg"
-      sleep 1
-      log_notice "Second Amp set"
-      send_command $vin "charging-set-amps $msg"
-     fi
-     ;;
+      charging-amps)
+        # https://github.com/iainbullock/tesla_ble_mqtt_docker/issues/4
+        if [ $msg -gt 4 ]; then
+          log_notice "Set Amp to $msg"
+          send_command $vin "charging-set-amps $msg"
+        else
+          log_notice "First Amp set to $msg"
+          send_command $vin "charging-set-amps $msg"
+          sleep 1
+          log_notice "Second Amp set to $msg"
+          send_command $vin "charging-set-amps $msg"
+        fi
+      ;;
 
-    auto-seat-and-climate)
-     send_command $vin "auto-seat-and-climate LR on";;
+      auto-seat-and-climate)
+        send_command $vin "auto-seat-and-climate LR on";;
 
-    charging-set-limit)
-     send_command $vin "charging-set-limit $msg";;
+      charging-set-limit)
+        send_command $vin "charging-set-limit $msg";;
 
-    climate-set-temp)
-     send_command $vin "climate-set-temp ${msg}C";;
+      climate-set-temp)
+        send_command $vin "climate-set-temp ${msg}C";;
 
-    heated_seat_left)
-     send_command $vin "seat-heater front-left $msg";;
+      heated_seat_left)
+        send_command $vin "seat-heater front-left $msg";;
 
-    heated_seat_right)
-     send_command $vin "seat-heater front-right $msg";;
+      heated_seat_right)
+        send_command $vin "seat-heater front-right $msg";;
 
-    *)
-     log_error "Invalid MQTT topic. Topic: $topic Message: $msg";;
-   esac
+      *)
+        log_error "Invalid MQTT topic. Topic: $topic Message: $msg"
+      ;;
+
+    esac # END case command
+
   done
 }
 
