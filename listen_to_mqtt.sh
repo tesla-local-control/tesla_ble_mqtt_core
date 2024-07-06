@@ -204,6 +204,7 @@ listen_for_HA_start() {
     status=$(echo "$payload" | cut -d ' ' -f 2-)
     log_info "Received MQTT message: topic:$topic status:$status"
     case $topic in
+      # shellcheck disable=SC1009
       homeassistant/status)
         case $status in
           offline)
