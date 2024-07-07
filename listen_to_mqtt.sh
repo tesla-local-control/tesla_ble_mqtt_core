@@ -185,7 +185,7 @@ setup_auto_discovery_loop() {
 
     # IF HA backend is enable, setup HA Auto Discover
     if [ "$HA_BACKEND_DISABLE" == "false" ]; then
-      log_debug "Calling setup_auto_discovery() $sin"
+      log_debug "Calling setup_auto_discovery() $vin"
       setup_auto_discovery $vin
     else
       log_info "HA backend is disable, skipping setup for HA Auto Discovery"
