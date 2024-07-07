@@ -16,10 +16,21 @@ echo "Source required files to load required functions"
   && type initProduct > /dev/null \
   && initProduct
 
-# Source libcolor
-echo "Source /app/libcolor.sh"
-export COLOR=${COLOR:=true}
-. /app/libcolor.sh
+#####
+#####
+#####
+#####
+####################################### TODO - REMOVE ONCE LIBCOLOR IS MOVED TO DOCKER LIBPRODUCT
+#####
+#####
+#####
+#####
+if [ ! -n "${HASSIO_TOKEN:-}" ]; then
+  # Source libcolor
+  echo "Source /app/libcolor.sh"
+  export COLOR=${COLOR:=true}
+  . /app/libcolor.sh
+fi
 
 log_info "Source /app/subroutines.sh"
 . /app/subroutines.sh
@@ -57,7 +68,7 @@ export PRESENCE_DETECTION_TTL=${PRESENCE_DETECTION_TTL:-240}
 
 
 ### LOG CONFIG VARS ###########################################################
-log_green "Configuration Options are:
+log_info "Configuration Options are:
   BLE_CMD_RETRY_DELAY=$BLE_CMD_RETRY_DELAY
   BLE_MAC_LIST=$BLE_MAC_LIST
   DEBUG=$DEBUG
@@ -69,8 +80,8 @@ log_green "Configuration Options are:
   PRESENCE_DETECTION_TTL=$PRESENCE_DETECTION_TTL
   VIN_LIST=$VIN_LIST"
 
-[ -n "$HA_BACKEND_DISABLE" ] && log_green "  HA_BACKEND_DISABLE=$HA_BACKEND_DISABLE"
-[ -n "$BLECTL_FILE_INPUT" ] && log_green "  BLECTL_FILE_INPUT=$BLECTL_FILE_INPUT"
+[ -n "$HA_BACKEND_DISABLE" ] && log_info "  HA_BACKEND_DISABLE=$HA_BACKEND_DISABLE"
+[ -n "$BLECTL_FILE_INPUT" ] && log_info "  BLECTL_FILE_INPUT=$BLECTL_FILE_INPUT"
 
 # MQTT clients anonymous or authentication mode
 if [ -n "$MQTT_USERNAME" ]; then
@@ -141,7 +152,7 @@ while true
 do
 
   # Launch listen_to_mqtt_loop in background
-  log_green "Lauching background listen_to_mqtt_loop..."
+  log_info "Lauching background listen_to_mqtt_loop..."
   listen_to_mqtt_loop &
   # Don't run presence detection if TTL is 0
 
