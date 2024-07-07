@@ -14,7 +14,7 @@ function fileRandomRead() {
 
   # Read from file
   [ ! -f $fileName ] \
-    && log_fatal "blectl input file $fileName not found" \
+    && log_fatal "Error bluetoothctl-file input file $fileName not found" \
     && exit 30
 
   # Number of lines in fileName
@@ -45,6 +45,6 @@ processBltctlCmd() {
   done
 }
 
-trap 'exit 0' SIGINT
+trap 'exit 0' INT
 
 processBltctlCmd
