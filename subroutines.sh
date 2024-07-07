@@ -188,7 +188,7 @@ listen_to_ble() {
       check_presence "BLE MAC & LN" "($BLE_MAC|$BLE_LN)"
 
     done
-    sleep $LISTEN_TO_BLE_SLEEP
+    sleep $PRESENCE_DETECTION_LOOP_DELAY
   done
 }
 
