@@ -128,7 +128,7 @@ if [ $PRESENCE_DETECTION_TTL -gt 0 ] ; then
     PRESENCE_EXPIRE_TIME_LIST="$PRESENCE_EXPIRE_TIME_LIST 0"
   done
 else
-  log_info "Presence detection is not enable due to TTL of $PRESENCE_DETECTION_TTL seconds"
+  log_info "Presence detection is not enabled due to TTL of $PRESENCE_DETECTION_TTL seconds"
 fi
 
 
