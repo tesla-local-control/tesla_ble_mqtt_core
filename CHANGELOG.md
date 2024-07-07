@@ -1,5 +1,19 @@
 <!-- https://developers.home-assistant.io/docs/add-ons/presentation#keeping-a-changelog -->
 
+## 0.0.11
+
+- BREAKING CHANGES: Keep a backup of your VIN & MAC Addr
+
+- NEW Feature: Support for unlimited cars (VINs + MAC Addrs)
+- NEW Feature: Added a TTL for car presence, when gone the sensor in HA stays ON until the TTL expires
+- NEW Setting: BLE Proximity Detection TTL (Detection is on by default; set to 0 to disable)
+- NEW Setting: Presence Detection Loop Delay (how often to check the presence of your car(s))
+- NEW Setting: Toggle to enable/disable HA backend (Standalone version only)
+- CHG : Support bashio::log w/ timestamp (HA add-on)
+- CHG : Reduce logging; More to be removed once code is considered stable
+- CHD : Improved presence detection using car's MAC addr and BLE Local Name
+- WARNING : [BLE device overheating](https://github.com/tesla-local-control/tesla-local-control-addon/issues/27) causing performance issues
+
 ## 0.0.10
 
 - Toggle to enable/disable car presence detection
