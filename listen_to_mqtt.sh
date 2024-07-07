@@ -13,10 +13,10 @@
 ###
 function listen_to_mqtt_loop() {
 
-  log_green "Entering Listen to MQTT loop..."
+  log_info "Entering Listen to MQTT loop..."
 
   while : ; do
-    log_green "Launching listen_to_mqtt"
+    log_info "Launching listen_to_mqtt"
     if ! listen_to_mqtt; then
       log_error "listen_to_mqtt stopped due to a failure; restarting the process in 10 seconds"
       sleep 10

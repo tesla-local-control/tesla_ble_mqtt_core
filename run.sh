@@ -9,15 +9,28 @@
 echo "Source required files to load required functions"
 ### Source required files
 #
-# Source product's library
+# Source & Init product's library
 [ -f /app/libproduct.sh ] \
   && echo "Source libproduct.sh" \
-  && . /app/libproduct.sh
+  && . /app/libproduct.sh \
+  && type initProduct > /dev/null \
+  && initProduct
 
-# Source libcolor
-echo "Source /app/libcolor.sh"
-export COLOR=${COLOR:=true}
-. /app/libcolor.sh
+#####
+#####
+#####
+#####
+####################################### TODO - REMOVE ONCE LIBCOLOR IS MOVED TO DOCKER LIBPRODUCT
+#####
+#####
+#####
+#####
+if [ ! -n "${HASSIO_TOKEN:-}" ]; then
+  # Source libcolor
+  echo "Source /app/libcolor.sh"
+  export COLOR=${COLOR:=true}
+  . /app/libcolor.sh
+fi
 
 log_info "Source /app/subroutines.sh"
 . /app/subroutines.sh
@@ -39,39 +52,36 @@ else
 fi
 
 
-### SETUP PRODUCT  ############################################################
-# If it's a function, call productInit
-if type productInit > /dev/null; then
-  productInit
-fi
-
-
 ### TODO - Move to Docker's libproduct otherwise this setting will show up for add-on
-export HA_BACKEND_DISABLE=${HA_BACKEND_DISABLE:=false}
 ### TODO : Add validations in Docker's libproduct; make it a function and name it "productInit()"
 ### Docker Add validation for ly for docker. Addon in config allows to specify
 ### What's valid/needed or not.
 ###
 ###
 
+# If empty string, initialize w/ default value
+export BLE_CMD_RETRY_DELAY=${BLE_CMD_RETRY_DELAY:-5}
+export BLECTL_FILE_INPUT=${BLECTL_FILE_INPUT:-}
+export HA_BACKEND_DISABLE=${HA_BACKEND_DISABLE:-false}
+export PRESENCE_DETECTION_LOOP_DELAY=${PRESENCE_DETECTION_LOOP_DELAY:-120}
+export PRESENCE_DETECTION_TTL=${PRESENCE_DETECTION_TTL:-240}
+
 
 ### LOG CONFIG VARS ###########################################################
-log_green "Configuration Options are:
+log_info "Configuration Options are:
+  BLE_CMD_RETRY_DELAY=$BLE_CMD_RETRY_DELAY
   BLE_MAC_LIST=$BLE_MAC_LIST
   DEBUG=$DEBUG
   MQTT_SERVER=$MQTT_SERVER
   MQTT_PORT=$MQTT_PORT
   MQTT_PASSWORD=Not Shown
   MQTT_USERNAME=$MQTT_USERNAME
+  PRESENCE_DETECTION_LOOP_DELAY=$PRESENCE_DETECTION_LOOP_DELAY
   PRESENCE_DETECTION_TTL=$PRESENCE_DETECTION_TTL
-  BLE_CMD_RETRY_DELAY=$BLE_CMD_RETRY_DELAY
   VIN_LIST=$VIN_LIST"
 
-export BLECTL_FILE_INPUT=${BLECTL_FILE_INPUT:-}
-export LISTEN_TO_BLE_SLEEP=${LISTEN_TO_BLE_SLEEP:-180}
-
-[ -n "$HA_BACKEND_DISABLE" ] && log_green "HA_BACKEND_DISABLE=$HA_BACKEND_DISABLE"
-[ -n "$BLECTL_FILE_INPUT" ] && log_green "BLECTL_FILE_INPUT=$BLECTL_FILE_INPUT"
+[ -n "$HA_BACKEND_DISABLE" ] && log_info "  HA_BACKEND_DISABLE=$HA_BACKEND_DISABLE"
+[ -n "$BLECTL_FILE_INPUT" ] && log_info "  BLECTL_FILE_INPUT=$BLECTL_FILE_INPUT"
 
 # MQTT clients anonymous or authentication mode
 if [ -n "$MQTT_USERNAME" ]; then
@@ -118,7 +128,7 @@ if [ $PRESENCE_DETECTION_TTL -gt 0 ] ; then
     PRESENCE_EXPIRE_TIME_LIST="$PRESENCE_EXPIRE_TIME_LIST 0"
   done
 else
-  log_info "Presence detection is not enable due to TTL of $PRESENCE_DETECTION_TTL seconds"
+  log_info "Presence detection is not enabled due to TTL of $PRESENCE_DETECTION_TTL seconds"
 fi
 
 
@@ -142,16 +152,15 @@ while true
 do
 
   # Launch listen_to_mqtt_loop in background
-  log_green "Lauching background listen_to_mqtt_loop..."
+  log_info "Lauching background listen_to_mqtt_loop..."
   listen_to_mqtt_loop &
   # Don't run presence detection if TTL is 0
 
   if [ $PRESENCE_DETECTION_TTL -gt 0 ] ; then
-    PRESENCE_DETECTION_DELAY=180
-    log_info "Launch BLE scanning for car presence every $PRESENCE_DETECTION_DELAY seconds"
+    log_info "Launch BLE scanning for car presence every $PRESENCE_DETECTION_LOOP_DELAY seconds"
     listen_to_ble $vin_count
     # Run listen_to_ble every 3m
-    sleep $PRESENCE_DETECTION_DELAY
+    sleep $PRESENCE_DETECTION_LOOP_DELAY
   else
     # block here til the process dies
     read -r
