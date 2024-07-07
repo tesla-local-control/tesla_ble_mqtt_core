@@ -102,9 +102,9 @@ function setup_auto_discovery() {
     "sw_version": "'${SW_VERSION}'"
    },
    "name": "Wake Car",
-   "payload_press": "wake-up",
+   "payload_press": "wake",
    "qos": 1,
-   "unique_id": "'${DEV_ID}'_wake-up"
+   "unique_id": "'${DEV_ID}'_wake"
   }' | sed ':a;N;$!ba;s/\n//g' | eval $MOSQUITTO_PUB_BASE -t homeassistant/button/${DEV_ID}/wake-up/config -l
 
   echo '{
@@ -176,7 +176,7 @@ function setup_auto_discovery() {
    }' | sed ':a;N;$!ba;s/\n//g' | eval $MOSQUITTO_PUB_BASE -t homeassistant/button/${DEV_ID}/unlock/config -l
 
   echo '{
-   "command_topic": "'${TOPIC_ROOT}'/command",
+   "command_topic": "'${TOPIC_ROOT}'/auto-seat-and-climate",
    "device": {
     "identifiers": [
     "'${DEV_ID}'"
