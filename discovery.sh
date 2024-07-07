@@ -4,18 +4,18 @@
 #
 
 function setup_auto_discovery() {
- vin=$1
- log_notice "Setting up HA auto discovery for vin $vin"
+  vin=$1
+  log_notice "Setting up HA auto discovery for vin $vin"
 
- DEV_ID=tesla_ble_${vin}
- DEV_NAME=Tesla_BLE_${vin}
+  DEV_ID=tesla_ble_${vin}
+  DEV_NAME=Tesla_BLE_${vin}
 
- TOPIC_ROOT=tesla_ble/${vin}
- SW_VERSION=0.0.10f
+  TOPIC_ROOT=tesla_ble/${vin}
+  SW_VERSION=0.0.10f
 
- log_debug "DEV_ID=$DEV_ID"
- log_debug "DEV_NAME=$DEV_NAME"
- log_debug "TOPIC_ROOT=$TOPIC_ROOT"
+  log_debug "DEV_ID=$DEV_ID"
+  log_debug "DEV_NAME=$DEV_NAME"
+  log_debug "TOPIC_ROOT=$TOPIC_ROOT"
 
   echo '{
    "state_topic": "'${TOPIC_ROOT}'/binary_sensor/presence",
@@ -31,7 +31,7 @@ function setup_auto_discovery() {
    "name": "Presence",
    "unique_id": "'${DEV_ID}'_presence",
    "sw_version": "'${SW_VERSION}'"
-  }' | eval $MOSQUITTO_PUB_BASE -t homeassistant/binary_sensor/${DEV_ID}/presence/config -l
+  }' | sed ':a;N;$!ba;s/\n//g' | eval $MOSQUITTO_PUB_BASE -t homeassistant/binary_sensor/${DEV_ID}/presence/config -l
 
   echo '{
    "command_topic": "'${TOPIC_ROOT}'/config",
@@ -50,7 +50,7 @@ function setup_auto_discovery() {
    "unique_id": "'${DEV_ID}'_generate-keys",
    "entity_category": "config",
    "sw_version": "'${SW_VERSION}'"
-  }' | eval $MOSQUITTO_PUB_BASE -t homeassistant/button/${DEV_ID}/generate-keys/config -l
+  }' | sed ':a;N;$!ba;s/\n//g' | eval $MOSQUITTO_PUB_BASE -t homeassistant/button/${DEV_ID}/generate-keys/config -l
 
   echo '{
    "command_topic": "'${TOPIC_ROOT}'/config",
@@ -69,7 +69,7 @@ function setup_auto_discovery() {
    "unique_id": "'${DEV_ID}'_deploy-key",
    "entity_category": "config",
    "sw_version": "'${SW_VERSION}'"
-  }' | eval $MOSQUITTO_PUB_BASE -t homeassistant/button/${DEV_ID}/deploy-key/config -l
+  }' | sed ':a;N;$!ba;s/\n//g' | eval $MOSQUITTO_PUB_BASE -t homeassistant/button/${DEV_ID}/deploy-key/config -l
 
   echo '{
    "command_topic": "'${TOPIC_ROOT}'/config",
@@ -88,7 +88,7 @@ function setup_auto_discovery() {
    "unique_id": "'${DEV_ID}'_scan-bleln-macaddr",
    "entity_category": "diagnostic",
    "sw_version": "'${SW_VERSION}'"
-  }' | eval $MOSQUITTO_PUB_BASE -t homeassistant/button/${DEV_ID}/scan-bleln-macaddr/config -l
+  }' | sed ':a;N;$!ba;s/\n//g' | eval $MOSQUITTO_PUB_BASE -t homeassistant/button/${DEV_ID}/scan-bleln-macaddr/config -l
 
   echo '{
    "command_topic": "'${TOPIC_ROOT}'/command",
@@ -105,7 +105,7 @@ function setup_auto_discovery() {
    "qos": 1,
    "unique_id": "'${DEV_ID}'_wake-up",
    "sw_version": "'${SW_VERSION}'"
-  }' | eval $MOSQUITTO_PUB_BASE -t homeassistant/button/${DEV_ID}/wake-up/config -l
+  }' | sed ':a;N;$!ba;s/\n//g' | eval $MOSQUITTO_PUB_BASE -t homeassistant/button/${DEV_ID}/wake-up/config -l
 
   echo '{
    "command_topic": "'${TOPIC_ROOT}'/command",
@@ -122,7 +122,7 @@ function setup_auto_discovery() {
    "qos": 1,
    "unique_id": "'${DEV_ID}'_flash-lights",
    "sw_version": "'${SW_VERSION}'"
-  }' | eval $MOSQUITTO_PUB_BASE -t homeassistant/button/${DEV_ID}/flash-lights/config -l
+  }' | sed ':a;N;$!ba;s/\n//g' | eval $MOSQUITTO_PUB_BASE -t homeassistant/button/${DEV_ID}/flash-lights/config -l
 
   echo '{
    "command_topic": "'${TOPIC_ROOT}'/command",
@@ -139,7 +139,7 @@ function setup_auto_discovery() {
    "qos": 1,
    "unique_id": "'${DEV_ID}'_honk",
    "sw_version": "'${SW_VERSION}'"
-  }' | eval $MOSQUITTO_PUB_BASE -t homeassistant/button/${DEV_ID}/honk/config -l
+  }' | sed ':a;N;$!ba;s/\n//g' | eval $MOSQUITTO_PUB_BASE -t homeassistant/button/${DEV_ID}/honk/config -l
 
   echo '{
    "command_topic": "'${TOPIC_ROOT}'/command",
@@ -156,7 +156,7 @@ function setup_auto_discovery() {
    "qos": 1,
    "unique_id": "'${DEV_ID}'_lock",
    "sw_version": "'${SW_VERSION}'"
-  }' | eval $MOSQUITTO_PUB_BASE -t homeassistant/button/${DEV_ID}/lock/config -l
+  }' | sed ':a;N;$!ba;s/\n//g' | eval $MOSQUITTO_PUB_BASE -t homeassistant/button/${DEV_ID}/lock/config -l
 
   echo '{
    "command_topic": "'${TOPIC_ROOT}'/command",
@@ -173,7 +173,7 @@ function setup_auto_discovery() {
    "qos": 1,
    "unique_id": "'${DEV_ID}'_unlock",
    "sw_version": "'${SW_VERSION}'"
-   }' | eval $MOSQUITTO_PUB_BASE -t homeassistant/button/${DEV_ID}/unlock/config -l
+   }' | sed ':a;N;$!ba;s/\n//g' | eval $MOSQUITTO_PUB_BASE -t homeassistant/button/${DEV_ID}/unlock/config -l
 
   echo '{
    "command_topic": "'${TOPIC_ROOT}'/command",
@@ -190,7 +190,7 @@ function setup_auto_discovery() {
    "qos": 1,
    "unique_id": "'${DEV_ID}'-auto-seat-and-climate",
    "sw_version": "'${SW_VERSION}'"
-   }' | eval $MOSQUITTO_PUB_BASE -t homeassistant/button/${DEV_ID}/auto-seat-and-climate/config -l
+   }' | sed ':a;N;$!ba;s/\n//g' | eval $MOSQUITTO_PUB_BASE -t homeassistant/button/${DEV_ID}/auto-seat-and-climate/config -l
 
   echo '{
    "command_topic": "'${TOPIC_ROOT}'/command",
@@ -207,7 +207,7 @@ function setup_auto_discovery() {
    "qos": 1,
    "unique_id": "'${DEV_ID}'_climate-off",
    "sw_version": "'${SW_VERSION}'"
-   }' | eval $MOSQUITTO_PUB_BASE -t homeassistant/button/${DEV_ID}/climate-off/config -l
+   }' | sed ':a;N;$!ba;s/\n//g' | eval $MOSQUITTO_PUB_BASE -t homeassistant/button/${DEV_ID}/climate-off/config -l
 
   echo '{
    "command_topic": "'${TOPIC_ROOT}'/command",
@@ -224,7 +224,7 @@ function setup_auto_discovery() {
    "qos": 1,
    "unique_id": "'${DEV_ID}'_climate-on",
    "sw_version": "'${SW_VERSION}'"
-   }' | eval $MOSQUITTO_PUB_BASE -t homeassistant/button/${DEV_ID}/climate-on/config -l
+   }' | sed ':a;N;$!ba;s/\n//g' | eval $MOSQUITTO_PUB_BASE -t homeassistant/button/${DEV_ID}/climate-on/config -l
 
   echo '{
    "command_topic": "'${TOPIC_ROOT}'/command",
@@ -241,7 +241,7 @@ function setup_auto_discovery() {
    "qos": 1,
    "unique_id": "'${DEV_ID}'_trunk-open",
    "sw_version": "'${SW_VERSION}'"
-   }' | eval $MOSQUITTO_PUB_BASE -t homeassistant/button/${DEV_ID}/trunk-open/config -l
+   }' | sed ':a;N;$!ba;s/\n//g' | eval $MOSQUITTO_PUB_BASE -t homeassistant/button/${DEV_ID}/trunk-open/config -l
 
   echo '{
    "command_topic": "'${TOPIC_ROOT}'/command",
@@ -258,7 +258,7 @@ function setup_auto_discovery() {
    "qos": 1,
    "unique_id": "'${DEV_ID}'_trunk-close",
    "sw_version": "'${SW_VERSION}'"
-   }' | eval $MOSQUITTO_PUB_BASE -t homeassistant/button/${DEV_ID}/trunk-close/config -l
+   }' | sed ':a;N;$!ba;s/\n//g' | eval $MOSQUITTO_PUB_BASE -t homeassistant/button/${DEV_ID}/trunk-close/config -l
 
   echo '{
    "command_topic": "'${TOPIC_ROOT}'/command",
@@ -275,7 +275,7 @@ function setup_auto_discovery() {
    "qos": 1,
    "unique_id": "'${DEV_ID}'_frunk-open",
    "sw_version": "'${SW_VERSION}'"
-   }' | eval $MOSQUITTO_PUB_BASE -t homeassistant/button/${DEV_ID}/frunk-open/config -l
+   }' | sed ':a;N;$!ba;s/\n//g' | eval $MOSQUITTO_PUB_BASE -t homeassistant/button/${DEV_ID}/frunk-open/config -l
 
   echo '{
    "command_topic": "'${TOPIC_ROOT}'/command",
@@ -292,7 +292,7 @@ function setup_auto_discovery() {
    "qos": 1,
    "unique_id": "'${DEV_ID}'_charging-start",
    "sw_version": "'${SW_VERSION}'"
-   }' | eval $MOSQUITTO_PUB_BASE -t homeassistant/button/${DEV_ID}/charging-start/config -l
+   }' | sed ':a;N;$!ba;s/\n//g' | eval $MOSQUITTO_PUB_BASE -t homeassistant/button/${DEV_ID}/charging-start/config -l
 
   echo '{
    "command_topic": "'${TOPIC_ROOT}'/command",
@@ -309,7 +309,7 @@ function setup_auto_discovery() {
    "qos": 1,
    "unique_id": "'${DEV_ID}'_charging-stop",
    "sw_version": "'${SW_VERSION}'"
-   }' | eval $MOSQUITTO_PUB_BASE -t homeassistant/button/${DEV_ID}/charging-stop/config -l
+   }' | sed ':a;N;$!ba;s/\n//g' | eval $MOSQUITTO_PUB_BASE -t homeassistant/button/${DEV_ID}/charging-stop/config -l
 
   echo '{
    "command_topic": "'${TOPIC_ROOT}'/command",
@@ -326,7 +326,7 @@ function setup_auto_discovery() {
    "qos": 1,
    "unique_id": "'${DEV_ID}'_charge-port-open",
    "sw_version": "'${SW_VERSION}'"
-   }' | eval $MOSQUITTO_PUB_BASE -t homeassistant/button/${DEV_ID}/charge-port-open/config -l
+   }' | sed ':a;N;$!ba;s/\n//g' | eval $MOSQUITTO_PUB_BASE -t homeassistant/button/${DEV_ID}/charge-port-open/config -l
 
   echo '{
    "command_topic": "'${TOPIC_ROOT}'/command",
@@ -343,7 +343,7 @@ function setup_auto_discovery() {
    "qos": 1,
    "unique_id": "'${DEV_ID}'_charge-port-close",
    "sw_version": "'${SW_VERSION}'"
-   }' | eval $MOSQUITTO_PUB_BASE -t homeassistant/button/${DEV_ID}/charge-port-close/config -l
+   }' | sed ':a;N;$!ba;s/\n//g' | eval $MOSQUITTO_PUB_BASE -t homeassistant/button/${DEV_ID}/charge-port-close/config -l
 
   echo '{
    "command_topic": "'${TOPIC_ROOT}'/command",
@@ -360,7 +360,7 @@ function setup_auto_discovery() {
    "qos": 1,
    "unique_id": "'${DEV_ID}'_windows-close",
    "sw_version": "'${SW_VERSION}'"
-   }' | eval $MOSQUITTO_PUB_BASE -t homeassistant/button/${DEV_ID}/windows-close/config -l
+   }' | sed ':a;N;$!ba;s/\n//g' | eval $MOSQUITTO_PUB_BASE -t homeassistant/button/${DEV_ID}/windows-close/config -l
 
   echo '{
    "command_topic": "'${TOPIC_ROOT}'/command",
@@ -377,7 +377,7 @@ function setup_auto_discovery() {
    "qos": 1,
    "unique_id": "'${DEV_ID}'_windows-vent",
    "sw_version": "'${SW_VERSION}'"
-   }' | eval $MOSQUITTO_PUB_BASE -t homeassistant/button/${DEV_ID}/windows-vent/config -l
+   }' | sed ':a;N;$!ba;s/\n//g' | eval $MOSQUITTO_PUB_BASE -t homeassistant/button/${DEV_ID}/windows-vent/config -l
 
   echo '{
    "command_topic": "'${TOPIC_ROOT}'/charging-set-amps",
@@ -398,7 +398,7 @@ function setup_auto_discovery() {
    "qos": 1,
    "icon": "mdi:current-ac",
    "sw_version": "'${SW_VERSION}'"
-   }' | eval $MOSQUITTO_PUB_BASE -t homeassistant/number/${DEV_ID}/charging-set-amps/config -l
+   }' | sed ':a;N;$!ba;s/\n//g' | eval $MOSQUITTO_PUB_BASE -t homeassistant/number/${DEV_ID}/charging-set-amps/config -l
 
   echo '{
    "command_topic": "'${TOPIC_ROOT}'/charging-set-amps-override",
@@ -420,7 +420,7 @@ function setup_auto_discovery() {
    "icon": "mdi:current-ac",
    "entity_category": "diagnostic",
    "sw_version": "'${SW_VERSION}'"
-   }' | eval $MOSQUITTO_PUB_BASE -t homeassistant/number/${DEV_ID}/charging-set-amps-override/config -l
+   }' | sed ':a;N;$!ba;s/\n//g' | eval $MOSQUITTO_PUB_BASE -t homeassistant/number/${DEV_ID}/charging-set-amps-override/config -l
 
   echo '{
    "command_topic": "'${TOPIC_ROOT}'/charging-set-limit",
@@ -441,7 +441,7 @@ function setup_auto_discovery() {
    "qos": 1,
    "icon": "mdi:battery-90",
    "sw_version": "'${SW_VERSION}'"
-   }' | eval $MOSQUITTO_PUB_BASE -t homeassistant/number/${DEV_ID}/charging-set-limit/config -l
+   }' | sed ':a;N;$!ba;s/\n//g' | eval $MOSQUITTO_PUB_BASE -t homeassistant/number/${DEV_ID}/charging-set-limit/config -l
 
   echo '{
    "command_topic": "'${TOPIC_ROOT}'/climate-set-temp",
@@ -462,7 +462,7 @@ function setup_auto_discovery() {
    "qos": 1,
    "icon": "mdi:temperature",
    "sw_version": "'${SW_VERSION}'"
-   }' | eval $MOSQUITTO_PUB_BASE -t homeassistant/number/${DEV_ID}/climate-temp/config -l
+   }' | sed ':a;N;$!ba;s/\n//g' | eval $MOSQUITTO_PUB_BASE -t homeassistant/number/${DEV_ID}/climate-temp/config -l
 
   echo '{
    "command_topic": "'${TOPIC_ROOT}'/sw-heater",
@@ -479,7 +479,7 @@ function setup_auto_discovery() {
    "qos": 1,
    "unique_id": "'${DEV_ID}'_sw-heater",
    "sw_version": "'${SW_VERSION}'"
-   }' | eval $MOSQUITTO_PUB_BASE -t homeassistant/switch/${DEV_ID}/sw-heater/config -l
+   }' | sed ':a;N;$!ba;s/\n//g' | eval $MOSQUITTO_PUB_BASE -t homeassistant/switch/${DEV_ID}/sw-heater/config -l
 
   echo '{
    "command_topic": "'${TOPIC_ROOT}'/sentry-mode",
@@ -496,7 +496,7 @@ function setup_auto_discovery() {
    "qos": 1,
    "unique_id": "'${DEV_ID}'_sentry-mode",
    "sw_version": "'${SW_VERSION}'"
-   }' | eval $MOSQUITTO_PUB_BASE -t homeassistant/switch/${DEV_ID}/sentry-mode/config -l
+   }' | sed ':a;N;$!ba;s/\n//g' | eval $MOSQUITTO_PUB_BASE -t homeassistant/switch/${DEV_ID}/sentry-mode/config -l
 
   echo '{
    "command_topic": "'${TOPIC_ROOT}'/heater-seat-front-left",
@@ -514,7 +514,7 @@ function setup_auto_discovery() {
    "icon": "mdi:car-seat-heater",
    "unique_id": "'${DEV_ID}'_heater-seat-front-left",
    "sw_version": "'${SW_VERSION}'"
-   }' | eval $MOSQUITTO_PUB_BASE -t homeassistant/select/${DEV_ID}/heater-seat-front-left/config -l
+   }' | sed ':a;N;$!ba;s/\n//g' | eval $MOSQUITTO_PUB_BASE -t homeassistant/select/${DEV_ID}/heater-seat-front-left/config -l
 
   echo '{
    "command_topic": "'${TOPIC_ROOT}'/heater-seat-front-right",
@@ -532,6 +532,6 @@ function setup_auto_discovery() {
    "icon": "mdi:car-seat-heater",
    "unique_id": "'${DEV_ID}'_heater-seat-front-right",
    "sw_version": "'${SW_VERSION}'"
-   }' | eval $MOSQUITTO_PUB_BASE -t homeassistant/select/${DEV_ID}/heater-seat-front-right/config -l
+   }' | sed ':a;N;$!ba;s/\n//g' | eval $MOSQUITTO_PUB_BASE -t homeassistant/select/${DEV_ID}/heater-seat-front-right/config -l
 
 }
