@@ -162,8 +162,9 @@ do
     # Run listen_to_ble every 3m
     sleep $PRESENCE_DETECTION_LOOP_DELAY
   else
-    # block here til the process dies
-    read -r
+    while :; do
+      sleep 86400
+    done
   fi
 
 done
