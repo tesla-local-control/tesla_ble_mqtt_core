@@ -189,7 +189,7 @@ function setup_auto_discovery() {
    "name": "Auto Seat & Climate",
    "payload_press": "auto-seat-and-climate",
    "qos": 1,
-   "unique_id": "'${DEV_ID}'-auto-seat-and-climate"
+   "unique_id": "'${DEV_ID}'_auto_seat-climate"
    }' | sed ':a;N;$!ba;s/\n//g' | eval $MOSQUITTO_PUB_BASE -t homeassistant/button/${DEV_ID}/auto-seat-and-climate/config -l
 
   echo '{
