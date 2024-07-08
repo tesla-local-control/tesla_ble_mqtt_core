@@ -16,22 +16,6 @@ echo "Source required files to load required functions"
   && type initProduct > /dev/null \
   && initProduct
 
-#####
-#####
-#####
-#####
-####################################### TODO - REMOVE ONCE LIBCOLOR IS MOVED TO DOCKER LIBPRODUCT
-#####
-#####
-#####
-#####
-if [ ! -n "${HASSIO_TOKEN:-}" ]; then
-  # Source libcolor
-  echo "Source /app/libcolor.sh"
-  export COLOR=${COLOR:=true}
-  . /app/libcolor.sh
-fi
-
 log_info "Source /app/subroutines.sh"
 . /app/subroutines.sh
 
@@ -52,14 +36,7 @@ else
 fi
 
 
-### TODO - Move to Docker's libproduct otherwise this setting will show up for add-on
-### TODO : Add validations in Docker's libproduct; make it a function and name it "productInit()"
-### Docker Add validation for ly for docker. Addon in config allows to specify
-### What's valid/needed or not.
-###
-###
-
-# If empty string, initialize w/ default value
+# If empty string, initialize w/ default value - Required for add-on and Docker standalone
 export BLE_CMD_RETRY_DELAY=${BLE_CMD_RETRY_DELAY:-5}
 export BLECTL_FILE_INPUT=${BLECTL_FILE_INPUT:-}
 export HA_BACKEND_DISABLE=${HA_BACKEND_DISABLE:-false}
@@ -162,8 +139,9 @@ do
     # Run listen_to_ble every 3m
     sleep $PRESENCE_DETECTION_LOOP_DELAY
   else
-    # block here til the process dies
-    read -r
+    while :; do
+      sleep 86400
+    done
   fi
 
 done

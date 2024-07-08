@@ -73,7 +73,7 @@ function listen_to_mqtt() {
 
     command)
      case $msg in
-       wake-up)
+       wake)
         log_notice "Waking Up"
         send_command $vin "-domain vcsec $msg";;
        trunk-open)
@@ -185,7 +185,7 @@ setup_auto_discovery_loop() {
 
     # IF HA backend is enable, setup HA Auto Discover
     if [ "$HA_BACKEND_DISABLE" == "false" ]; then
-      log_info "Setting up Home Assistant Auto Discovery for $vin"
+      log_debug "Calling setup_auto_discovery() $vin"
       setup_auto_discovery $vin
     else
       log_info "HA backend is disable, skipping setup for HA Auto Discovery"
