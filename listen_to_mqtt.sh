@@ -54,7 +54,7 @@ function listen_to_mqtt() {
        log_notice "$(cat /share/tesla_ble_mqtt/${vin}_public.pem)"
 
        log_notice "Adding Deploy Keys Button to Home Assistant"
-       setupHADeployKeys
+       setupHADeployKeys $vin
 
        log_warning "Private and Public keys were generated; Next:
        1/ Remove any previously deployed BLE keys from vehicle before deploying this one
@@ -66,7 +66,7 @@ function listen_to_mqtt() {
        log_notice "Trying to deploy the public key to vehicle..."
        send_key $vin
        ### TODO check send_key result before calling setupHAAutoDiscovery
-       setupHAAutoDiscovery;;
+       setupHAAutoDiscovery $vin;;
 
       scan-bleln-macaddr)
        log_notice "Scanning for Tesla BLE Local Name and respective MAC addr..."

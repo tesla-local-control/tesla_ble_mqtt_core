@@ -25,7 +25,7 @@ echo "Source required files to load required functions"
 #####
 #####
 #####
-if [ ! -n "${HASSIO_TOKEN:-}" ]; then
+if [ -z "${HASSIO_TOKEN:-}" ]; then
   # Source libcolor
   echo "Source /app/libcolor.sh"
   export COLOR=${COLOR:=true}
@@ -157,7 +157,7 @@ do
   # Don't run presence detection if TTL is 0
 
   # If PRESENCE_DETECTION_TTL > 0 and BLE_MAC_LIST is not empty
-  if [ $PRESENCE_DETECTION_TTL -gt 0 ] && [ -n $BLE_MAC_LIST ]; then
+  if [ $PRESENCE_DETECTION_TTL -gt 0 ] && [ -n "$BLE_MAC_LIST" ]; then
     log_info "Launch BLE scanning for car presence every $PRESENCE_DETECTION_LOOP_DELAY seconds"
     listen_to_ble $vin_count
     # Run listen_to_ble every 3m

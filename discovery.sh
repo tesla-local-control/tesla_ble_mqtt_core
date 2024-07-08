@@ -2,13 +2,35 @@
 #
 # discovery.sh
 #
+vinLast=""
 
-function setupHAAutoDiscoveryMain() {
+function setupHAAutoDiscoveryEnvVars() {
   vin=$1
 
+  [ "$vinLast" == "$vin" ] && return
+  vinLast=$1
+
+  DEV_ID=tesla_ble_${vin}
+  DEV_NAME=Tesla_BLE_${vin}
+
+  TOPIC_ROOT=tesla_ble/${vin}
+  SW_VERSION=0.0.10f
+
+  log_debug "DEV_ID=$DEV_ID"
+  log_debug "DEV_NAME=$DEV_NAME"
+  log_debug "TOPIC_ROOT=$TOPIC_ROOT"
+
+}
+
+
+function setupHAAutoDiscoveryMain() {
+
+  vin=$1
+  setupHAAutoDiscoveryEnvVars $vin
+
   # If detection is enable, show presence
-  if [ $PRESENCE_DETECTION_TTL -gt 0 ] && [ -n BLE_MAC_LIST ]; then
-    setupHAPresence
+  if [ $PRESENCE_DETECTION_TTL -gt 0 ] && [ -n "$BLE_MAC_LIST" ]; then
+    setupHAPresence $vin
   fi
 
   # Newly added car?
@@ -16,30 +38,21 @@ function setupHAAutoDiscoveryMain() {
      [ ! -f /share/tesla_ble_mqtt/${vin}_public.pem ]; then
 
     # Show button to Generate Keys
-    setupHAGenerateKeys
+    setupHAGenerateKeys $vin
     # listen_to_mqtt call setupHADeployKeys once the keys are generated
 
   else
-    setupHADeployKeys
-    setupHAGenerateKeys
-    setupHAAutoDiscovery
+    setupHADeployKeys $vin
+    setupHAGenerateKeys $vin
+    setupHAAutoDiscovery $vin
   fi
 }
 
 
 function setupHAAutoDiscovery() {
- vin=$1
- log_notice "Setting up HA auto discovery for vin $vin"
 
- DEV_ID=tesla_ble_${vin}
- DEV_NAME=Tesla_BLE_${vin}
-
- TOPIC_ROOT=tesla_ble/${vin}
- SW_VERSION=0.0.10f
-
- log_debug "DEV_ID=$DEV_ID"
- log_debug "DEV_NAME=$DEV_NAME"
- log_debug "TOPIC_ROOT=$TOPIC_ROOT"
+  vin=$1
+  setupHAAutoDiscoveryEnvVars $vin
 
   echo '{
    "command_topic": "'${TOPIC_ROOT}'/config",
@@ -508,6 +521,10 @@ function setupHAAutoDiscovery() {
 
 
 setupHAGenerateKeys() {
+
+  vin=$1
+  setupHAAutoDiscoveryEnvVars $vin
+
   echo '{
    "command_topic": "'${TOPIC_ROOT}'/config",
    "device": {
@@ -529,9 +546,11 @@ setupHAGenerateKeys() {
 }
 
 
-
 # Basic Setup when keys haven't been generated yet
 function setupHAPresence {
+
+  vin=$1
+  setupHAAutoDiscoveryEnvVars $vin
 
   echo '{
    "state_topic": "'${TOPIC_ROOT}'/binary_sensor/presence",
@@ -553,6 +572,9 @@ function setupHAPresence {
 
 function setupHADeployKeys() {
 
+  vin=$1
+  setupHAAutoDiscoveryEnvVars $vin
+
   echo '{
    "command_topic": "'${TOPIC_ROOT}'/config",
    "device": {
@@ -571,5 +593,4 @@ function setupHADeployKeys() {
    "entity_category": "config",
    "sw_version": "'${SW_VERSION}'"
   }' | eval $MOSQUITTO_PUB_BASE -t homeassistant/button/${DEV_ID}/deploy-key/config -l
-
 }
