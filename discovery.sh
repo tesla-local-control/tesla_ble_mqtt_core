@@ -4,7 +4,6 @@
 #
 vinLast=""
 
-
 function setupHAAutoDiscoveryEnvVars() {
   vin=$1
 
@@ -23,7 +22,6 @@ function setupHAAutoDiscoveryEnvVars() {
 
 }
 
-
 function setupHAAutoDiscoveryMain() {
 
   vin=$1
@@ -35,8 +33,8 @@ function setupHAAutoDiscoveryMain() {
   fi
 
   # Newly added car?
-  if [ ! -f /share/tesla_ble_mqtt/${vin}_private.pem ] && \
-     [ ! -f /share/tesla_ble_mqtt/${vin}_public.pem ]; then
+  if [ ! -f /share/tesla_ble_mqtt/${vin}_private.pem ] &&
+    [ ! -f /share/tesla_ble_mqtt/${vin}_public.pem ]; then
 
     # Show button to Generate Keys
     setupHAGenerateKeys $vin
@@ -48,7 +46,6 @@ function setupHAAutoDiscoveryMain() {
     setupHAAutoDiscovery $vin
   fi
 }
-
 
 function setupHAAutoDiscovery() {
 
@@ -520,7 +517,6 @@ function setupHAAutoDiscovery() {
 
 }
 
-
 setupHAGenerateKeys() {
 
   vin=$1
@@ -546,7 +542,6 @@ setupHAGenerateKeys() {
   }' | eval $MOSQUITTO_PUB_BASE -t homeassistant/button/${DEV_ID}/generate-keys/config -l
 }
 
-
 # Basic Setup when keys haven't been generated yet
 function setupHAPresence {
 
@@ -569,7 +564,6 @@ function setupHAPresence {
    "sw_version": "'${SW_VERSION}'"
   }' | eval $MOSQUITTO_PUB_BASE -t homeassistant/binary_sensor/${DEV_ID}/presence/config -l
 }
-
 
 function setupHADeployKey() {
 

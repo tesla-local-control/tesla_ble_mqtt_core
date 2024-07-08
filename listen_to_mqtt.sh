@@ -25,7 +25,6 @@ listen_to_mqtt_loop() {
 
 }
 
-
 listen_to_mqtt() {
   log_info"Listening to MQTT"
   eval $MOSQUITTO_SUB_BASE --nodelay -t tesla_ble/+/+ -F \"%t %p\" -c -i tesla_ble_mqtt -q 0 |
@@ -250,11 +249,11 @@ listen_for_HA_start() {
         offline)
           log_notice "Home Assistant is stopping"
           ;;
-          online)
-            # Ref: https://github.com/iainbullock/tesla_ble_mqtt_docker/discussions/6
-            log_notice "Home Assistant is now online, calling setupHAAutoDiscoveryLoop()"
-            discardMessages=no
-            setupHAAutoDiscoveryLoop $discardMessages
+        online)
+          # Ref: https://github.com/iainbullock/tesla_ble_mqtt_docker/discussions/6
+          log_notice "Home Assistant is now online, calling setupHAAutoDiscoveryLoop()"
+          discardMessages=no
+          setupHAAutoDiscoveryLoop $discardMessages
           ;;
         *)
           log_error "Invalid status; topic:$topic status:$status"
