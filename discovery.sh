@@ -3,7 +3,31 @@
 # discovery.sh
 #
 
-function setup_auto_discovery() {
+function setupHAAutoDiscoveryMain() {
+  vin=$1
+
+  # If detection is enable, show presence
+  if [ $PRESENCE_DETECTION_TTL -gt 0 ] && [ -n BLE_MAC_LIST ]; then
+    setupHAPresence
+  fi
+
+  # Newly added car?
+  if [ ! -f /share/tesla_ble_mqtt/${vin}_private.pem ] && \
+     [ ! -f /share/tesla_ble_mqtt/${vin}_public.pem ]; then
+
+    # Show button to Generate Keys
+    setupHAGenerateKeys
+    # listen_to_mqtt call setupHADeployKeys once the keys are generated
+
+  else
+    setupHADeployKeys
+    setupHAGenerateKeys
+    setupHAAutoDiscovery
+  fi
+}
+
+
+function setupHAAutoDiscovery() {
  vin=$1
  log_notice "Setting up HA auto discovery for vin $vin"
 
@@ -16,60 +40,6 @@ function setup_auto_discovery() {
  log_debug "DEV_ID=$DEV_ID"
  log_debug "DEV_NAME=$DEV_NAME"
  log_debug "TOPIC_ROOT=$TOPIC_ROOT"
-
-  echo '{
-   "state_topic": "'${TOPIC_ROOT}'/binary_sensor/presence",
-   "device": {
-    "identifiers": [
-    "'${DEV_ID}'"
-    ],
-    "manufacturer": "tesla-local-control",
-    "model": "Tesla_BLE",
-    "name": "'${DEV_NAME}'"
-   },
-   "device_class": "presence",
-   "name": "Presence",
-   "unique_id": "'${DEV_ID}'_presence",
-   "sw_version": "'${SW_VERSION}'"
-  }' | eval $MOSQUITTO_PUB_BASE -t homeassistant/binary_sensor/${DEV_ID}/presence/config -l
-
-  echo '{
-   "command_topic": "'${TOPIC_ROOT}'/config",
-   "device": {
-    "identifiers": [
-    "'${DEV_ID}'"
-    ],
-    "manufacturer": "tesla-local-control",
-    "model": "Tesla_BLE",
-    "name": "'${DEV_NAME}'"
-   },
-   "device_class": "update",
-   "name": "Generate Keys",
-   "payload_press": "generate-keys",
-   "qos": 1,
-   "unique_id": "'${DEV_ID}'_generate-keys",
-   "entity_category": "config",
-   "sw_version": "'${SW_VERSION}'"
-  }' | eval $MOSQUITTO_PUB_BASE -t homeassistant/button/${DEV_ID}/generate-keys/config -l
-
-  echo '{
-   "command_topic": "'${TOPIC_ROOT}'/config",
-   "device": {
-    "identifiers": [
-    "'${DEV_ID}'"
-    ],
-    "manufacturer": "tesla-local-control",
-    "model": "Tesla_BLE",
-    "name": "'${DEV_NAME}'"
-   },
-   "device_class": "update",
-   "name": "Deploy Key",
-   "payload_press": "deploy-key",
-   "qos": 1,
-   "unique_id": "'${DEV_ID}'_deploy-key",
-   "entity_category": "config",
-   "sw_version": "'${SW_VERSION}'"
-  }' | eval $MOSQUITTO_PUB_BASE -t homeassistant/button/${DEV_ID}/deploy-key/config -l
 
   echo '{
    "command_topic": "'${TOPIC_ROOT}'/config",
@@ -533,5 +503,73 @@ function setup_auto_discovery() {
    "unique_id": "'${DEV_ID}'_heater-seat-front-right",
    "sw_version": "'${SW_VERSION}'"
    }' | eval $MOSQUITTO_PUB_BASE -t homeassistant/select/${DEV_ID}/heater-seat-front-right/config -l
+
+}
+
+
+setupHAGenerateKeys() {
+  echo '{
+   "command_topic": "'${TOPIC_ROOT}'/config",
+   "device": {
+    "identifiers": [
+    "'${DEV_ID}'"
+    ],
+    "manufacturer": "tesla-local-control",
+    "model": "Tesla_BLE",
+    "name": "'${DEV_NAME}'"
+   },
+   "device_class": "update",
+   "name": "Generate Keys",
+   "payload_press": "generate-keys",
+   "qos": 1,
+   "unique_id": "'${DEV_ID}'_generate-keys",
+   "entity_category": "config",
+   "sw_version": "'${SW_VERSION}'"
+  }' | eval $MOSQUITTO_PUB_BASE -t homeassistant/button/${DEV_ID}/generate-keys/config -l
+}
+
+
+
+# Basic Setup when keys haven't been generated yet
+function setupHAPresence {
+
+  echo '{
+   "state_topic": "'${TOPIC_ROOT}'/binary_sensor/presence",
+   "device": {
+    "identifiers": [
+    "'${DEV_ID}'"
+    ],
+    "manufacturer": "tesla-local-control",
+    "model": "Tesla_BLE",
+    "name": "'${DEV_NAME}'"
+   },
+   "device_class": "presence",
+   "name": "Presence",
+   "unique_id": "'${DEV_ID}'_presence",
+   "sw_version": "'${SW_VERSION}'"
+  }' | eval $MOSQUITTO_PUB_BASE -t homeassistant/binary_sensor/${DEV_ID}/presence/config -l
+}
+
+
+function setupHADeployKeys() {
+
+  echo '{
+   "command_topic": "'${TOPIC_ROOT}'/config",
+   "device": {
+    "identifiers": [
+    "'${DEV_ID}'"
+    ],
+    "manufacturer": "tesla-local-control",
+    "model": "Tesla_BLE",
+    "name": "'${DEV_NAME}'"
+   },
+   "device_class": "update",
+   "name": "Deploy Key",
+   "payload_press": "deploy-key",
+   "qos": 1,
+   "unique_id": "'${DEV_ID}'_deploy-key",
+   "entity_category": "config",
+   "sw_version": "'${SW_VERSION}'"
+  }' | eval $MOSQUITTO_PUB_BASE -t homeassistant/button/${DEV_ID}/deploy-key/config -l
 
 }

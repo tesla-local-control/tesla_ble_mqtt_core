@@ -52,6 +52,10 @@ function listen_to_mqtt() {
        log_notice "Generating the public key..."
        openssl ec -in /share/tesla_ble_mqtt/${vin}_private.pem -pubout > /share/tesla_ble_mqtt/${vin}_public.pem
        log_notice "$(cat /share/tesla_ble_mqtt/${vin}_public.pem)"
+
+       log_notice "Adding Deploy Keys Button to Home Assistant"
+       setupHADeployKeys
+
        log_warning "Private and Public keys were generated; Next:
        1/ Remove any previously deployed BLE keys from vehicle before deploying this one
        2/ Wake the car up with your Tesla App
@@ -60,7 +64,9 @@ function listen_to_mqtt() {
 
       deploy-key)
        log_notice "Trying to deploy the public key to vehicle..."
-       send_key $vin;;
+       send_key $vin
+       ### TODO check send_key result before calling setupHAAutoDiscovery
+       setupHAAutoDiscovery;;
 
       scan-bleln-macaddr)
        log_notice "Scanning for Tesla BLE Local Name and respective MAC addr..."
@@ -176,7 +182,7 @@ function listen_to_mqtt() {
 
 
 # Function
-setup_auto_discovery_loop() {
+setupHAAutoDiscoveryLoop() {
 
   discardMessages=$1
 
@@ -186,7 +192,7 @@ setup_auto_discovery_loop() {
     # IF HA backend is enable, setup HA Auto Discover
     if [ "$HA_BACKEND_DISABLE" == "false" ]; then
       log_info "Setting up Home Assistant Auto Discovery for $vin"
-      setup_auto_discovery $vin
+      setupHAAutoDiscoveryMain $vin
     else
       log_info "HA backend is disable, skipping setup for HA Auto Discovery"
     fi
@@ -217,9 +223,9 @@ listen_for_HA_start() {
           ;;
           online)
             # Ref: https://github.com/iainbullock/tesla_ble_mqtt_docker/discussions/6
-            log_notice "Home Assistant is now online, calling setup_auto_discovery_loop()"
+            log_notice "Home Assistant is now online, calling setupHAAutoDiscoveryLoop()"
             discardMessages=no
-            setup_auto_discovery_loop $discardMessages
+            setupHAAutoDiscoveryLoop $discardMessages
           ;;
           *)
             log_error "Invalid status; topic:$topic status:$status"

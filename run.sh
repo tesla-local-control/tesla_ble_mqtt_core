@@ -134,7 +134,7 @@ fi
 
 # Setup HA auto discovery, or skip if HA backend is disable, and discard old MQTT messages
 discardMessages=yes
-setup_auto_discovery_loop $discardMessages
+setupHAAutoDiscoveryLoop $discardMessages
 
 # IF HA backend is enable, call listen_for_HA_start()
 if [ "$HA_BACKEND_DISABLE" = "false" ]; then
@@ -156,7 +156,8 @@ do
   listen_to_mqtt_loop &
   # Don't run presence detection if TTL is 0
 
-  if [ $PRESENCE_DETECTION_TTL -gt 0 ] ; then
+  # If PRESENCE_DETECTION_TTL > 0 and BLE_MAC_LIST is not empty
+  if [ $PRESENCE_DETECTION_TTL -gt 0 ] && [ -n $BLE_MAC_LIST ]; then
     log_info "Launch BLE scanning for car presence every $PRESENCE_DETECTION_LOOP_DELAY seconds"
     listen_to_ble $vin_count
     # Run listen_to_ble every 3m
