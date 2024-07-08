@@ -1,0 +1,54 @@
+#!/bin/sh
+#
+# shellcheck shell=dash
+#
+
+# Use environment variable otherwise use default
+bltctlDevicesFile=${bltctlDevicesFile:-/app/bltctl-devices.out}
+bltctlScanFile=${bltctlScanFile:-/app/bltctl-scan.out}
+
+# Function to randomly read X lines starting at a random line:
+#   - randomly pick a start line (startLine)
+#   - randomly pick number of line to read between
+fileRandomRead() {
+  fileName=$1 # file to read
+  nPickMin=$2 # min number of lines to pick
+  nPickMax=$3 # max number of lines to pick
+
+  # Read from file
+  [ ! -f $fileName ] &&
+    log_fatal "Error bluetoothctl-file input file $fileName not found" &&
+    exit 30
+
+  # Number of lines in fileName
+  finputTotalLines=$(wc -l <"$fileName")
+  # nPick to be within the file line count and the nPickMax
+  nPick=$((RANDOM % ((finputTotalLines < nPickMax ? \
+    finputTotalLines : nPickMax) - nPickMin + 1) + nPickMin))
+  # Pick a startLine
+  startLine=$((RANDOM % (finputTotalLines - nPick + 1) + 1)) # Random starting line
+
+  # Extract nPick lines starting from line startLine
+  # sed -u (unbuffered) requires GNU sed
+  sed -u -n "${startLine},$((startLine + nPick - 1))p" "$fileName"
+}
+
+# Loop to process incoming commands
+processBltctlCmd() {
+  while :; do
+    if read -r bltctlCmd; then
+      case $bltctlCmd in
+      devices)
+        fileRandomRead $bltctlDevicesFile 0 10
+        ;;
+      scan*on)
+        fileRandomRead $bltctlScanFile 0 35
+        ;;
+      esac
+    fi
+  done
+}
+
+trap 'exit 0' INT
+
+processBltctlCmd
