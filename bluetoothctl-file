@@ -1,4 +1,7 @@
 #!/bin/sh
+#
+# shellcheck shell=dash
+#
 
 # Use environment variable otherwise use default
 bltctlDevicesFile=${bltctlDevicesFile:-/app/bltctl-devices.out}
@@ -13,9 +16,9 @@ function fileRandomRead() {
   nPickMax=$3 # max number of lines to pick
 
   # Read from file
-  [ ! -f $fileName ] \
-    && log_fatal "Error bluetoothctl-file input file $fileName not found" \
-    && exit 30
+  [ ! -f $fileName ] &&
+    log_fatal "Error bluetoothctl-file input file $fileName not found" &&
+    exit 30
 
   # Number of lines in fileName
   finputTotalLines=$(wc -l < "$fileName")
