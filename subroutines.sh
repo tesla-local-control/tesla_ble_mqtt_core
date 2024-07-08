@@ -20,12 +20,12 @@ send_command() {
       break
     else
       if [[ "$tesla_ctrl_out" == *"Failed to execute command: car could not execute command"* ]]; then
-        log_error "$tesla_ctrl_out"
-        log_notice "Skipping command $* to vin $vin"
+        log_warning "$tesla_ctrl_out"
+        log_warning "Skipping command $* to vin $vin"
         break
       else
         log_error "tesla-control send command failed exit status $EXIT_STATUS."
-        log_info "$tesla_ctrl_out"
+        log_error "$tesla_ctrl_out"
         # Don't continue if we've reached max retries
         [ $max_retries -eq $count ] && break
         log_notice "Retrying in $BLE_CMD_RETRY_DELAY seconds"
