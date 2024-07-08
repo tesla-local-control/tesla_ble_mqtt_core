@@ -2,10 +2,24 @@
 
 ## 0.0.11
 
-### Breaking change & Upgrade Instruction
-- **BREAKING CHANGE - save config before update**: Now supports **list** of VINS and MAC addresses. You will need to adjust configuration. Existing **entities** from v0.0.10f will not be affected.
+### Breaking changes & Upgrade Instruction
+- ** *** BREAKING CHANGES*** **
+- Save config before update: Now supports **list** of VINS and MAC addresses. You will need to adjust configuration. Existing **entities** from v0.0.10f will not be affected with a few exceptions***
 - Cut & Paste your current vin to vin_list
 - Cut & Paste your current mac_addr to mac_addr_list
+
+- ENTITIES RENAMED; for consistency all entities now use - (no more _)
+
+    Old                  New entity name
+    ============================================
+    auto_seat-climate    auto-seat-and-climate
+    flash_lights         flash-lights
+    heated_seat_left     heater-seat-front-left*
+    heated_seat_right    heater-seat-front-right*
+    sw_heater            sw-heater
+    deploy_key           deploy-key      ### To be removed from PR, keep to remember to clean MQTT
+    generate_keys        generate-keys   ### To be removed from PR
+    * in preparation of rear seats
 
 ### Changed
 - NEW Feature: Support for unlimited cars (VINs + MAC Addrs)
@@ -18,6 +32,7 @@
 - CHG: Support bashio::log w/ timestamp (HA add-on)
 - CHG: Reduce logging; Improved colors consistency; More to be removed once code is considered stable
 - CHG: Add bluez-deprecated pkg (ciptool hciattach hciconfig hcidump hcitool meshctl rfcomm sdptool)
+- CHG: Renamew entities for consistency & better wording
 - WARNING: [BLE device possible overheating](https://github.com/tesla-local-control/tesla-local-control-addon/issues/27) causing performance issues
 
 
