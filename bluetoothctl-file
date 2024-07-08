@@ -10,7 +10,7 @@ bltctlScanFile=${bltctlScanFile:-/app/bltctl-scan.out}
 # Function to randomly read X lines starting at a random line:
 #   - randomly pick a start line (startLine)
 #   - randomly pick number of line to read between
-function fileRandomRead() {
+fileRandomRead() {
   fileName=$1 # file to read
   nPickMin=$2 # min number of lines to pick
   nPickMax=$3 # max number of lines to pick
@@ -21,7 +21,7 @@ function fileRandomRead() {
     exit 30
 
   # Number of lines in fileName
-  finputTotalLines=$(wc -l < "$fileName")
+  finputTotalLines=$(wc -l <"$fileName")
   # nPick to be within the file line count and the nPickMax
   nPick=$((RANDOM % ((finputTotalLines < nPickMax ? \
     finputTotalLines : nPickMax) - nPickMin + 1) + nPickMin))
@@ -37,11 +37,11 @@ processBltctlCmd() {
   while :; do
     if read -r bltctlCmd; then
       case $bltctlCmd in
-        devices)
-          fileRandomRead $bltctlDevicesFile 0 10
+      devices)
+        fileRandomRead $bltctlDevicesFile 0 10
         ;;
-        scan*on)
-          fileRandomRead $bltctlScanFile 0 35
+      scan*on)
+        fileRandomRead $bltctlScanFile 0 35
         ;;
       esac
     fi
