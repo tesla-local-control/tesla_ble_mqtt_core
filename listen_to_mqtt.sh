@@ -13,10 +13,10 @@
 ###
 function listen_to_mqtt_loop() {
 
-  log_info "Entering Listen to MQTT loop..."
+  log_notice "Entering Listen to MQTT loop..."
 
   while : ; do
-    log_info "Launching listen_to_mqtt"
+    log_debug "Launching listen_to_mqtt"
     if ! listen_to_mqtt; then
       log_error "listen_to_mqtt stopped due to a failure; restarting the process in 10 seconds"
       sleep 10
@@ -48,10 +48,10 @@ function listen_to_mqtt() {
        openssl ecparam -genkey -name prime256v1 -noout > /share/tesla_ble_mqtt/${vin}_private.pem
        log_debug "$(cat /share/tesla_ble_mqtt/${vin}_private.pem)"
        [ "$DEBUG" != "true" ] \
-         && log_notice "The private key is shown only in debug mode"
+         && log_info "The private key is shown only in debug mode"
        log_notice "Generating the public key..."
        openssl ec -in /share/tesla_ble_mqtt/${vin}_private.pem -pubout > /share/tesla_ble_mqtt/${vin}_public.pem
-       log_notice "$(cat /share/tesla_ble_mqtt/${vin}_public.pem)"
+       log_info "$(cat /share/tesla_ble_mqtt/${vin}_public.pem)"
        log_warning "Private and Public keys were generated; Next:
        1/ Remove any previously deployed BLE keys from vehicle before deploying this one
        2/ Wake the car up with your Tesla App
@@ -193,7 +193,7 @@ setup_auto_discovery_loop() {
 
     # Discard or not awaiting messages
     if [ "$discardMessages" = "yes" ]; then
-      log_info "Discarding any unread MQTT messages for $vin"
+      log_notice "Discarding any unread MQTT messages for $vin"
       eval $MOSQUITTO_SUB_BASE -E -i tesla_ble_mqtt -t tesla_ble_mqtt/$vin/+
     fi
   done

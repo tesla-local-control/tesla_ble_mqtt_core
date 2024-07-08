@@ -12,7 +12,7 @@ send_command() {
   for count in $(seq $max_retries); do
     log_notice "Sending command $* to vin $vin, attempt $count/${max_retries}"
     set +e
-    tesla_ctrl_out=$(tesla-control -vin $vin -ble -key-name /share/tesla_blemqtt/${vin}_private.pem -key-file /share/tesla_ble_mqtt/${vin}_private.pem "$@" 2>&1)
+    tesla_ctrl_out=$(tesla-control -vin $vin -ble -key-name /share/tesla_blemqtt/${vin}_private.pem -key-file /share/tesla_ble_mqtt/${vin}_private.pem $@ 2>&1)
     EXIT_STATUS=$?
     set -e
     if [ $EXIT_STATUS -eq 0 ]; then
@@ -20,12 +20,12 @@ send_command() {
       break
     else
       if [[ "$tesla_ctrl_out" == *"Failed to execute command: car could not execute command"* ]]; then
-        log_error "$tesla_ctrl_out"
-        log_notice "Skipping command $* to vin $vin"
+        log_warning "$tesla_ctrl_out"
+        log_warning "Skipping command $* to vin $vin"
         break
       else
         log_error "tesla-control send command failed exit status $EXIT_STATUS."
-        log_info "$tesla_ctrl_out"
+        log_error "$tesla_ctrl_out"
         # Don't continue if we've reached max retries
         [ $max_retries -eq $count ] && break
         log_notice "Retrying in $BLE_CMD_RETRY_DELAY seconds"
@@ -101,7 +101,7 @@ check_presence() {
       [ $EXIT_STATUS -ne 0 ] \
         && log_error "$(MQTT_OUT)" \
         && return
-      log_info "mqtt topic $MQTT_TOPIC succesfully updated to ON"
+      log_notice "mqtt topic $MQTT_TOPIC succesfully updated to ON"
     fi
 
     # Update presence expire time
@@ -121,7 +121,7 @@ check_presence() {
       [ $EXIT_STATUS -ne 0 ] \
         && log_error "$MQTT_OUT" \
         && return
-      log_info "mqtt topic $MQTT_TOPIC succesfully updated to OFF"
+      log_notice "mqtt topic $MQTT_TOPIC succesfully updated to OFF"
     else
       log_info "VIN $VIN $TYPE $MATCH presence not expired"
     fi # END if expired time
@@ -134,7 +134,7 @@ bluetoothctl_read() {
 
   # Read BLE data from bluetoothctl or an input file
   if [ -z $BLECTL_FILE_INPUT ]; then
-    log_notice "Launching bluetoothctl to check for BLE presence"
+    log_debug "Launching bluetoothctl to check for BLE presence"
     BLECTL_TIMEOUT=11
     set +e
     BLTCTL_OUT=$(bluetoothctl --timeout $BLECTL_TIMEOUT scan on 2>&1 | grep -v DEL)
@@ -148,7 +148,7 @@ bluetoothctl_read() {
       && log_fatal "blectl input file $BLECTL_FILE_INPUT not found" \
       && exit 30
 
-    log_notice "Reading BLE presence data from file $BLECTL_FILE_INPUT"
+    log_debug "Reading BLE presence data from file $BLECTL_FILE_INPUT"
     nPickMin=0  # min number of lines to pick
     nPickMax=35 # max number of lines to pick
     finputTotalLines=$(wc -l < "$BLECTL_FILE_INPUT")
