@@ -199,13 +199,14 @@ send_key() {
     EXIT_STATUS=$?
     set -e
     if [ $EXIT_STATUS -eq 0 ]; then
-      log_notice "KEY SENT TO VEHICLE: PLEASE CHECK YOU TESLA'S SCREEN AND ACCEPT WITH YOUR CARD"
-      break
+      log_warning "KEY SENT TO VEHICLE; PLEASE CHECK YOU TESLA'S SCREEN AND ACCEPT WITH YOUR CARD"
+      return 0
     else
-      log_notice "COULD NOT SEND THE KEY. Is the car awake and sufficiently close to the bluetooth device?"
+      log_error "Could not send the key; Is the car awake and sufficiently close to the bluetooth adapter?"
       sleep $BLE_CMD_RETRY_DELAY
     fi
   done
+  return 1
 }
 
 # Function

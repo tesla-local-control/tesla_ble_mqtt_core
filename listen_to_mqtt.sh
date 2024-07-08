@@ -63,9 +63,13 @@ listen_to_mqtt() {
 
         deploy-key)
           log_notice "Trying to deploy the public key to vehicle..."
-          send_key $vin
-          ### TODO check send_key result before calling setupHAAutoDiscovery
-          setupHAAutoDiscovery $vin
+          if send_key $vin; then
+            log_info "Public key successfully deployed"
+            log_info "Setting up Home Assistant device's panel"
+            setupHAAutoDiscovery $vin
+          else
+            log_error "Public key did not deployed"
+          fi
           ;;
 
         scan-bleln-macaddr)
