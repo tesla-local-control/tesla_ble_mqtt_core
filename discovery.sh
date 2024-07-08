@@ -105,7 +105,7 @@ function setup_auto_discovery() {
    "payload_press": "wake",
    "qos": 1,
    "unique_id": "'${DEV_ID}'_wake"
-  }' | sed ':a;N;$!ba;s/\n//g' | eval $MOSQUITTO_PUB_BASE -t homeassistant/button/${DEV_ID}/wake-up/config -l
+  }' | sed ':a;N;$!ba;s/\n//g' | eval $MOSQUITTO_PUB_BASE -t homeassistant/button/${DEV_ID}/wake/config -l
 
   echo '{
    "command_topic": "'${TOPIC_ROOT}'/command",
