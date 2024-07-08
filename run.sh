@@ -25,7 +25,7 @@ echo "Source required files to load required functions"
 #####
 #####
 #####
-if [ ! -n "${HASSIO_TOKEN:-}" ]; then
+if [ -z ${HASSIO_TOKEN:-} ]; then
   # Source libcolor
   echo "Source /app/libcolor.sh"
   export COLOR=${COLOR:=true}
