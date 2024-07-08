@@ -4,17 +4,16 @@
 #
 # Note: shebang will be replaced automatically by the HA addon deployment script to #!/command/with-contenv bashio
 
-
 ### DEFINE FUNCTIONS ##########################################################
 echo "Source required files to load required functions"
 ### Source required files
 #
 # Source & Init product's library
-[ -f /app/libproduct.sh ] \
-  && echo "Source libproduct.sh" \
-  && . /app/libproduct.sh \
-  && type initProduct > /dev/null \
-  && initProduct
+[ -f /app/libproduct.sh ] &&
+  echo "Source libproduct.sh" &&
+  . /app/libproduct.sh &&
+  type initProduct >/dev/null &&
+  initProduct
 
 log_info "Source /app/subroutines.sh"
 . /app/subroutines.sh
@@ -26,15 +25,13 @@ log_info "Source /app/listen_to_mqtt.sh"
 . /app/listen_to_mqtt.sh
 ### END Source all required files
 
-
 ### SETUP ENVIRONMENT #########################################################
 if [ ! -d /share/tesla_ble_mqtt ]; then
-    log_info "Creating directory /share/tesla_ble_mqtt"
-    mkdir -p /share/tesla_ble_mqtt
+  log_info "Creating directory /share/tesla_ble_mqtt"
+  mkdir -p /share/tesla_ble_mqtt
 else
-    log_debug "/share/tesla_ble_mqtt already exists, existing keys can be reused"
+  log_debug "/share/tesla_ble_mqtt already exists, existing keys can be reused"
 fi
-
 
 # If empty string, initialize w/ default value - Required for add-on and Docker standalone
 export BLE_CMD_RETRY_DELAY=${BLE_CMD_RETRY_DELAY:-5}
@@ -42,7 +39,6 @@ export BLECTL_FILE_INPUT=${BLECTL_FILE_INPUT:-}
 export HA_BACKEND_DISABLE=${HA_BACKEND_DISABLE:-false}
 export PRESENCE_DETECTION_LOOP_DELAY=${PRESENCE_DETECTION_LOOP_DELAY:-120}
 export PRESENCE_DETECTION_TTL=${PRESENCE_DETECTION_TTL:-240}
-
 
 ### LOG CONFIG VARS ###########################################################
 log_info "Configuration Options are:
@@ -95,7 +91,7 @@ for vin in $VIN_LIST; do
 done
 
 # Populate PRESENCE_EXPIRE_TIME_LIST only if Presence Detection is enable
-if [ $PRESENCE_DETECTION_TTL -gt 0 ] ; then
+if [ $PRESENCE_DETECTION_TTL -gt 0 ]; then
   log_info "Presence detection is enable with a TTL of $PRESENCE_DETECTION_TTL seconds"
   ble_mac_addr_count=0
   # shellcheck disable=SC2034
@@ -107,7 +103,6 @@ if [ $PRESENCE_DETECTION_TTL -gt 0 ] ; then
 else
   log_info "Presence detection is not enabled due to TTL of $PRESENCE_DETECTION_TTL seconds"
 fi
-
 
 # Setup HA auto discovery, or skip if HA backend is disable, and discard old MQTT messages
 discardMessages=yes
@@ -121,19 +116,17 @@ else
   log_notice "HA backend is disable, not listening for Home Assistant Start"
 fi
 
-
 ### START MAIN PROGRAM LOOP ###################################################
 
 log_info "Entering main loop..."
-while true
-do
+while true; do
 
   # Launch listen_to_mqtt_loop in background
   log_info "Lauching background listen_to_mqtt_loop..."
   listen_to_mqtt_loop &
   # Don't run presence detection if TTL is 0
 
-  if [ $PRESENCE_DETECTION_TTL -gt 0 ] ; then
+  if [ $PRESENCE_DETECTION_TTL -gt 0 ]; then
     log_info "Launch BLE scanning for car presence every $PRESENCE_DETECTION_LOOP_DELAY seconds"
     listen_to_ble $vin_count
     # Run listen_to_ble every 3m
