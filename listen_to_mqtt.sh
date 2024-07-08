@@ -10,7 +10,7 @@
 #   - If listen_to_mqtt fails due to MQTT service restart, network or other conditions the
 #     loop will restart it.
 ###
-function listen_to_mqtt_loop() {
+listen_to_mqtt_loop() {
 
   log_notice "Entering Listen to MQTT loop..."
 
@@ -25,7 +25,7 @@ function listen_to_mqtt_loop() {
 
 }
 
-function listen_to_mqtt() {
+listen_to_mqtt() {
   log_debug "Listening to MQTT"
   eval $MOSQUITTO_SUB_BASE --nodelay -t tesla_ble/+/+ -F \"%t %p\" -c -i tesla_ble_mqtt -q 0 |
     while read -r payload; do

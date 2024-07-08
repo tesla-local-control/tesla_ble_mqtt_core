@@ -3,7 +3,7 @@
 # discovery.sh
 #
 
-function setup_auto_discovery() {
+setup_auto_discovery() {
   vin=$1
   log_notice "Setting up HA auto discovery for vin $vin"
 
