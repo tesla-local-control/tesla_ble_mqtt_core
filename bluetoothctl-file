@@ -26,7 +26,8 @@ function fileRandomRead() {
   startLine=$((RANDOM % (finputTotalLines - nPick + 1) + 1)) # Random starting line
 
   # Extract nPick lines starting from line startLine
-  sed -n "${startLine},$((startLine + nPick - 1))p" "$fileName"
+  # sed -u (unbuffered) requires GNU sed
+  sed -u -n "${startLine},$((startLine + nPick - 1))p" "$fileName"
 }
 
 # Loop to process incoming commands
