@@ -36,7 +36,7 @@ fi
 # If empty string, initialize w/ default value - Required for add-on and Docker standalone
 export BLE_CMD_RETRY_DELAY=${BLE_CMD_RETRY_DELAY:-5}
 export BLECTL_FILE_INPUT=${BLECTL_FILE_INPUT:-}
-export HA_BACKEND_DISABLE=${HA_BACKEND_DISABLE:-false}
+export ENABLE_HA_FEATURES=${ENABLE_HA_FEATURES:-true}
 export PRESENCE_DETECTION_LOOP_DELAY=${PRESENCE_DETECTION_LOOP_DELAY:-120}
 export PRESENCE_DETECTION_TTL=${PRESENCE_DETECTION_TTL:-240}
 
@@ -53,7 +53,7 @@ log_info "Configuration Options are:
   PRESENCE_DETECTION_TTL=$PRESENCE_DETECTION_TTL
   VIN_LIST=$VIN_LIST"
 
-[ -n "$HA_BACKEND_DISABLE" ] && log_info "  HA_BACKEND_DISABLE=$HA_BACKEND_DISABLE"
+[ -n "$ENABLE_HA_FEATURES" ] && log_info "  ENABLE_HA_FEATURES=$ENABLE_HA_FEATURES"
 [ -n "$BLECTL_FILE_INPUT" ] && log_info "  BLECTL_FILE_INPUT=$BLECTL_FILE_INPUT"
 
 # MQTT clients anonymous or authentication mode
@@ -109,7 +109,7 @@ discardMessages=yes
 setup_auto_discovery_loop $discardMessages
 
 # IF HA backend is enable, call listen_for_HA_start()
-if [ "$HA_BACKEND_DISABLE" = "false" ]; then
+if [ "$ENABLE_HA_FEATURES" == "true" ]; then
   log_notice "Listening for Home Assistant Start (in background)"
   listen_for_HA_start &
 else
