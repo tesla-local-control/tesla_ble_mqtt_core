@@ -12,7 +12,7 @@
 ###
 function listen_to_mqtt_loop() {
 
-  log_info "Entering Listen to MQTT loop..."
+  log_notice "Entering Listen to MQTT loop..."
 
   while :; do
     log_info "Launching listen_to_mqtt"
@@ -26,7 +26,7 @@ function listen_to_mqtt_loop() {
 }
 
 function listen_to_mqtt() {
-  # log_info "Listening to MQTT"
+  log_debug "Listening to MQTT"
   eval $MOSQUITTO_SUB_BASE --nodelay -t tesla_ble/+/+ -F \"%t %p\" -c -i tesla_ble_mqtt -q 0 |
     while read -r payload; do
       topic=${payload%% *}
@@ -217,7 +217,7 @@ setup_auto_discovery_loop() {
 
     # Discard or not awaiting messages
     if [ "$discardMessages" = "yes" ]; then
-      log_info "Discarding any unread MQTT messages for $vin"
+      log_notice "Discarding any unread MQTT messages for $vin"
       eval $MOSQUITTO_SUB_BASE -E -i tesla_ble_mqtt -t tesla_ble_mqtt/$vin/+
     fi
   done
