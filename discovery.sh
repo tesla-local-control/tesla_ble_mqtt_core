@@ -39,10 +39,10 @@ function setupHAAutoDiscoveryMain() {
 
     # Show button to Generate Keys
     setupHAGenerateKeys $vin
-    # listen_to_mqtt call setupHADeployKeys once the keys are generated
+    # listen_to_mqtt call setupHADeployKey once the keys are generated
 
   else
-    setupHADeployKeys $vin
+    setupHADeployKey $vin
     setupHAGenerateKeys $vin
     setupHAAutoDiscovery $vin
   fi
@@ -570,7 +570,7 @@ function setupHAPresence {
 }
 
 
-function setupHADeployKeys() {
+function setupHADeployKey() {
 
   vin=$1
   setupHAAutoDiscoveryEnvVars $vin

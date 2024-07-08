@@ -53,8 +53,8 @@ function listen_to_mqtt() {
        openssl ec -in /share/tesla_ble_mqtt/${vin}_private.pem -pubout > /share/tesla_ble_mqtt/${vin}_public.pem
        log_notice "$(cat /share/tesla_ble_mqtt/${vin}_public.pem)"
 
-       log_notice "Adding Deploy Keys Button to Home Assistant"
-       setupHADeployKeys $vin
+       log_notice "Adding Deploy Key Button to Home Assistant"
+       setupHADeployKey $vin
 
        log_warning "Private and Public keys were generated; Next:
        1/ Remove any previously deployed BLE keys from vehicle before deploying this one
