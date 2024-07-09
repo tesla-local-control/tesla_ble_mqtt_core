@@ -2,17 +2,24 @@
 
 ## 0.0.11
 
-- BREAKING CHANGES: Keep a backup of your VIN & MAC Addr
+### Breaking change & Upgrade Instruction
+- **BREAKING CHANGE - save config before update**: Now supports **list** of VINS and MAC addresses. You will need to adjust configuration. Existing **entities** from v0.0.10f will not be affected.
+- Cut & Paste your current vin to vin_list
+- Cut & Paste your current mac_addr to mac_addr_list
 
+### Changed
 - NEW Feature: Support for unlimited cars (VINs + MAC Addrs)
 - NEW Feature: Added a TTL for car presence, when gone the sensor in HA stays ON until the TTL expires
+- NEW Feature: Added "debug" entity which sends only one charge amps command: Issue [#19](https://github.com/tesla-local-control/tesla_ble_mqtt_core/issues/19)
 - NEW Setting: BLE Proximity Detection TTL (Detection is on by default; set to 0 to disable)
 - NEW Setting: Presence Detection Loop Delay (how often to check the presence of your car(s))
 - NEW Setting: Toggle to enable/disable HA backend (Standalone version only)
-- CHG : Support bashio::log w/ timestamp (HA add-on)
-- CHG : Reduce logging; More to be removed once code is considered stable
-- CHD : Improved presence detection using car's MAC addr and BLE Local Name
-- WARNING : [BLE device overheating](https://github.com/tesla-local-control/tesla-local-control-addon/issues/27) causing performance issues
+- CHG: Improved presence detection reliability (using car's MAC addr and BLE Local Name)
+- CHG: Support bashio::log w/ timestamp (HA add-on)
+- CHG: Reduce logging; Improved colors consistency; More to be removed once code is considered stable
+- CHG: Add bluez-deprecated pkg (ciptool hciattach hciconfig hcidump hcitool meshctl rfcomm sdptool)
+- WARNING: [BLE device possible overheating](https://github.com/tesla-local-control/tesla-local-control-addon/issues/27) causing performance issues
+
 
 ## 0.0.10
 

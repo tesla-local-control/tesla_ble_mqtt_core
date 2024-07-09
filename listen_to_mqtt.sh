@@ -219,7 +219,7 @@ setupHAAutoDiscoveryLoop() {
   for vin in $VIN_LIST; do
 
     # IF HA backend is enable, setup HA Auto Discover
-    if [ "$HA_BACKEND_DISABLE" == "false" ]; then
+    if [ "$ENABLE_HA_FEATURES" == "true" ]; then
       log_debug "Calling setup_auto_discovery() $vin"
       setupHAAutoDiscoveryMain $vin
     else
