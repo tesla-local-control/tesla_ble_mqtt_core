@@ -539,7 +539,7 @@ setupHAGenerateKeys() {
    "unique_id": "'${DEV_ID}'_generate-keys",
    "entity_category": "config",
    "sw_version": "'${SW_VERSION}'"
-  }' | eval $MOSQUITTO_PUB_BASE -t homeassistant/button/${DEV_ID}/generate-keys/config -l
+  }' | sed ':a;N;$!ba;s/\n//g' | eval $MOSQUITTO_PUB_BASE -t homeassistant/button/${DEV_ID}/generate-keys/config -l
 }
 
 # Basic Setup when keys haven't been generated yet
@@ -562,7 +562,7 @@ function setupHAPresence {
    "name": "Presence",
    "unique_id": "'${DEV_ID}'_presence",
    "sw_version": "'${SW_VERSION}'"
-  }' | eval $MOSQUITTO_PUB_BASE -t homeassistant/binary_sensor/${DEV_ID}/presence/config -l
+  }' | sed ':a;N;$!ba;s/\n//g' | eval $MOSQUITTO_PUB_BASE -t homeassistant/binary_sensor/${DEV_ID}/presence/config -l
 }
 
 function setupHADeployKey() {
@@ -587,5 +587,5 @@ function setupHADeployKey() {
    "unique_id": "'${DEV_ID}'_deploy-key",
    "entity_category": "config",
    "sw_version": "'${SW_VERSION}'"
-  }' | eval $MOSQUITTO_PUB_BASE -t homeassistant/button/${DEV_ID}/deploy-key/config -l
+  }' | sed ':a;N;$!ba;s/\n//g' | eval $MOSQUITTO_PUB_BASE -t homeassistant/button/${DEV_ID}/deploy-key/config -l
 }
