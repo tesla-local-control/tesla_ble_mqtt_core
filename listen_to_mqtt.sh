@@ -50,8 +50,10 @@ listen_to_mqtt() {
           openssl ec -in /share/tesla_ble_mqtt/${vin}_private.pem -pubout >/share/tesla_ble_mqtt/${vin}_public.pem
           log_notice "$(cat /share/tesla_ble_mqtt/${vin}_public.pem)"
 
-          log_notice "Adding Deploy Key Button to Home Assistant"
-          setupHADeployKey $vin
+          if [ "$ENABLE_HA_FEATURES" == "true" ]; then
+            log_notice "Adding Deploy Key Button to Home Assistant"
+            setupHADeployKey $vin
+          fi
 
           log_warning "Private and Public keys were generated; Next:
 
