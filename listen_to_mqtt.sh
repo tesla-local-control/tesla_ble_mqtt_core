@@ -222,7 +222,7 @@ setupHAAutoDiscoveryLoop() {
 
     # IF HA backend is enable, setup HA Auto Discover
     if [ "$ENABLE_HA_FEATURES" == "true" ]; then
-      log_debug "Calling setup_auto_discovery() $vin"
+      log_debug "Calling setupHAAutoDiscoveryMain() $vin"
       setupHAAutoDiscoveryMain $vin
     else
       log_info "HA backend is disable, skipping setup for HA Auto Discovery"
