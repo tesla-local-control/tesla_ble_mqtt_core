@@ -185,7 +185,8 @@ listen_to_mqtt() {
         ;;
 
       sw-heater)
-        send_command $vin "sw-heater $msg"
+	    msg_lower=`echo "$msg" | tr '[:upper:]' '[:lower:]'`
+        send_command $vin "sw-heater $msg_lower"
         ;;
 
       sentry-mode)
