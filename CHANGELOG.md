@@ -30,7 +30,7 @@
 - CHG: Support bashio::log w/ timestamp (HA add-on)
 - CHG: Reduce logging; Improved colors consistency; More to be removed once code is considered stable
 - CHG: Add bluez-deprecated pkg (ciptool hciattach hciconfig hcidump hcitool meshctl rfcomm sdptool)
-- CHG: Renamew entities for consistency & better wording
+- CHG: Rename entities for consistency & better wording
 - WARNING: [BLE device possible overheating](https://github.com/tesla-local-control/tesla-local-control-addon/issues/27) causing performance issues
 
 
