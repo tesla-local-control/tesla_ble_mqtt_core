@@ -7,6 +7,8 @@ vinLast=""
 function setupHAAutoDiscoveryEnvVars() {
   vin=$1
 
+  log_debug "Entering setupHAAutoDiscoveryEnvVars() vin:$vin"
+
   [ "$vinLast" == "$vin" ] && return
   vinLast=$1
 
@@ -20,34 +22,48 @@ function setupHAAutoDiscoveryEnvVars() {
   log_debug "DEV_NAME=$DEV_NAME"
   log_debug "TOPIC_ROOT=$TOPIC_ROOT"
 
+  log_debug "Leaving setupHAAutoDiscoveryEnvVars() vin:$vin"
+
 }
 
 function setupHAAutoDiscoveryMain() {
 
   vin=$1
+  keysDir=/share/tesla_ble_mqtt
+
+  log_debug "Entering setupHAAutoDiscoveryMain() vin:$vin"
+
   setupHAAutoDiscoveryEnvVars $vin
 
   # If detection is enable, show presence
   if [ $PRESENCE_DETECTION_TTL -gt 0 ] && [ -n "$BLE_MAC_LIST" ]; then
+    log_debug "setupHAAutoDiscoveryMain() vin:$vin presence detection enable"
     setupHAPresence $vin
   fi
 
   # Newly added car?
-  if [ ! -f /share/tesla_ble_mqtt/${vin}_private.pem ] &&
-    [ ! -f /share/tesla_ble_mqtt/${vin}_public.pem ]; then
+  if [ ! -f $keysDir/${vin}_private.pem ] && [ ! -f $keysDir/${vin}_public.pem ]; then
 
+    log_debug "setupHAAutoDiscoveryMain() vin:$vin newly added car, adding Generate Key menu"
     # Show button to Generate Keys
     setupHAGenerateKeys $vin
+
     # listen_to_mqtt call setupHADeployKey once the keys are generated
 
   else
+    log_debug "setupHAAutoDiscoveryMain() vin:$vin old car"
     setupHADeployKey $vin
     setupHAGenerateKeys $vin
     setupHAAutoDiscovery $vin
   fi
+
+  log_debug "Leaving setupHAAutoDiscoveryMain() vin:$vin"
+
 }
 
 function setupHAAutoDiscovery() {
+
+  log_debug "Entering setupHAAutoDiscovery() vin:$vin"
 
   vin=$1
   setupHAAutoDiscoveryEnvVars $vin
@@ -515,9 +531,11 @@ function setupHAAutoDiscovery() {
    "unique_id": "'${DEV_ID}'_heater-seat-front-right"
    }' | sed ':a;N;$!ba;s/\n//g' | eval $MOSQUITTO_PUB_BASE -t homeassistant/select/${DEV_ID}/heater-seat-front-right/config -l
 
+  log_debug "Leaving setupHAAutoDiscovery() vin:$vin"
 }
 
 setupHAGenerateKeys() {
+  log_debug "Entering setupHAGenerateKeys() vin:$vin"
 
   vin=$1
   setupHAAutoDiscoveryEnvVars $vin
@@ -540,10 +558,14 @@ setupHAGenerateKeys() {
    "entity_category": "config",
    "sw_version": "'${SW_VERSION}'"
   }' | sed ':a;N;$!ba;s/\n//g' | eval $MOSQUITTO_PUB_BASE -t homeassistant/button/${DEV_ID}/generate-keys/config -l
+
+  log_debug "Leaving setupHAGenerateKeys() vin:$vin"
+
 }
 
 # Basic Setup when keys haven't been generated yet
 function setupHAPresence {
+  log_debug "Entering setupHAPresence() vin:$vin"
 
   vin=$1
   setupHAAutoDiscoveryEnvVars $vin
@@ -563,10 +585,14 @@ function setupHAPresence {
    "unique_id": "'${DEV_ID}'_presence",
    "sw_version": "'${SW_VERSION}'"
   }' | sed ':a;N;$!ba;s/\n//g' | eval $MOSQUITTO_PUB_BASE -t homeassistant/binary_sensor/${DEV_ID}/presence/config -l
+
+  log_debug "Leaving setupHAPresence() vin:$vin"
+
 }
 
 function setupHADeployKey() {
 
+  log_debug "Entering setupHADeployKey() vin:$vin"
   vin=$1
   setupHAAutoDiscoveryEnvVars $vin
 
@@ -588,4 +614,7 @@ function setupHADeployKey() {
    "entity_category": "config",
    "sw_version": "'${SW_VERSION}'"
   }' | sed ':a;N;$!ba;s/\n//g' | eval $MOSQUITTO_PUB_BASE -t homeassistant/button/${DEV_ID}/deploy-key/config -l
+
+  log_debug "Leaving setupHADeployKey() vin:$vin"
+
 }
