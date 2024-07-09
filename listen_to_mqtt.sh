@@ -184,8 +184,14 @@ listen_to_mqtt() {
         send_command $vin "seat-heater front-right $msg"
         ;;
 
-      sw-heater)
-        send_command $vin "sw-heater $msg"
+      steering-wheel-heater)
+        msg_lower=$(echo "$msg" | tr '[:upper:]' '[:lower:]')
+        send_command $vin "steering-wheel-heater $msg_lower"
+        ;;
+
+      sentry-mode)
+        msg_lower=$(echo "$msg" | tr '[:upper:]' '[:lower:]')
+        send_command $vin "sentry-mode $msg_lower"
         ;;
 
       *)
