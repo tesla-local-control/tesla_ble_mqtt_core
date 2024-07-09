@@ -14,7 +14,7 @@
     flash_lights         flash-lights
     heated_seat_left     heater-seat-front-left*
     heated_seat_right    heater-seat-front-right*
-    sw_heater            sw-heater
+    sw_heater            steering-wheel-heater
     deploy_key           deploy-key      ### To be removed from PR, keep to remember to clean MQTT
     generate_keys        generate-keys   ### To be removed from PR
     * in preparation of rear seats
