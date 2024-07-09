@@ -188,6 +188,11 @@ listen_to_mqtt() {
         send_command $vin "sw-heater $msg"
         ;;
 
+      sentry-mode)
+	    msg_lower=`echo "$msg" | tr '[:upper:]' '[:lower:]'`
+        send_command $vin "sentry-mode $msg_lower"
+        ;;
+
       *)
         log_error "Invalid request; topic:$topic vin:$vin msg:$msg"
         ;;
