@@ -2,13 +2,11 @@
 
 ## 0.0.11
 
-### Breaking changes & Upgrade Instruction
-- ** *** BREAKING CHANGES*** **
+### BREAKING CHANGES & Upgrade Instruction
 - Save config before update: Now supports **list** of VINS and MAC addresses. You will need to adjust configuration. Existing **entities** from v0.0.10f will not be affected with a few exceptions***
 - Cut & Paste your current vin to vin_list
 - Cut & Paste your current mac_addr to mac_addr_list
-
-- ENTITIES RENAMED; for consistency all entities now use - (no more _)
+- ENTITIES RENAMED; for consistency all entities now use - (no more _). /!\ It will affect your current Home Assistant MQTT entities (if you use them)
 
     Old                  New entity name
     ============================================
