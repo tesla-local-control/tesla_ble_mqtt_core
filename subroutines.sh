@@ -3,51 +3,6 @@
 # subroutines.sh
 #
 
-# Function
-send_command() {
-  vin=$1
-  shift
-
-  max_retries=5
-  for count in $(seq $max_retries); do
-    log_notice "Sending command $* to vin $vin, attempt $count/${max_retries}"
-    set +e
-    # shellcheck disable=SC2068
-    tesla_ctrl_out=$(tesla-control -vin $vin -ble -key-name /share/tesla_blemqtt/${vin}_private.pem -key-file /share/tesla_ble_mqtt/${vin}_private.pem $@ 2>&1)
-    EXIT_STATUS=$?
-    set -e
-    if [ $EXIT_STATUS -eq 0 ]; then
-      log_info "tesla-control send command succeeded"
-      break
-    else
-      if [[ "$tesla_ctrl_out" == *"Failed to execute command: car could not execute command"* ]]; then
-        log_warning "$tesla_ctrl_out"
-        log_warning "Skipping command $* to vin $vin"
-        break
-      else
-        log_error "tesla-control send command failed exit status $EXIT_STATUS."
-        log_error "$tesla_ctrl_out"
-        # Don't continue if we've reached max retries
-        [ $max_retries -eq $count ] && break
-        log_notice "Retrying in $BLE_CMD_RETRY_DELAY seconds"
-      fi
-      sleep $BLE_CMD_RETRY_DELAY
-    fi
-  done
-}
-
-# Function
-# Tesla VIN to BLE Local Name
-tesla_vin2ble_ln() {
-  vin=$1
-  ble_ln=""
-
-  # BLE Local Name
-  ble_ln="S$(echo -n ${vin} | sha1sum | cut -c 1-16)C"
-
-  echo $ble_ln
-
-}
 
 # Function
 replace_value_at_position() {
@@ -77,6 +32,7 @@ replace_value_at_position() {
   # Print the new list
   echo "$new_list"
 }
+
 
 # Function
 check_presence() {
@@ -125,6 +81,7 @@ check_presence() {
   fi   # END if ! MATCH
 }
 
+
 # Function
 bluetoothctl_read() {
 
@@ -159,6 +116,7 @@ bluetoothctl_read() {
   log_debug "${BLTCTL_OUT}"
 }
 
+
 # Function
 listen_to_ble() {
   n_vins=$1
@@ -186,28 +144,6 @@ listen_to_ble() {
   done
 }
 
-# Function
-send_key() {
-  vin=$1
-
-  max_retries=5
-  for count in $(seq $max_retries); do
-    echo "Attempt $count/${max_retries}"
-    log_notice "Sending key to vin $vin, attempt $count/${max_retries}"
-    set +e
-    tesla-control -ble -vin $vin add-key-request /share/tesla_ble_mqtt/${vin}_public.pem owner cloud_key
-    EXIT_STATUS=$?
-    set -e
-    if [ $EXIT_STATUS -eq 0 ]; then
-      log_warning "KEY SENT TO VEHICLE; PLEASE CHECK YOU TESLA'S SCREEN AND ACCEPT WITH YOUR CARD"
-      return 0
-    else
-      log_error "Could not send the key; Is the car awake and sufficiently close to the bluetooth adapter?"
-      sleep $BLE_CMD_RETRY_DELAY
-    fi
-  done
-  return 1
-}
 
 # Function
 delete_legacies() {
@@ -249,4 +185,22 @@ delete_legacies() {
     mv /share/tesla_ble_mqtt/public.pem /share/tesla_ble_mqtt/${vin}_public.pem
   fi
 
+}
+
+
+scan_bleln_macaddr() {
+  # copied from legacy "scan_bluetooth" function. To decide if still relevant
+  # note there is this PR https://github.com/tesla-local-control/tesla-local-control-addon/pull/32
+  # quite old, but has the principles for auto populating the BLE MAC Address with only the VIN
+  ble_ln=$1
+
+  log_info "Looking in BLE cache for a device matching ble_ln:$bleln"
+  if ! bluetoothctl --timeout 2 devices | grep $ble_ln; then
+    log_debug "Did not find ble_ln:$ble_ln in the BLE cache"
+    # Look for a BLE adverstisement matching ble_ln
+    log_notice "Scanning (10 seconds) BLE advertisement for ble_ln:$ble_ln"
+    bluetoothctl --timeout 10 scan on | grep $ble_ln
+    [ $? -ne 0 ] && return 1
+  fi
+  log_debug "scan_bleln_macaddr; found MAC addr for vin:$vin ble_ln:$ble_ln"
 }
