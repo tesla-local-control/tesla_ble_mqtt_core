@@ -14,9 +14,10 @@ send_command() {
 
   # add a retry loop
   max_retries=5
+  tesla_ctrl_count=0
   for tesla_ctrl_count in $(seq $max_retries); do
 
-    log_notice "Attempt $tesla_ctrl_count//${max_retries} sending $cmd_name to vin:$vin command:$cmd $2, attempt $tesla_ctrl_count/${max_retries}"
+    log_notice "Attempt $tesla_ctrl_count//${max_retries} sending $cmd_name to vin:$vin command:$cmd $2"
     set +e
     # shellcheck disable=SC2068
     tesla_ctrl_out=$(eval $TESLA_CONTROL_CMD)
@@ -26,7 +27,7 @@ send_command() {
       log_info "tesla-control command to vin:$vin was delivered"
       return 0
     else
-      if [[ "$tesla_ctrl_out" == *"Failed to execute command to vin:$vin: car could not execute command"* ]]; then
+      if [[ "$tesla_ctrl_out" == *"Failed to execute command to car could not execute command"* ]]; then
         log_warning "$tesla_ctrl_out"
         log_warning "Skipping command $* to vin:$vin"
         break
@@ -57,7 +58,7 @@ send_key() {
     EXIT_STATUS=$?
     set -e
     if [ $EXIT_STATUS -eq 0 ]; then
-      log_warning "KEY DELIVERED; IN YOUR CAR, CHECK THE LCD SCREEN AND ACCEPT THE KEY USING YOUR NFC CARD"
+      log_warning "KEY DELIVERED; IN YOUR CAR, CHECK THE CAR's CENTRAL SCREEN AND ACCEPT THE KEY USING YOUR NFC CARD"
       return 0
     else
       log_notice "COULD NOT SEND THE KEY. Is the car awake and sufficiently close to the bluetooth adapter?"
