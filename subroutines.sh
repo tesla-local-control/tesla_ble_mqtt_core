@@ -254,9 +254,7 @@ scan_bleln_macaddr() {
   # copied from legacy "scan_bluetooth" function. To decide if still relevant
   # note there is this PR https://github.com/tesla-local-control/tesla-local-control-addon/pull/32
   # quite old, but has the principles for auto populating the BLE MAC Address with only the VIN
-  vin=$1
-  ble_ln=$(tesla_vin2ble_ln $vin)
-  log_debug "Calculated BLE Local Name:$ble_ln for vin:$vin"
+  ble_ln=$1
 
   log_info "Looking for vin:$vin in the BLE cache that matches ble_ln:$ble_ln"
   bltctl_out=$(bluetoothctl --timeout 2 devices | grep $ble_ln)
