@@ -258,13 +258,14 @@ scan_bleln_macaddr() {
   ble_ln=$(tesla_vin2ble_ln $vin)
   log_debug "Calculated BLE Local Name:$ble_ln for vin:$vin"
 
-  log_info "Looking for vin:$vin in the BLE cache that matches ble_ln:$bleln"
+  log_info "Looking for vin:$vin in the BLE cache that matches ble_ln:$ble_ln"
   if ! bluetoothctl --timeout 2 devices | grep $ble_ln; then
     log_debug "Couldn't find ble_ln:$ble_ln in the BLE cache for vin:$vin"
     # Look for a BLE adverstisement matching ble_ln
     log_notice "Scanning (10 seconds) for BLE advertisement that matches ble_ln:$ble_ln"
-    bluetoothctl --timeout 10 scan on | grep $ble_ln
-    [ $? -ne 0 ] && return 1
+    if ! bluetoothctl --timeout 10 scan on | grep $ble_ln; then
+      return 1
+    fi
   fi
   log_debug "scan_bleln_macaddr; found above MAC addr for vin:$vin ble_ln:$ble_ln"
 }
