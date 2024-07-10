@@ -465,7 +465,7 @@ setup_auto_discovery() {
    }' | sed ':a;N;$!ba;s/\n//g' | eval $MOSQUITTO_PUB_BASE -t homeassistant/number/${DEV_ID}/climate-temp/config -l
 
   echo '{
-   "command_topic": "'${TOPIC_ROOT}'/sw-heater",
+   "command_topic": "'${TOPIC_ROOT}'/steering-wheel-heater",
    "device": {
     "identifiers": [
     "'${DEV_ID}'"
@@ -478,7 +478,7 @@ setup_auto_discovery() {
    "name": "Steering Wheel Heater",
    "device_class": "switch",
    "qos": 1,
-   "unique_id": "'${DEV_ID}'_sw-heater"
+   "unique_id": "'${DEV_ID}'_steering-wheel-heater"
    }' | sed ':a;N;$!ba;s/\n//g' | eval $MOSQUITTO_PUB_BASE -t homeassistant/switch/${DEV_ID}/sw-heater/config -l
 
   echo '{
