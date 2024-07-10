@@ -62,7 +62,7 @@ listen_to_mqtt() {
 
         scan-bleln-macaddr)
           log_notice "Scanning for Tesla BLE Local Name and respective MAC addr..."
-          scan-bleln-macaddr
+          scan-bleln-macaddr $vin
           ;;
 
         *)
