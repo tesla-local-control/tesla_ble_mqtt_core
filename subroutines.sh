@@ -193,18 +193,17 @@ scan_bleln_macaddr() {
   # quite old, but has the principles for auto populating the BLE MAC Address with only the VIN
   ble_ln=$1
 
+  mac_regex='([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})'
+
   log_info "Looking for vin:$vin in the BLE cache that matches ble_ln:$ble_ln"
-  bltctl_out=$(bluetoothctl --timeout 2 devices | grep $ble_ln)
-  if ! echo "$bltctl_out" | grep $ble_ln; then
-    log_notice "Couldn't find ble_ln:$ble_ln in the BLE cache for vin:$vin"
+  if ! bltctl_out=$(bluetoothctl --timeout 2 devices | grep $ble_ln | grep -Eo $mac_regex); then
+    log_notice "Couldn't find a match in the cache for ble_ln:$ble_ln for vin:$vin"
     # Look for a BLE adverstisement matching ble_ln
-    log_notice "Scanning (10 seconds) for BLE advertisement that matches ble_ln:$ble_ln"
-    bltctl_out=$(bluetoothctl --timeout 2 devices | grep $ble_ln)
-    if ! echo "$bltctl_out" | grep $ble_ln; then
+    log_notice "Scanning (10 seconds) for BLE advertisement that matches ble_ln:$ble_ln for vin:v$in"
+    if ! bltctl_out=$(bluetoothctl --timeout 10 "scan on" | grep $ble_ln | grep -Eo $mac_regex); then
       log_debug "Couldn't find a BLE advertisement for ble_ln:$ble_ln vin:$vin"
       return 1
     fi
   fi
-  log_info "scan_bleln_macaddr; found above MAC addr for vin:$vin ble_ln:$ble_ln"
-  log_notice "scan_bleln_macaddr; $bltctl_out"
+  log_notice "scan_bleln_macaddr; your car's BLE MAC addr for vin:$vin is $bltctl_out"
 }
