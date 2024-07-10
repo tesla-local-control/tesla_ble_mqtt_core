@@ -3,38 +3,70 @@
 # subroutines.sh
 #
 
+
 # Function
 send_command() {
   vin=$1
-  shift
+  cmd=$2
+  cmd_name=$3
 
+  TESLA_CONTROL_CMD='/usr/bin/tesla-control -ble -vin $vin -key-name /share/tesla_blemqtt/${vin}_private.pem -key-file /share/tesla_ble_mqtt/${vin}_private.pem $cmd 2>&1'
+
+  # add a retry loop
   max_retries=5
-  for count in $(seq $max_retries); do
-    log_notice "Sending command $* to vin $vin, attempt $count/${max_retries}"
+  for tesla_ctrl_count in $(seq $max_retries); do
+
+    log_notice "Attempt $tesla_ctrl_count//${max_retries} sending $cmd_name to vin:$vin command:$cmd $2, attempt $tesla_ctrl_count/${max_retries}"
     set +e
     # shellcheck disable=SC2068
-    tesla_ctrl_out=$(tesla-control -vin $vin -ble -key-name /share/tesla_blemqtt/${vin}_private.pem -key-file /share/tesla_ble_mqtt/${vin}_private.pem $@ 2>&1)
+    tesla_ctrl_out=$(eval $TESLA_CONTROL_CMD)
     EXIT_STATUS=$?
     set -e
     if [ $EXIT_STATUS -eq 0 ]; then
-      log_info "tesla-control send command succeeded"
-      break
+      log_info "tesla-control command to vin:$vin was delivered"
+      return 0
     else
-      if [[ "$tesla_ctrl_out" == *"Failed to execute command: car could not execute command"* ]]; then
+      if [[ "$tesla_ctrl_out" == *"Failed to execute command to vin:$vin: car could not execute command"* ]]; then
         log_warning "$tesla_ctrl_out"
-        log_warning "Skipping command $* to vin $vin"
+        log_warning "Skipping command $* to vin:$vin"
         break
       else
         log_error "tesla-control send command failed exit status $EXIT_STATUS."
         log_error "$tesla_ctrl_out"
         # Don't continue if we've reached max retries
-        [ $max_retries -eq $count ] && break
+        [ $max_retries -eq $tesla_ctrl_count ] &&
+          break
         log_notice "Retrying in $BLE_CMD_RETRY_DELAY seconds"
       fi
       sleep $BLE_CMD_RETRY_DELAY
     fi
   done
+  return 1
 }
+
+
+# Function
+send_key() {
+  vin=$1
+
+  max_retries=5
+  for count in $(seq $max_retries); do
+    log_notice "Attempt $sendKeyCount/${max_retries} to delivery the public key to vin $vin"
+    set +e
+    tesla-control -ble -vin $vin add-key-request /share/tesla_ble_mqtt/${vin}_public.pem owner cloud_key
+    EXIT_STATUS=$?
+    set -e
+    if [ $EXIT_STATUS -eq 0 ]; then
+      log_warning "KEY DELIVERED; IN YOUR CAR, CHECK THE LCD SCREEN AND ACCEPT THE KEY USING YOUR NFC CARD"
+      return 0
+    else
+      log_notice "COULD NOT SEND THE KEY. Is the car awake and sufficiently close to the bluetooth adapter?"
+      sleep $BLE_CMD_RETRY_DELAY
+    fi
+  done
+  return 1
+}
+
 
 # Function
 # Tesla VIN to BLE Local Name
@@ -186,27 +218,6 @@ listen_to_ble() {
   done
 }
 
-# Function
-send_key() {
-  vin=$1
-
-  max_retries=5
-  for count in $(seq $max_retries); do
-    echo "Attempt $count/${max_retries}"
-    log_notice "Sending key to vin $vin, attempt $count/${max_retries}"
-    set +e
-    tesla-control -ble -vin $vin add-key-request /share/tesla_ble_mqtt/${vin}_public.pem owner cloud_key
-    EXIT_STATUS=$?
-    set -e
-    if [ $EXIT_STATUS -eq 0 ]; then
-      log_notice "KEY SENT TO VEHICLE: PLEASE CHECK YOU TESLA'S SCREEN AND ACCEPT WITH YOUR CARD"
-      break
-    else
-      log_notice "COULD NOT SEND THE KEY. Is the car awake and sufficiently close to the bluetooth device?"
-      sleep $BLE_CMD_RETRY_DELAY
-    fi
-  done
-}
 
 # Function
 delete_legacies() {
