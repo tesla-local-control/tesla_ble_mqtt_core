@@ -213,8 +213,8 @@ scan-bleln-macaddr(){
   # note there is this PR https://github.com/tesla-local-control/tesla-local-control-addon/pull/32
   # quite old, but has the principles for auto populating the BLE MAC Address with only the VIN
   vin=$1
-  VIN_HASH=`echo -n ${vin} | sha1sum`
-  BLE_ADVERT=S${VIN_HASH:0:16}C
+  VIN_HASH=$(echo -n ${vin} | sha1sum)
+  BLE_ADVERT="S$(echo "$VIN_HASH" | cut -c1-16)C"
   log_notice "Calculating BLE Advert ${BLE_ADVERT} from VIN"
   log_notice "Scanning Bluetooth for $BLE_ADVERT, wait 10 secs"
   bluetoothctl --timeout 10 scan on | grep $BLE_ADVERT
