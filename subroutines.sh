@@ -259,13 +259,17 @@ scan_bleln_macaddr() {
   log_debug "Calculated BLE Local Name:$ble_ln for vin:$vin"
 
   log_info "Looking for vin:$vin in the BLE cache that matches ble_ln:$ble_ln"
-  if ! bluetoothctl --timeout 2 devices | grep $ble_ln; then
-    log_debug "Couldn't find ble_ln:$ble_ln in the BLE cache for vin:$vin"
+  bltctl_out=$(bluetoothctl --timeout 2 devices | grep $ble_ln)
+  if ! echo "$bltctl_out" | grep $ble_ln; then
+    log_notice "Couldn't find ble_ln:$ble_ln in the BLE cache for vin:$vin"
     # Look for a BLE adverstisement matching ble_ln
     log_notice "Scanning (10 seconds) for BLE advertisement that matches ble_ln:$ble_ln"
-    if ! bluetoothctl --timeout 10 scan on | grep $ble_ln; then
+    bltctl_out=$(bluetoothctl --timeout 2 devices | grep $ble_ln)
+    if ! echo "$bltctl_out" | grep $ble_ln; then
+      log_debug "Couldn't find a BLE advertisement for ble_ln:$ble_ln vin:$vin"
       return 1
     fi
   fi
-  log_debug "scan_bleln_macaddr; found above MAC addr for vin:$vin ble_ln:$ble_ln"
+  log_info "scan_bleln_macaddr; found above MAC addr for vin:$vin ble_ln:$ble_ln"
+  log_notice "scan_bleln_macaddr; $bltctl_out"
 }
