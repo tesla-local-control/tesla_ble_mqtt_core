@@ -19,16 +19,18 @@ send_key() {
 
   TESLA_ADD_KEY_CMD='/usr/bin/tesla-control -vin $vin -ble add-key-request /share/tesla_ble_mqtt/${vin}_public.pem owner cloud_key 2>&1'
 
+  log_info "Trying to deploy the public key to vin:$vin"
+
   max_retries=5
   for sendKeyCount in $(seq $max_retries); do
-    log_notice "Attempt $sendKeyCount/${max_retries} to delivery the public key to vin $vin"
+    log_info "Attempt $sendKeyCount/${max_retries} to delivery the public key to vin $vin"
     set +e
     tesla_ctrl_out=$(eval $TESLA_ADD_KEY_CMD)
     EXIT_STATUS=$?
     set -e
     if [ $EXIT_STATUS -eq 0 ]; then
       log_notice "$tesla_ctrl_out"
-      log_warning "KEY DELIVERED; IN YOUR CAR, CHECK THE LCD SCREEN AND ACCEPT THE KEY USING YOUR NFC CARD"
+      log_warning "KEY DELIVERED; IN YOUR CAR, CHECK THE CAR's CENTRAL SCREEN AND ACCEPT THE KEY USING YOUR NFC CARD"
       return 0
     else
       log_error "$tesla_ctrl_out"

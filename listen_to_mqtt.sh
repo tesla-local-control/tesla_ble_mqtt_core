@@ -57,20 +57,19 @@ listen_to_mqtt() {
           fi
 
           log_warning "Private and Public keys were generated; Next:
-       1/ Remove any previously deployed BLE keys from vehicle before deploying this one
-       2/ Open the Tesla App on your smartphone and make sure the car is awake.Wake the car up with your Tesla App
-       3/ In Home Assistant device Tesla_BLE_${vin}, push the button 'Deploy Key'"
+
+            1/ Remove any previously deployed BLE keys from vehicle before deploying this one
+            2/ Open the Tesla App on your smartphone and make sure the vehicule is awake
+            3/ In Home Assistant device Tesla_BLE_${vin}, push the button 'Deploy Key'"
+
           ;;
 
         deploy-key)
-          log_notice "Trying to deploy the public key to vehicle..."
+          log_debug "deploy-key; calling send_key()"
           if send_key $vin; then
-            log_info "Public key successfully sent to the car"
             ### TODO add checkVehiculeValidKey tesla-control ping or list-keys or ?!
             log_info "Setting up Home Assistant device's panel"
             setupHAAutoDiscovery $vin
-          else
-            log_error "Public key did not deployed to vin:$vin"
           fi
           ;;
 
@@ -164,7 +163,7 @@ listen_to_mqtt() {
           send_command $vin $msg "Unlock vehicle"
           ;;
         wake)
-          send_command $vin " "-domain vcsec $msg" "Wake up vehicule"
+          send_command $vin "-domain vcsec $msg" "Wake up vehicule"
           ;;
         windows-close)
           send_command $vin $msg "Close all windows"
@@ -189,11 +188,11 @@ listen_to_mqtt() {
       charging-set-amps)
         # https://github.com/iainbullock/tesla_ble_mqtt_docker/issues/4
         if [ $msg -gt 4 ]; then
-          send_command $vin "charging-set-amps $msg" "Set amps"
+          send_command $vin "charging-set-amps $msg" "Set charging Amps to $msg"
         else
-          send_command $vin "charging-set-amps $msg" "First Amp set"
+          send_command $vin "charging-set-amps $msg" "Set charging Amps to 5A then to $msg"
           sleep 1
-          send_command $vin "charging-set-amps $msg" "Second Ampt set"
+          send_command $vin "charging-set-amps $msg" "Set charging Amps to $msg"
         fi
         ;;
 
