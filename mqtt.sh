@@ -4,14 +4,14 @@
 #
 
 
-### function setupMQTTCmds
+### function setupMQTTEnv
 ##
 ##  Define MOSQUITTO_PUB_BASE and MOSQUITTO_SUB_BASE
 #   - supports authentication or anonymous
 ##  - TODO : Add support for key authentication & tls
 ##
 ###
-setupMQTTCmds() {
+setupMQTTEnv() {
   # MQTT clients anonymous or authentication mode
   if [ -n "$MQTT_USERNAME" ]; then
     log_notice "Setting up MQTT clients with authentication"
@@ -48,3 +48,5 @@ setupHAAutoDiscoveryLoop() {
     fi
   done
 }
+
+setupMQTTEnv
