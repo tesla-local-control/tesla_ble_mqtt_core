@@ -126,7 +126,7 @@ while :; do
   listen_to_mqtt_loop &
   # Don't run presence detection if TTL is 0
 
-  if [ $PRESENCE_DETECTION_TTL -gt 0 ]; then
+  if [ $PRESENCE_DETECTION_TTL -gt 0 ] && [ -n "$BLE_MAC_LIST" ]; then
     log_info "Launch BLE scanning for car presence every $PRESENCE_DETECTION_LOOP_DELAY seconds"
     listen_to_ble $vin_count
     # Run listen_to_ble every 3m
