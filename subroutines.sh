@@ -208,7 +208,7 @@ send_key() {
   done
 }
 
-scan-bleln-macaddr(){
+scan_bleln_macaddr(){
   # copied from legacy "scan_bluetooth" function. To decide if still relevant
   # note there is this PR https://github.com/tesla-local-control/tesla-local-control-addon/pull/32
   # quite old, but has the principles for auto populating the BLE MAC Address with only the VIN
