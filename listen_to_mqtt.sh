@@ -58,7 +58,11 @@ listen_to_mqtt() {
 
         deploy-key)
           log_notice "Trying to deploy the public key to vehicle..."
-          send_key $vin
+          if send_key $vin; then
+            log_info "Public key successfully sent to vin:$vin"
+          else
+            log_error "Public key did not deployed to vin:$vin"
+          fi
           ;;
 
         scan-bleln-macaddr)
