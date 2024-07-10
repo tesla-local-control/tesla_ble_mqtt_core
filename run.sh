@@ -8,21 +8,31 @@
 echo "Source required files to load required functions"
 ### Source required files
 #
-# Source & Init product's library
-[ -f /app/libproduct.sh ] &&
-  echo "Source libproduct.sh" &&
-  . /app/libproduct.sh &&
-  type initProduct >/dev/null &&
-  initProduct
+# Init product's library
+[ ! -f /app/libproduct.sh ] &&
+  log_fatal "File not found; /app/$fSource" && \
+  exit 5
+echo "Source libproduct.sh"
+. /app/libproduct.sh
+initProduct
 
-log_debug "Source /app/subroutines.sh"
-. /app/subroutines.sh
+# Source all libraries
+for fSource in "version.h \
+  mqtt.sh \
+  discovery.sh \
+  listen_to_mqtt.sh \
+  subroutines.sh \
+  tesla.sh"; do
 
-log_debug "Source /app/discovery.sh"
-. /app/discovery.sh
+  [ ! -f $fSource ] &&
+    log_fatal "File not found; $fSource" &&
+    exit 10
 
-log_debug "Source /app/listen_to_mqtt.sh"
-. /app/listen_to_mqtt.sh
+  log_debug "Source /app/$fSource" &&
+  . /app/$fSource
+
+done
+
 ### END Source all required files
 
 ### SETUP ENVIRONMENT #########################################################
@@ -30,7 +40,7 @@ if [ ! -d /share/tesla_ble_mqtt ]; then
   log_info "Creating directory /share/tesla_ble_mqtt"
   mkdir -p /share/tesla_ble_mqtt
 else
-  log_debug "/share/tesla_ble_mqtt already exists, existing keys can be reused"
+  log_debug "/share/tesla_ble_mqtt already exists"
 fi
 
 # If empty string, initialize w/ default value - Required for add-on and Docker standalone
@@ -79,6 +89,13 @@ for vin in $VIN_LIST; do
   log_debug "Adding $BLE_LN to BLE_LN_LIST, count $vin_count"
   BLE_LN_LIST="$BLE_LN_LIST $BLE_LN"
 
+  if [ -f /share/tesla_ble_mqtt/${vin}_private.pem ] &&
+    [ -f /share/tesla_ble_mqtt/${vin}_public.pem ]; then
+    log_debug "Found public and private keys set for vin:$vin"
+  else
+    log_debug "Did not find public and private keys for vin:$vin"
+  fi
+
   ################ HANDLE CONFIG CHANGE #######################################
   # TEMPORARY - Move original "vin" key to "vin{1}"
   if [ -f /share/tesla_ble_mqtt/private.pem ] && [ $vin_count -eq 1 ]; then
@@ -108,10 +125,10 @@ fi
 discardMessages=yes
 setupHAAutoDiscoveryLoop $discardMessages
 
-# IF HA backend is enable, call listen_for_HA_start()
+# IF HA backend is enable, call listen_for_HA_status()
 if [ "$ENABLE_HA_FEATURES" == "true" ]; then
   log_notice "Listening for Home Assistant Start (in background)"
-  listen_for_HA_start &
+  listen_for_HA_status &
 else
   log_info "HA backend is disable, not listening for Home Assistant Start"
 fi

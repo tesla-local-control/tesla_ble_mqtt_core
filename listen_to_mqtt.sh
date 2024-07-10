@@ -3,12 +3,13 @@
 # listen_to_mqtt
 #
 
-###
-#
-# listen_to_mqtt_loop :
-#   - Main while loop
-#   - If listen_to_mqtt fails due to MQTT service restart, network or other conditions the
-#     loop will restart it.
+### function listen_to_mqtt_loop
+##
+##  - Main MQTT while loop
+#   - If listen_to_mqtt() fails due to MQTT service (restart/network/etc), loop handles restart
+#   - TODO: After testing, this loop might be useless.... process _sub keeps running when MQTT is
+@     down for ~ 10-15m
+##
 ###
 listen_to_mqtt_loop() {
 
@@ -56,149 +57,181 @@ listen_to_mqtt() {
           fi
 
           log_warning "Private and Public keys were generated; Next:
-
        1/ Remove any previously deployed BLE keys from vehicle before deploying this one
-       2/ Wake the car up with your Tesla App
-       3/ Push the button 'Deploy Key'"
+       2/ Open the Tesla App on your smartphone and make sure the car is awake.Wake the car up with your Tesla App
+       3/ In Home Assistant device Tesla_BLE_${vin}, push the button 'Deploy Key'"
           ;;
 
         deploy-key)
           log_notice "Trying to deploy the public key to vehicle..."
           if send_key $vin; then
-            log_info "Public key successfully deployed"
+            log_info "Public key successfully sent to the car"
+            ### TODO add checkVehiculeValidKey tesla-control ping or list-keys or ?!
             log_info "Setting up Home Assistant device's panel"
             setupHAAutoDiscovery $vin
           else
-            log_error "Public key did not deployed"
+            log_error "Public key did not deployed to vin:$vin"
           fi
           ;;
 
         scan-bleln-macaddr)
-          log_notice "Scanning for Tesla BLE Local Name and respective MAC addr..."
-          scan-bleln-macaddr
+          ble_ln=$(tesla_vin2ble_ln $vin)
+          log_notice "BLE scanning for vin:$vin using ble_ln:$ble_ln"
+          scan-bleln-macaddr $ble_ln
           ;;
 
         *)
-          log_error "Invalid configuration request; topic:$topic vin:$vin msg:$msg"
+          log_error "Invalid configuration request:$msg topic:$topic vin:$vin"
           ;;
         esac
         ;;
 
       command)
         case $msg in
-        wake)
-          log_notice "Waking Up"
-          send_command $vin "-domain vcsec $msg"
-          ;;
-        trunk-open)
-          log_notice "Opening Trunk"
-          send_command $vin $msg
-          ;;
-        trunk-close)
-          log_notice "Closing Trunk"
-          send_command $vin $msg
-          ;;
-        charging-start)
-          log_notice "Start Charging"
-          send_command $vin $msg
-          ;;
-        charging-stop)
-          log_notice "Stop Charging"
-          send_command $vin $msg
-          ;;
-        charge-port-open)
-          log_notice "Open Charge Port"
-          send_command $vin $msg
+        autosecure-modelx)
+          send_command $vin $msg "Close falcon-wing doors and lock vehicle"
           ;;
         charge-port-close)
-          log_notice "Close Charge Port"
-          send_command $vin $msg
+          send_command $vin $msg "Close charge port"
           ;;
-        climate-on)
-          log_notice "Start Climate"
-          send_command $vin $msg
+        charge-port-open)
+          send_command $vin $msg "Open charge port"
+          ;;
+        charging-schedule-cancel)
+          send_command $vin $msg "Cancel scheduled charge start"
+          ;;
+        charging-start)
+          send_command $vin $msg "Start charging"
+          ;;
+        charging-stop)
+          send_command $vin $msg "Stop charging"
           ;;
         climate-off)
-          log_notice "Stop Climate"
-          send_command $vin $msg
+          send_command $vin $msg "Turn off climate control"
+          ;;
+        climate-on)
+          send_command $vin $msg "Turn on climate control"
+          ;;
+        drive)
+          send_command $vin $msg "Remote start vehicle"
           ;;
         flash-lights)
-          log_notice "Flash Lights"
-          send_command $vin $msg
+          send_command $vin $msg "Flash lights"
           ;;
         frunk-open)
-          log_notice "Open Frunk"
-          send_command $vin $msg
+          send_command $vin $msg "Open vehicle frunk"
           ;;
         honk)
-          log_notice "Honk Horn"
-          send_command $vin $msg
+          send_command $vin $msg "Honk horn"
+          ;;
+        list-keys)
+          send_command $vin $msg "List public keys enrolled on vehicle"
           ;;
         lock)
-          log_notice "Lock Car"
-          send_command $vin $msg
+          send_command $vin $msg "Lock vehicle"
+          ;;
+        media-toggle-playback)
+          send_command $vin $msg "Toggle between play/pause"
+          ;;
+        ping)
+          send_command $vin $msg "Ping vehicle"
+          ;;
+        software-update-cancel)
+          send_command $vin $msg "Cancel a pending software update"
+          ;;
+        software-update-start)
+          send_command $vin $msg "Start software update after delay"
+          ;;
+        tonneau-close)
+          send_command $vin $msg "Close Cybertruck tonneau"
+          ;;
+        tonneau-open)
+          send_command $vin $msg "Open Cybertruck tonneau"
+          ;;
+        tonneau-stop)
+          send_command $vin $msg "Stop moving Cybertruck tonneau"
+          ;;
+        trunk-close)
+          send_command $vin $msg "Close vehicle trunk"
+          ;;
+        trunk-move)
+          send_command $vin $msg "Toggle trunk open/closed"
+          ;;
+        trunk-open)
+          send_command $vin $msg "Open vehicle trunk"
           ;;
         unlock)
-          log_notice "Unlock Car"
-          send_command $vin $msg
+          send_command $vin $msg "Unlock vehicle"
+          ;;
+        wake)
+          send_command $vin " "-domain vcsec $msg" "Wake up vehicule"
           ;;
         windows-close)
-          log_notice "Close Windows"
-          send_command $vin $msg
+          send_command $vin $msg "Close all windows"
           ;;
         windows-vent)
-          log_notice "Vent Windows"
-          send_command $vin $msg
+          send_command $vin $msg "Vent all windows"
           ;;
         *)
-          log_error "Invalid command request; topic:$topic msg:$msg"
+          log_error "Invalid command request; vin:$vin topic:$topic msg:$msg"
           ;;
         esac
         ;; ## END of command)
 
+      auto-seat-and-climate)
+        send_command $vin "auto-seat-and-climate LR on" "Turn on automatic seat heating and HVAC"
+        ;;
+
+      charging-schedule)
+        send_command $vin "charging-schedule $msg" "Schedule charging to $msg minutes after midnight and enable daily scheduling"
+        ;;
+
       charging-set-amps)
         # https://github.com/iainbullock/tesla_ble_mqtt_docker/issues/4
         if [ $msg -gt 4 ]; then
-          log_notice "Set amps"
-          send_command $vin "charging-set-amps $msg"
+          send_command $vin "charging-set-amps $msg" "Set amps"
         else
-          log_notice "First Amp set"
-          send_command $vin "charging-set-amps $msg"
+          send_command $vin "charging-set-amps $msg" "First Amp set"
           sleep 1
-          log_notice "Second Amp set"
-          send_command $vin "charging-set-amps $msg"
+          send_command $vin "charging-set-amps $msg" "Second Ampt set"
         fi
         ;;
 
       charging-set-amps-override)
         # Command to send a single Amps request
         # Ref: https://github.com/tesla-local-control/tesla_ble_mqtt_core/issues/19
-        log_info "Set charging Amps to $msg"
-        send_command $vin "charging-set-amps $msg"
+        send_command $vin "charging-set-amps $msg" "Set charging Amps to $msg"
         ;;
 
       charging-set-limit)
-        send_command $vin "charging-set-limit $msg"
+        send_command $vin "charging-set-limit $msg" "Set charging limit to ${msg}%"
         ;;
 
       climate-set-temp)
-        send_command $vin "climate-set-temp ${msg}C"
-        ;;
-
-      auto-seat-and-climate)
-        send_command $vin "auto-seat-and-climate LR on"
+        [ ${msg} -le 50 ] && T="${msg}ºC" || T="${msg}ºF"
+        send_command $vin "climate-set-temp $msg" "Set climate temperature to ${T}"
         ;;
 
       heater-seat-front-left)
-        send_command $vin "seat-heater front-left $msg"
+        send_command $vin "seat-heater front-left $msg" "Turn $msg front left seat heater"
         ;;
 
       heater-seat-front-right)
-        send_command $vin "seat-heater front-right $msg"
+        send_command $vin "seat-heater front-right $msg" "Turn $msg front right seat heater"
         ;;
 
-      sw-heater)
-        send_command $vin "sw-heater $msg"
+      media-set-volume)
+        send_command $vin $msg "Set volume to $msg"
+        ;;
+
+      sentry-mode)
+        msg_lower=$(echo "$msg" | tr '[:upper:]' '[:lower:]')
+        send_command $vin "sentry-mode $msg_lower" "Set sentry mode to $msg_lower"
+        ;;
+
+      steering-wheel-heater)
+        msg_lower=$(echo "$msg" | tr '[:upper:]' '[:lower:]')
+        send_command $vin "steering-wheel-heater $msg_lower" "Set steering wheel mode to $msg_lower"
         ;;
 
       *)
@@ -212,32 +245,9 @@ listen_to_mqtt() {
 
 }
 
-# Function
-setupHAAutoDiscoveryLoop() {
-
-  discardMessages=$1
-
-  # Setup or skip HA auto discovery & Discard old MQTT messages
-  for vin in $VIN_LIST; do
-
-    # IF HA backend is enable, setup HA Auto Discover
-    if [ "$ENABLE_HA_FEATURES" == "true" ]; then
-      log_debug "Calling setupHAAutoDiscoveryMain() $vin"
-      setupHAAutoDiscoveryMain $vin
-    else
-      log_info "HA backend is disable, skipping setup for HA Auto Discovery"
-    fi
-
-    # Discard or not awaiting messages
-    if [ "$discardMessages" = "yes" ]; then
-      log_notice "Discarding any unread MQTT messages for $vin"
-      eval $MOSQUITTO_SUB_BASE -E -i tesla_ble_mqtt -t tesla_ble_mqtt/$vin/+
-    fi
-  done
-}
 
 # Function
-listen_for_HA_start() {
+listen_for_HA_status() {
   eval $MOSQUITTO_SUB_BASE --nodelay -t homeassistant/status -F \"%t %p\" |
     while read -r payload; do
       topic=$(echo "$payload" | cut -d ' ' -f 1)
