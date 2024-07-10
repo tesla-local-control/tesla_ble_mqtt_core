@@ -83,6 +83,9 @@ listen_to_mqtt() {
         autosecure-modelx)
           send_command $vin $msg "Close falcon-wing doors and lock vehicle"
           ;;
+        body-controller-state)
+          send_command $vin $msg "Fetch limited vehicle state information. Works over BLE when infotainment is asleep"
+          ;;
         charge-port-close)
           send_command $vin $msg "Close charge port"
           ;;
