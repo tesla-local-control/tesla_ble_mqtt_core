@@ -3,7 +3,6 @@
 # listen_to_mqtt
 #
 
-
 ###
 #
 # listen_to_mqtt_loop :
