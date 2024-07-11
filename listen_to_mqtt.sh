@@ -256,9 +256,9 @@ listenForHAstatus() {
           ;;
         online)
           # Ref: https://github.com/iainbullock/tesla_ble_mqtt_docker/discussions/6
-          log_notice "Home Assistant is now online, calling setup_auto_discovery_loop()"
+          log_notice "Home Assistant is now online, calling setupHADeviceAllVINsLoop()"
           discardMessages=no
-          setup_auto_discovery_loop $discardMessages
+          setupHADeviceAllVINsLoop $discardMessages
           ;;
         *)
           log_error "Invalid status; topic:$topic status:$status"
