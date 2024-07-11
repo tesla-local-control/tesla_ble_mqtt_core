@@ -61,9 +61,10 @@ listen_to_mqtt() {
           ;;
 
         scan-bleln-macaddr)
-          ble_ln=$(tesla_vin2ble_ln $vin)
-          log_notice "BLE scanning for vin:$vin using ble_ln:$ble_ln"
-          scan-bleln-macaddr $ble_ln
+          log_notice 'scan-bleln-macaddr; calling scanBLEforMACaddr()'
+          if ble_mac_addr=$(scanBLEforMACaddr $vin); then
+            log_notice "Found BLE MAC addr for vin:$vin is $ble_mac_addr"
+          fi
           ;;
 
         *)
