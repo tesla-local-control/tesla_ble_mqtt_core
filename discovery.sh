@@ -52,7 +52,7 @@ function setupHADevicePanelCardsMain() {
   fi
 
   # Newly added car?
-  if [ $keysDir/${vin}_pubkey_accepted ]; then
+  if [ -f $keysDir/${vin}_pubkey_accepted ]; then
     log_debug "setupHADevicePanelCardsMain() pubkey deployed vin:$vin"
     setupHADeviceDeployKeyButton $vin
     setupHADeviceGenerateKeysButton $vin
@@ -669,7 +669,6 @@ function setupHADeviceScanBLElnButton() {
   log_debug "setupHADeviceScanBLElnButton() leaving vin:$vin"
 
 }
-
 
 ###
 ##
