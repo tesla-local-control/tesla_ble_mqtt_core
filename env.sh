@@ -2,19 +2,19 @@
 #
 # shellcheck shell=dash
 #
+export SW_VERSION=0.1.0
 
 ### LOAD LIBRARIES (FUNCTIONS & ENVIRONMENT ) #################################
-echo "Loading libraries (functions & environment)..."
-for fSource in version.h \
-  product.sh \
-  mqtt.sh \
-  discovery.sh \
+echo "[$(date +%H:%M:%S)] loading libproduct.sh"
+. /app/libproduct.sh
+log_debug "Loading environment & functions..."
+for fSource in discovery.sh \
   listen_to_mqtt.sh \
   subroutines.sh \
   tesla.sh; do
 
-  if [ -f $fSource ]; then
-    [ $DEBUG == "true" ] && echo "$DATELOG Loading /app/$fSource"
+  if [ -f /app/$fSource ]; then
+    log_debug "Loading /app/$fSource"
     # shellcheck source=/dev/null
     . /app/$fSource
   else

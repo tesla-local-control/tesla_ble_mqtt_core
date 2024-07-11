@@ -5,7 +5,7 @@
 # Note: shebang will be replaced automatically by the HA addon deployment script to #!/command/with-contenv bashio
 
 ### DEFINE FUNCTIONS ##########################################################
-echo "[$(date +%H:%M:%S)] Starting, initialize environment..."
+echo "[$(date +%H:%M:%S)] Starting... loading /app/env.sh"
 # Init product's environment
 . /app/env.sh
 
