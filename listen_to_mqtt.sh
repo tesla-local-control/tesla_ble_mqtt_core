@@ -8,7 +8,7 @@
 ##  - Main MQTT while loop
 #   - If listen_to_mqtt() fails due to MQTT service (restart/network/etc), loop handles restart
 #   - TODO: After testing, this loop might be useless.... process _sub keeps running when MQTT is
-@     down for ~ 10-15m
+#     down for ~ 10-15m
 ##
 ###
 listen_to_mqtt_loop() {
@@ -74,9 +74,10 @@ listen_to_mqtt() {
           ;;
 
         scan-bleln-macaddr)
-          ble_ln=$(tesla_vin2ble_ln $vin)
-          log_notice "BLE scanning for vin:$vin using ble_ln:$ble_ln"
-          scan-bleln-macaddr $ble_ln
+          log_notice 'scan-bleln-macaddr; calling scanBLEforMACaddr()'
+          if ble_mac_addr=$(scanBLEforMACaddr $vin); then
+            log_notice "Found BLE MAC addr for vin:$vin is $ble_mac_addr"
+          fi
           ;;
 
         *)

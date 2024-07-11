@@ -31,6 +31,10 @@ export ENABLE_HA_FEATURES=${ENABLE_HA_FEATURES:-true}
 export PRESENCE_DETECTION_LOOP_DELAY=${PRESENCE_DETECTION_LOOP_DELAY:-120}
 export PRESENCE_DETECTION_TTL=${PRESENCE_DETECTION_TTL:-240}
 
+export BLE_LN_REGEX='S[0-9A-Fa-f]{16}C'
+export MAC_REGEX='([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})'
+export VIN_REGEX='[A-HJ-NPR-Z0-9]{17}'
+
 
 ### LOG CONFIG VARS ###########################################################
 log_info "Configuration Options are:
