@@ -249,3 +249,32 @@ delete_legacies() {
   fi
 
 }
+
+### scanBLEforMACaddr
+##
+#   Uses BLE Local Name derived from the VIN to match a MAC addr in the output
+##  of the command bluetoothctl "devices" and "scan on"
+###
+scanBLEforMACaddr() {
+  # copied from legacy "scan_bluetooth" function. To decide if still relevant
+  # note there is this PR https://github.com/tesla-local-control/tesla-local-control-addon/pull/32
+  # quite old, but has the principles for auto populating the BLE MAC Address with only the VIN
+  vin=$1
+
+  mac_regex='([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})'
+
+  ble_ln=$(tesla_vin2ble_ln $vin)
+
+  log_info "Looking for vin:$vin in the BLE cache that matches ble_ln:$ble_ln"
+  if ! bltctl_out=$(bluetoothctl --timeout 2 devices | grep $ble_ln | grep -Eo $mac_regex); then
+    log_notice "Couldn't find a match in the cache for ble_ln:$ble_ln for vin:$vin"
+    # Look for a BLE adverstisement matching ble_ln
+    log_notice "Scanning (10 seconds) for BLE advertisement that matches ble_ln:$ble_ln for vin:$vin"
+    if ! bltctl_out=$(bluetoothctl --timeout 10 "scan on" | grep $ble_ln | grep -Eo $mac_regex); then
+      log_notice "Couldn't find a BLE advertisement for ble_ln:$ble_ln vin:$vin"
+      return 1
+    fi
+  fi
+  echo $bltctl_out
+  return 0
+}
