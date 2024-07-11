@@ -4,52 +4,6 @@
 #
 
 # Function
-send_command() {
-  vin=$1
-  shift
-
-  max_retries=5
-  for count in $(seq $max_retries); do
-    log_notice "Sending command $* to vin $vin, attempt $count/${max_retries}"
-    set +e
-    # shellcheck disable=SC2068
-    tesla_ctrl_out=$(tesla-control -vin $vin -ble -key-name /share/tesla_blemqtt/${vin}_private.pem -key-file /share/tesla_ble_mqtt/${vin}_private.pem $@ 2>&1)
-    EXIT_STATUS=$?
-    set -e
-    if [ $EXIT_STATUS -eq 0 ]; then
-      log_info "tesla-control send command succeeded"
-      break
-    else
-      if [[ "$tesla_ctrl_out" == *"Failed to execute command: car could not execute command"* ]]; then
-        log_warning "$tesla_ctrl_out"
-        log_warning "Skipping command $* to vin $vin"
-        break
-      else
-        log_error "tesla-control send command failed exit status $EXIT_STATUS."
-        log_error "$tesla_ctrl_out"
-        # Don't continue if we've reached max retries
-        [ $max_retries -eq $count ] && break
-        log_notice "Retrying in $BLE_CMD_RETRY_DELAY seconds"
-      fi
-      sleep $BLE_CMD_RETRY_DELAY
-    fi
-  done
-}
-
-# Function
-# Tesla VIN to BLE Local Name
-tesla_vin2ble_ln() {
-  vin=$1
-  ble_ln=""
-
-  # BLE Local Name
-  ble_ln="S$(echo -n ${vin} | sha1sum | cut -c 1-16)C"
-
-  echo $ble_ln
-
-}
-
-# Function
 replace_value_at_position() {
 
   original_list="$1"
@@ -183,28 +137,6 @@ listen_to_ble() {
 
     done
     sleep $PRESENCE_DETECTION_LOOP_DELAY
-  done
-}
-
-# Function
-send_key() {
-  vin=$1
-
-  max_retries=5
-  for count in $(seq $max_retries); do
-    echo "Attempt $count/${max_retries}"
-    log_notice "Sending key to vin $vin, attempt $count/${max_retries}"
-    set +e
-    tesla-control -ble -vin $vin add-key-request /share/tesla_ble_mqtt/${vin}_public.pem owner cloud_key
-    EXIT_STATUS=$?
-    set -e
-    if [ $EXIT_STATUS -eq 0 ]; then
-      log_notice "KEY SENT TO VEHICLE: PLEASE CHECK YOU TESLA'S SCREEN AND ACCEPT WITH YOUR CARD"
-      break
-    else
-      log_notice "COULD NOT SEND THE KEY. Is the car awake and sufficiently close to the bluetooth device?"
-      sleep $BLE_CMD_RETRY_DELAY
-    fi
   done
 }
 

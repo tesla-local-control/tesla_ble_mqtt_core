@@ -57,7 +57,7 @@ listen_to_mqtt() {
 
         deploy-key)
           log_notice "Trying to deploy the public key to vehicle..."
-          send_key $vin
+          teslaCtrlSendKey $vin
           ;;
 
         scan-bleln-macaddr)
@@ -75,67 +75,67 @@ listen_to_mqtt() {
         case $msg in
         wake)
           log_notice "Waking Up"
-          send_command $vin "-domain vcsec $msg"
+          teslaCtrlSendCommand $vin "-domain vcsec $msg"
           ;;
         trunk-open)
           log_notice "Opening Trunk"
-          send_command $vin $msg
+          teslaCtrlSendCommand $vin $msg
           ;;
         trunk-close)
           log_notice "Closing Trunk"
-          send_command $vin $msg
+          teslaCtrlSendCommand $vin $msg
           ;;
         charging-start)
           log_notice "Start Charging"
-          send_command $vin $msg
+          teslaCtrlSendCommand $vin $msg
           ;;
         charging-stop)
           log_notice "Stop Charging"
-          send_command $vin $msg
+          teslaCtrlSendCommand $vin $msg
           ;;
         charge-port-open)
           log_notice "Open Charge Port"
-          send_command $vin $msg
+          teslaCtrlSendCommand $vin $msg
           ;;
         charge-port-close)
           log_notice "Close Charge Port"
-          send_command $vin $msg
+          teslaCtrlSendCommand $vin $msg
           ;;
         climate-on)
           log_notice "Start Climate"
-          send_command $vin $msg
+          teslaCtrlSendCommand $vin $msg
           ;;
         climate-off)
           log_notice "Stop Climate"
-          send_command $vin $msg
+          teslaCtrlSendCommand $vin $msg
           ;;
         flash-lights)
           log_notice "Flash Lights"
-          send_command $vin $msg
+          teslaCtrlSendCommand $vin $msg
           ;;
         frunk-open)
           log_notice "Open Frunk"
-          send_command $vin $msg
+          teslaCtrlSendCommand $vin $msg
           ;;
         honk)
           log_notice "Honk Horn"
-          send_command $vin $msg
+          teslaCtrlSendCommand $vin $msg
           ;;
         lock)
           log_notice "Lock Car"
-          send_command $vin $msg
+          teslaCtrlSendCommand $vin $msg
           ;;
         unlock)
           log_notice "Unlock Car"
-          send_command $vin $msg
+          teslaCtrlSendCommand $vin $msg
           ;;
         windows-close)
           log_notice "Close Windows"
-          send_command $vin $msg
+          teslaCtrlSendCommand $vin $msg
           ;;
         windows-vent)
           log_notice "Vent Windows"
-          send_command $vin $msg
+          teslaCtrlSendCommand $vin $msg
           ;;
         *)
           log_error "Invalid command request; topic:$topic msg:$msg"
@@ -147,13 +147,13 @@ listen_to_mqtt() {
         # https://github.com/iainbullock/tesla_ble_mqtt_docker/issues/4
         if [ $msg -gt 4 ]; then
           log_notice "Set amps"
-          send_command $vin "charging-set-amps $msg"
+          teslaCtrlSendCommand $vin "charging-set-amps $msg"
         else
           log_notice "First Amp set"
-          send_command $vin "charging-set-amps $msg"
+          teslaCtrlSendCommand $vin "charging-set-amps $msg"
           sleep 1
           log_notice "Second Amp set"
-          send_command $vin "charging-set-amps $msg"
+          teslaCtrlSendCommand $vin "charging-set-amps $msg"
         fi
         ;;
 
@@ -161,37 +161,37 @@ listen_to_mqtt() {
         # Command to send a single Amps request
         # Ref: https://github.com/tesla-local-control/tesla_ble_mqtt_core/issues/19
         log_info "Set charging Amps to $msg"
-        send_command $vin "charging-set-amps $msg"
+        teslaCtrlSendCommand $vin "charging-set-amps $msg"
         ;;
 
       charging-set-limit)
-        send_command $vin "charging-set-limit $msg"
+        teslaCtrlSendCommand $vin "charging-set-limit $msg"
         ;;
 
       climate-set-temp)
-        send_command $vin "climate-set-temp ${msg}C"
+        teslaCtrlSendCommand $vin "climate-set-temp ${msg}C"
         ;;
 
       auto-seat-and-climate)
-        send_command $vin "auto-seat-and-climate LR on"
+        teslaCtrlSendCommand $vin "auto-seat-and-climate LR on"
         ;;
 
       heater-seat-front-left)
-        send_command $vin "seat-heater front-left $msg"
+        teslaCtrlSendCommand $vin "seat-heater front-left $msg"
         ;;
 
       heater-seat-front-right)
-        send_command $vin "seat-heater front-right $msg"
+        teslaCtrlSendCommand $vin "seat-heater front-right $msg"
         ;;
 
       steering-wheel-heater)
         msg_lower=$(echo "$msg" | tr '[:upper:]' '[:lower:]')
-        send_command $vin "steering-wheel-heater $msg_lower"
+        teslaCtrlSendCommand $vin "steering-wheel-heater $msg_lower"
         ;;
 
       sentry-mode)
         msg_lower=$(echo "$msg" | tr '[:upper:]' '[:lower:]')
-        send_command $vin "sentry-mode $msg_lower"
+        teslaCtrlSendCommand $vin "sentry-mode $msg_lower"
         ;;
 
       *)
