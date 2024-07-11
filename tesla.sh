@@ -92,20 +92,20 @@ teslaCtrlSendKey() {
 #   Is the car awake?
 ##
 ###
-pingVehicule() {
+pingVehicle() {
   vin=$1
 
-  log_debug "pingVehicule; entering vin:$vin"
+  log_debug "pingVehicle; entering vin:$vin"
 
   if teslaCtrlSendCommand $vin ping "Ping vehicule"; then
-    log_debug "pingVehicule; ping vehicule succeeded vin:$vin"
+    log_debug "pingVehicle; ping vehicule succeeded vin:$vin"
     ret=0
   else
-    log_debug "pingVehicule; Failed to ping vehicule vin:$vin"
+    log_debug "pingVehicle; Failed to ping vehicule vin:$vin"
     ret=2
   fi
 
-  log_debug "pingVehicule; leaving vin:$vin return:$ret"
+  log_debug "pingVehicle; leaving vin:$vin return:$ret"
 
   return $ret
 
@@ -127,7 +127,7 @@ AcceptKeyConfirmationLoop() {
   # Retry loop
   # shellcheck disable=SC1073
   while [ "$(date +%s)" -lt $acceptKeyExpireTime ]; do
-    if pingVehicule $vin; then
+    if pingVehicle $vin; then
       log_info "AcceptKeyConfirmationLoop; congratulation, the public key has been  accepted vin:$vin"
       log_debug "touch /share/tesla_blemqtt/${vin}_pubkey_accepted"
       touch /share/tesla_blemqtt/${vin}_pubkey_accepted
