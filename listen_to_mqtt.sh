@@ -200,30 +200,6 @@ listen_to_mqtt() {
 }
 
 # Function
-setup_auto_discovery_loop() {
-
-  discardMessages=$1
-
-  # Setup or skip HA auto discovery & Discard old MQTT messages
-  for vin in $VIN_LIST; do
-
-    # IF HA backend is enable, setup HA Auto Discover
-    if [ "$ENABLE_HA_FEATURES" == "true" ]; then
-      log_debug "Calling setup_auto_discovery() $vin"
-      setup_auto_discovery $vin
-    else
-      log_info "HA backend is disable, skipping setup for HA Auto Discovery"
-    fi
-
-    # Discard or not awaiting messages
-    if [ "$discardMessages" = "yes" ]; then
-      log_notice "Discarding any unread MQTT messages for $vin"
-      eval $MOSQUITTO_SUB_BASE -E -i tesla_ble_mqtt -t tesla_ble_mqtt/$vin/+
-    fi
-  done
-}
-
-# Function
 listen_for_HA_start() {
   eval $MOSQUITTO_SUB_BASE --nodelay -t homeassistant/status -F \"%t %p\" |
     while read -r payload; do

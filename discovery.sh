@@ -3,9 +3,22 @@
 # discovery.sh
 #
 
-setup_auto_discovery() {
+###
+##
+#
+##
+###
+LastVIN=""
+function configHADeviceEnvVars() {
   vin=$1
-  log_notice "Setting up HA auto discovery for vin $vin"
+
+  [ "$LastVIN" == "$vin" ] &&
+    log_debug "configHADeviceEnvVars() same LastVIN:$vin" &&
+    return
+
+  log_debug "configHADeviceEnvVars() entering vin:$vin"
+
+  LastVIN=$1
 
   DEV_ID=tesla_ble_${vin}
   DEV_NAME=Tesla_BLE_${vin}
@@ -15,79 +28,42 @@ setup_auto_discovery() {
   log_debug "DEV_ID=$DEV_ID"
   log_debug "DEV_NAME=$DEV_NAME"
   log_debug "TOPIC_ROOT=$TOPIC_ROOT"
+  log_debug "configHADeviceEnvVars() leaving vin:$vin"
 
-  echo '{
-   "state_topic": "'${TOPIC_ROOT}'/binary_sensor/presence",
-   "device": {
-    "identifiers": [
-    "'${DEV_ID}'"
-    ],
-    "manufacturer": "tesla-local-control",
-    "model": "Tesla_BLE",
-    "name": "'${DEV_NAME}'",
-    "sw_version": "'${SW_VERSION}'"
-   },
-   "device_class": "presence",
-   "name": "Presence",
-   "unique_id": "'${DEV_ID}'_presence"
-  }' | sed ':a;N;$!ba;s/\n//g' | eval $MOSQUITTO_PUB_BASE -t homeassistant/binary_sensor/${DEV_ID}/presence/config -l
+}
 
-  echo '{
-   "command_topic": "'${TOPIC_ROOT}'/config",
-   "device": {
-    "identifiers": [
-    "'${DEV_ID}'"
-    ],
-    "manufacturer": "tesla-local-control",
-    "model": "Tesla_BLE",
-    "name": "'${DEV_NAME}'",
-    "sw_version": "'${SW_VERSION}'"
-   },
-   "device_class": "update",
-   "name": "Generate Keys",
-   "payload_press": "generate-keys",
-   "qos": 1,
-   "unique_id": "'${DEV_ID}'_generate-keys",
-   "entity_category": "config"
-  }' | sed ':a;N;$!ba;s/\n//g' | eval $MOSQUITTO_PUB_BASE -t homeassistant/button/${DEV_ID}/generate-keys/config -l
+###
+##
+#
+##
+###
+function setupHADevicePanelCardsMain() {
+  vin=$1
 
-  echo '{
-   "command_topic": "'${TOPIC_ROOT}'/config",
-   "device": {
-    "identifiers": [
-    "'${DEV_ID}'"
-    ],
-    "manufacturer": "tesla-local-control",
-    "model": "Tesla_BLE",
-    "name": "'${DEV_NAME}'",
-    "sw_version": "'${SW_VERSION}'"
-   },
-   "device_class": "update",
-   "name": "Deploy Key",
-   "payload_press": "deploy-key",
-   "qos": 1,
-   "unique_id": "'${DEV_ID}'_deploy-key",
-   "entity_category": "config"
-  }' | sed ':a;N;$!ba;s/\n//g' | eval $MOSQUITTO_PUB_BASE -t homeassistant/button/${DEV_ID}/deploy-key/config -l
+  log_debug "setupHADevicePanelCardsMain() entering vin:$vin"
+  configHADeviceEnvVars $vin
 
-  echo '{
-   "command_topic": "'${TOPIC_ROOT}'/config",
-   "device": {
-    "identifiers": [
-    "'${DEV_ID}'"
-    ],
-    "manufacturer": "tesla-local-control",
-    "model": "Tesla_BLE",
-    "name": "'${DEV_NAME}'",
-    "sw_version": "'${SW_VERSION}'"
-   },
-   "device_class": "update",
-   "name": "Scan Bluetooth",
-   "payload_press": "scan-bleln-macaddr",
-   "qos": 1,
-   "unique_id": "'${DEV_ID}'_scan-bleln-macaddr",
-   "entity_category": "diagnostic"
-  }' | sed ':a;N;$!ba;s/\n//g' | eval $MOSQUITTO_PUB_BASE -t homeassistant/button/${DEV_ID}/scan-bleln-macaddr/config -l
+  # Setup all device's cards
+  setupHADevicePresenceSensor $vin
+  setupHADeviceDeployKeyButton $vin
+  setupHADeviceGenerateKeysButton $vin
+  setupHADeviceControlsCard $vin
+  setupHADeviceScanBLElnButton $vin
+
+  log_debug "setupHADevicePanelCardsMain() leaving vin:$vin"
+
+}
+
+###
+##
+#
+##
+###
+function setupHADeviceControlsCard() {
+  vin=$1
+
+  log_debug "setupHADeviceControlsCard() entering vin:$vin"
+  configHADeviceEnvVars $vin
 
   echo '{
    "command_topic": "'${TOPIC_ROOT}'/command",
@@ -533,4 +509,168 @@ setup_auto_discovery() {
    "unique_id": "'${DEV_ID}'_heater-seat-front-right"
    }' | sed ':a;N;$!ba;s/\n//g' | eval $MOSQUITTO_PUB_BASE -t homeassistant/select/${DEV_ID}/heater-seat-front-right/config -l
 
+  log_debug "Leaving setupHADeviceControlsCard() vin:$vin"
+}
+
+###
+##
+#   Setup Configuration Generate Keys Button
+#   Setup Configuration Deploy Key Button
+##
+###
+function setupHADeviceGenerateKeysButton() {
+  vin=$1
+
+  log_debug "setupHADeviceGenerateKeysButton() entering vin:$vin"
+  configHADeviceEnvVars $vin
+
+  echo '{
+   "command_topic": "'${TOPIC_ROOT}'/config",
+   "device": {
+    "identifiers": [
+    "'${DEV_ID}'"
+    ],
+    "manufacturer": "tesla-local-control",
+    "model": "Tesla_BLE",
+    "name": "'${DEV_NAME}'"
+   },
+   "device_class": "update",
+   "name": "Generate Keys",
+   "payload_press": "generate-keys",
+   "qos": 1,
+   "unique_id": "'${DEV_ID}'_generate-keys",
+   "entity_category": "config",
+   "sw_version": "'${SW_VERSION}'"
+  }' | sed ':a;N;$!ba;s/\n//g' | eval $MOSQUITTO_PUB_BASE -t homeassistant/button/${DEV_ID}/generate-keys/config -l
+
+  log_debug "setupHADeviceGenerateKeysButton() leaving vin:$vin"
+
+}
+
+###
+##
+#   Setup Vehicule's Presence Sensor
+##
+###
+function setupHADevicePresenceSensor {
+  vin=$1
+
+  log_debug "setupHADevicePresenceSensor() entering vin:$vin"
+  configHADeviceEnvVars $vin
+
+  echo '{
+   "state_topic": "'${TOPIC_ROOT}'/binary_sensor/presence",
+   "device": {
+    "identifiers": [
+    "'${DEV_ID}'"
+    ],
+    "manufacturer": "tesla-local-control",
+    "model": "Tesla_BLE",
+    "name": "'${DEV_NAME}'"
+   },
+   "device_class": "presence",
+   "name": "Presence",
+   "unique_id": "'${DEV_ID}'_presence",
+   "sw_version": "'${SW_VERSION}'"
+  }' | sed ':a;N;$!ba;s/\n//g' | eval $MOSQUITTO_PUB_BASE -t homeassistant/binary_sensor/${DEV_ID}/presence/config -l
+
+  log_debug "setupHADevicePresenceSensor() leaving vin:$vin"
+
+}
+
+###
+##
+#   Setup Configuration Deploy Key Button
+##
+###
+function setupHADeviceDeployKeyButton() {
+  vin=$1
+
+  log_debug "setupHADeviceDeployKeyButton() entering vin:$vin"
+  configHADeviceEnvVars $vin
+
+  echo '{
+   "command_topic": "'${TOPIC_ROOT}'/config",
+   "device": {
+    "identifiers": [
+    "'${DEV_ID}'"
+    ],
+    "manufacturer": "tesla-local-control",
+    "model": "Tesla_BLE",
+    "name": "'${DEV_NAME}'"
+   },
+   "device_class": "update",
+   "name": "Deploy Key",
+   "payload_press": "deploy-key",
+   "qos": 1,
+   "unique_id": "'${DEV_ID}'_deploy-key",
+   "entity_category": "config",
+   "sw_version": "'${SW_VERSION}'"
+  }' | sed ':a;N;$!ba;s/\n//g' | eval $MOSQUITTO_PUB_BASE -t homeassistant/button/${DEV_ID}/deploy-key/config -l
+
+  log_debug "setupHADeviceDeployKeyButton() leaving vin:$vin"
+
+}
+
+###
+##
+#   Setup Scan BLE LN Button
+##
+###
+function setupHADeviceScanBLElnButton() {
+  vin=$1
+
+  log_debug "setupHADeviceScanBLElnButton() entering vin:$vin"
+  configHADeviceEnvVars $vin
+
+  echo '{
+   "command_topic": "'${TOPIC_ROOT}'/config",
+   "device": {
+    "identifiers": [
+    "'${DEV_ID}'"
+    ],
+    "manufacturer": "tesla-local-control",
+    "model": "Tesla_BLE",
+    "name": "'${DEV_NAME}'",
+    "sw_version": "'${SW_VERSION}'"
+   },
+   "device_class": "update",
+   "name": "Scan Bluetooth",
+   "payload_press": "scan-bleln-macaddr",
+   "qos": 1,
+   "unique_id": "'${DEV_ID}'_scan-bleln-macaddr",
+   "entity_category": "diagnostic"
+  }' | sed ':a;N;$!ba;s/\n//g' | eval $MOSQUITTO_PUB_BASE -t homeassistant/button/${DEV_ID}/scan-bleln-macaddr/config -l
+
+  log_debug "setupHADeviceScanBLElnButton() leaving vin:$vin"
+
+}
+
+
+###
+##
+#   Setup Device's Panel Cards for all VINS
+##
+###
+setupHADeviceAllVINsLoop() {
+
+  discardMessages=$1
+
+  # Setup or skip HA auto discovery & Discard old MQTT messages
+  for vin in $VIN_LIST; do
+
+    # IF HA backend is enable, setup HA Auto Discover
+    if [ "$ENABLE_HA_FEATURES" == "true" ]; then
+      log_debug "Calling setupHADevicePanelCardsMain() $vin"
+      setupHADevicePanelCardsMain $vin
+    else
+      log_info "HA backend is disable, skipping setup for HA Auto Discovery"
+    fi
+
+    # Discard or not awaiting messages
+    if [ "$discardMessages" = "yes" ]; then
+      log_notice "Discarding any unread MQTT messages for $vin"
+      eval $MOSQUITTO_SUB_BASE -E -i tesla_ble_mqtt -t tesla_ble_mqtt/$vin/+
+    fi
+  done
 }

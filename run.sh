@@ -56,7 +56,7 @@ fi
 
 # Setup HA auto discovery, or skip if HA backend is disable, and discard old MQTT messages
 discardMessages=yes
-setup_auto_discovery_loop $discardMessages
+setupHADeviceAllVINsLoop $discardMessages
 
 # IF HA backend is enable, call listen_for_HA_start()
 if [ "$ENABLE_HA_FEATURES" == "true" ]; then
