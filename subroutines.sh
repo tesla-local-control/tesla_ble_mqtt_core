@@ -3,39 +3,38 @@
 # subroutines.sh
 #
 
-
 # Function
 send_command() {
   vin=$1
-  cmd=$2
-  cmd_name=$3
+  command=$2
+  commandDescription=$3
 
-  TESLA_CONTROL_CMD='/usr/bin/tesla-control -ble -vin $vin -key-name /share/tesla_blemqtt/${vin}_private.pem -key-file /share/tesla_ble_mqtt/${vin}_private.pem $cmd 2>&1'
+  # shellcheck disable=SC2016
+  TESLA_CONTROL_CMD='/usr/bin/tesla-control -ble -vin $vin -key-name /share/tesla_blemqtt/${vin}_private.pem -key-file /share/tesla_ble_mqtt/${vin}_private.pem $command 2>&1'
 
   # add a retry loop
   max_retries=5
-  tesla_ctrl_count=0
-  for tesla_ctrl_count in $(seq $max_retries); do
+  sendCommandCount=0
+  for sendCommandCount in $(seq $max_retries); do
 
-    log_notice "Attempt $tesla_ctrl_count//${max_retries} sending $cmd_name to vin:$vin command:$cmd $2"
+    log_notice "Attempt $sendCommandCount/${max_retries} sending $commandDescription to vin:$vin command:$command $2"
     set +e
-    # shellcheck disable=SC2068
-    tesla_ctrl_out=$(eval $TESLA_CONTROL_CMD)
+    teslaCtrlOut=$(eval $TESLA_CONTROL_CMD)
     EXIT_STATUS=$?
     set -e
     if [ $EXIT_STATUS -eq 0 ]; then
       log_info "tesla-control command to vin:$vin was delivered"
       return 0
     else
-      if [[ "$tesla_ctrl_out" == *"Failed to execute command to car could not execute command"* ]]; then
-        log_warning "$tesla_ctrl_out"
+      if [[ "$teslaCtrlOut" == *"car could not execute command"* ]]; then
+        log_warning "$teslaCtrlOut"
         log_warning "Skipping command $* to vin:$vin"
         break
       else
-        log_error "tesla-control send command failed exit status $EXIT_STATUS."
-        log_error "$tesla_ctrl_out"
+        log_error "tesla-control send command $* to vin:$vin failed exit status $EXIT_STATUS."
+        log_error "$teslaCtrlOut"
         # Don't continue if we've reached max retries
-        [ $max_retries -eq $tesla_ctrl_count ] &&
+        [ $max_retries -eq $sendCommandCount ] &&
           break
         log_notice "Retrying in $BLE_CMD_RETRY_DELAY seconds"
       fi
@@ -45,13 +44,12 @@ send_command() {
   return 1
 }
 
-
 # Function
 send_key() {
   vin=$1
 
   max_retries=5
-  for count in $(seq $max_retries); do
+  for sendKeyCount in $(seq $max_retries); do
     log_notice "Attempt $sendKeyCount/${max_retries} to delivery the public key to vin $vin"
     set +e
     tesla-control -ble -vin $vin add-key-request /share/tesla_ble_mqtt/${vin}_public.pem owner cloud_key
@@ -67,7 +65,6 @@ send_key() {
   done
   return 1
 }
-
 
 # Function
 # Tesla VIN to BLE Local Name
@@ -218,7 +215,6 @@ listen_to_ble() {
     sleep $PRESENCE_DETECTION_LOOP_DELAY
   done
 }
-
 
 # Function
 delete_legacies() {
