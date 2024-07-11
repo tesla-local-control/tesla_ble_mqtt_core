@@ -62,12 +62,8 @@ listen_to_mqtt() {
           ;;
 
         deploy-key)
-          log_debug "deploy-key; calling send_key()"
-          if send_key $vin; then
-            ### TODO add a "checkVehiculeValidKey" using tesla-control list-keys
-            log_info "Setting up Home Assistant device's panel"
-            setupHAAutoDiscovery $vin
-          fi
+          log_debug "deploy-key; calling DeployKey()"
+          DeployKey $vin
           ;;
 
         scan-bleln-macaddr)

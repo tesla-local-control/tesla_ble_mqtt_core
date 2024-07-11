@@ -87,6 +87,88 @@ teslaCtrlSendKey() {
   return 1
 }
 
+
+
+###
+##
+#   Is the car awake?
+##
+###
+pingVehicule() {
+  vin=$1
+
+  log_debug "pingVehicule; entering vin:$vin"
+
+  if teslaCtrlCommandOut=$(teslaCtrlSendCommand $vin ping "Ping vehicule"); then
+    log_debug "pingVehicule; ping vehicule vin:$vin succeeded"
+    ret=0
+  else
+    log_debug "pingVehicule; Failed to ping vehicule vin:$vin"
+    ret=2
+  fi
+
+  log_debug "pingVehicule; leaving vin:$vin return:$ret"
+
+  return $ret
+
+}
+
+
+###
+##
+#   Loop for 5 minutes for key to be accepted
+##
+###
+AcceptKeyConfirmationLoop() {
+  vin=$1
+  log_debug "AcceptKeyConfirmationLoop; entering vin:$vin"
+
+  AcceptKeyConfirmationLoopSeconds=300
+  acceptKeyExpireTime=$(($(date +%s) + $AcceptKeyConfirmationLoopSeconds))
+
+  log_info "AcceptKeyConfirmationLoop; check if key was accepted by sending a ping command vin:$vin1"
+  # Retry loop
+  while [ "$(date +%s)" -lt $acceptKeyExpireTime ]; then
+    if pingVehicule $vin; then
+      log_info "AcceptKeyConfirmationLoop; congratulation, the public key has been  accepted vin:$vin"
+      log_debug "touch /share/tesla_blemqtt/${vin}_pubkey_accepted"
+      touch /share/tesla_blemqtt/${vin}_pubkey_accepted
+      log_debug "AcceptKeyConfirmationLoop; leaving vin:$vin ret:0"
+      return 0
+    else
+      log_notice "AcceptKeyConfirmationLoop; sleeping 5 seconds before retrying key vin:$vin1"
+      sleep 5
+    fi
+  done
+  log_debug "AcceptKeyConfirmationLoop; leaving vin:$vin ret:1"
+  return 1
+}
+
+
+###
+##
+#    Send the key to the car then check if it was accepted
+##
+###
+DeployKey() {
+  vin=$1
+
+  log_debug "DeployKey; calling teslaCtrlSendKey()"
+
+  if ! teslaCtrlSendKey $vin; then
+    log_debug "DeployKey; key was not delivered"
+    return 1
+  fi
+
+  log_debug "DeployKey; calling AcceptKeyConfirmationLoop()"
+  if AcceptKeyConfirmationLoop $vin; then
+    log_info "Setting up Home Assistant device's panel"
+    setupHAAutoDiscovery $vin
+  else
+  fi
+
+}
+
 ###
 ##
 #   Tesla VIN to BLE Local Name

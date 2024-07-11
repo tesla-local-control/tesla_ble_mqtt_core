@@ -52,19 +52,25 @@ function setupHADevicePanelCardsMain() {
   fi
 
   # Newly added car?
-  if [ ! -f $keysDir/${vin}_private.pem ] && [ ! -f $keysDir/${vin}_public.pem ]; then
+  if [ $keysDir/${vin}_pubkey_accepted ]; then
+    log_debug "setupHADevicePanelCardsMain() pubkey deployed vin:$vin"
+    setupHADeviceDeployKeyButton $vin
+    setupHADeviceGenerateKeysButton $vin
+    setupHADeviceControlsCard $vin
+    setupHADeviceScanBLElnButton $vin
+  elif [ ! -f $keysDir/${vin}_private.pem ] && [ ! -f $keysDir/${vin}_public.pem ]; then
 
-    log_debug "setupHADevicePanelCardsMain() vin:$vin newly added car, adding Generate Key menu"
+    log_debug "setupHADevicePanelCardsMain() vin:$vin newly added car, adding Generate Key button"
     # Show button to Generate Keys
     setupHADeviceGenerateKeysButton $vin
+    setupHADeviceScanBLElnButton $vin
 
     # listen_to_mqtt call setupHADeviceDeployKeyButton once the keys are generated
 
   else
-    log_debug "setupHADevicePanelCardsMain() vin:$vin old car"
+    log_debug "setupHADevicePanelCardsMain() new car but pubkey not deployed yet vin:$vin"
     setupHADeviceDeployKeyButton $vin
     setupHADeviceGenerateKeysButton $vin
-    setupHADeviceControlsCard $vin
     setupHADeviceScanBLElnButton $vin
   fi
 
