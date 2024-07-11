@@ -48,6 +48,12 @@ listen_to_mqtt() {
           log_notice "Generating the public key..."
           openssl ec -in /share/tesla_ble_mqtt/${vin}_private.pem -pubout >/share/tesla_ble_mqtt/${vin}_public.pem
           log_notice "$(cat /share/tesla_ble_mqtt/${vin}_public.pem)"
+
+          if [ "$ENABLE_HA_FEATURES" == "true" ]; then
+            log_notice "Adding Home Assistant 'Deploy Key' button"
+            setupHADeployKey $vin
+          fi
+
           log_warning "Private and Public keys were generated; Next:
 
             1/ Remove any previously deployed BLE keys from vehicle before deploying this one
@@ -56,8 +62,12 @@ listen_to_mqtt() {
           ;;
 
         deploy-key)
-          log_debug "deploy-key; calling teslaCtrlSendKey()"
-          teslaCtrlSendKey $vin
+          log_debug "deploy-key; calling send_key()"
+          if send_key $vin; then
+            ### TODO add a "checkVehiculeValidKey" using tesla-control list-keys
+            log_info "Setting up Home Assistant device's panel"
+            setupHAAutoDiscovery $vin
+          fi
           ;;
 
         scan-bleln-macaddr)
@@ -74,91 +84,91 @@ listen_to_mqtt() {
       command)
         case $msg in
         autosecure-modelx)
-          send_command $vin $msg "Close falcon-wing doors and lock vehicle"
+          teslaCtrlSendCommand $vin $msg "Close falcon-wing doors and lock vehicle"
           ;;
         body-controller-state)
-          send_command $vin $msg "Fetch limited vehicle state information. Works over BLE when infotainment is asleep"
+          teslaCtrlSendCommand $vin $msg "Fetch limited vehicle state information. Works over BLE when infotainment is asleep"
           ;;
         charge-port-close)
-          send_command $vin $msg "Close charge port"
+          teslaCtrlSendCommand $vin $msg "Close charge port"
           ;;
         charge-port-open)
-          send_command $vin $msg "Open charge port"
+          teslaCtrlSendCommand $vin $msg "Open charge port"
           ;;
         charging-schedule-cancel)
-          send_command $vin $msg "Cancel scheduled charge start"
+          teslaCtrlSendCommand $vin $msg "Cancel scheduled charge start"
           ;;
         charging-start)
-          send_command $vin $msg "Start charging"
+          teslaCtrlSendCommand $vin $msg "Start charging"
           ;;
         charging-stop)
-          send_command $vin $msg "Stop charging"
+          teslaCtrlSendCommand $vin $msg "Stop charging"
           ;;
         climate-off)
-          send_command $vin $msg "Turn off climate control"
+          teslaCtrlSendCommand $vin $msg "Turn off climate control"
           ;;
         climate-on)
-          send_command $vin $msg "Turn on climate control"
+          teslaCtrlSendCommand $vin $msg "Turn on climate control"
           ;;
         drive)
-          send_command $vin $msg "Remote start vehicle"
+          teslaCtrlSendCommand $vin $msg "Remote start vehicle"
           ;;
         flash-lights)
-          send_command $vin $msg "Flash lights"
+          teslaCtrlSendCommand $vin $msg "Flash lights"
           ;;
         frunk-open)
-          send_command $vin $msg "Open vehicle frunk"
+          teslaCtrlSendCommand $vin $msg "Open vehicle frunk"
           ;;
         honk)
-          send_command $vin $msg "Honk horn"
+          teslaCtrlSendCommand $vin $msg "Honk horn"
           ;;
         list-keys)
-          send_command $vin $msg "List public keys enrolled on vehicle"
+          teslaCtrlSendCommand $vin $msg "List public keys enrolled on vehicle"
           ;;
         lock)
-          send_command $vin $msg "Lock vehicle"
+          teslaCtrlSendCommand $vin $msg "Lock vehicle"
           ;;
         media-toggle-playback)
-          send_command $vin $msg "Toggle between play/pause"
+          teslaCtrlSendCommand $vin $msg "Toggle between play/pause"
           ;;
         ping)
-          send_command $vin $msg "Ping vehicle"
+          teslaCtrlSendCommand $vin $msg "Ping vehicle"
           ;;
         software-update-cancel)
-          send_command $vin $msg "Cancel a pending software update"
+          teslaCtrlSendCommand $vin $msg "Cancel a pending software update"
           ;;
         software-update-start)
-          send_command $vin $msg "Start software update after delay"
+          teslaCtrlSendCommand $vin $msg "Start software update after delay"
           ;;
         tonneau-close)
-          send_command $vin $msg "Close Cybertruck tonneau"
+          teslaCtrlSendCommand $vin $msg "Close Cybertruck tonneau"
           ;;
         tonneau-open)
-          send_command $vin $msg "Open Cybertruck tonneau"
+          teslaCtrlSendCommand $vin $msg "Open Cybertruck tonneau"
           ;;
         tonneau-stop)
-          send_command $vin $msg "Stop moving Cybertruck tonneau"
+          teslaCtrlSendCommand $vin $msg "Stop moving Cybertruck tonneau"
           ;;
         trunk-close)
-          send_command $vin $msg "Close vehicle trunk"
+          teslaCtrlSendCommand $vin $msg "Close vehicle trunk"
           ;;
         trunk-move)
-          send_command $vin $msg "Toggle trunk open/closed"
+          teslaCtrlSendCommand $vin $msg "Toggle trunk open/closed"
           ;;
         trunk-open)
-          send_command $vin $msg "Open vehicle trunk"
+          teslaCtrlSendCommand $vin $msg "Open vehicle trunk"
           ;;
         unlock)
-          send_command $vin $msg "Unlock vehicle"
+          teslaCtrlSendCommand $vin $msg "Unlock vehicle"
           ;;
         wake)
-          send_command $vin "-domain vcsec $msg" "Wake up vehicule"
+          teslaCtrlSendCommand $vin "-domain vcsec $msg" "Wake up vehicule"
           ;;
         windows-close)
-          send_command $vin $msg "Close all windows"
+          teslaCtrlSendCommand $vin $msg "Close all windows"
           ;;
         windows-vent)
-          send_command $vin $msg "Vent all windows"
+          teslaCtrlSendCommand $vin $msg "Vent all windows"
           ;;
         *)
           log_error "Invalid command request; vin:$vin topic:$topic msg:$msg"
@@ -167,59 +177,59 @@ listen_to_mqtt() {
         ;; ## END of command)
 
       auto-seat-and-climate)
-        send_command $vin "auto-seat-and-climate LR on" "Turn on automatic seat heating and HVAC"
+        teslaCtrlSendCommand $vin "auto-seat-and-climate LR on" "Turn on automatic seat heating and HVAC"
         ;;
 
       charging-schedule)
-        send_command $vin "charging-schedule $msg" "Schedule charging to $msg minutes after midnight and enable daily scheduling"
+        teslaCtrlSendCommand $vin "charging-schedule $msg" "Schedule charging to $msg minutes after midnight and enable daily scheduling"
         ;;
 
       charging-set-amps)
         # https://github.com/iainbullock/tesla_ble_mqtt_docker/issues/4
         if [ $msg -gt 4 ]; then
-          send_command $vin "charging-set-amps $msg" "Set charging Amps to $msg"
+          teslaCtrlSendCommand $vin "charging-set-amps $msg" "Set charging Amps to $msg"
         else
-          send_command $vin "charging-set-amps $msg" "Set charging Amps to 5A then to $msg"
+          teslaCtrlSendCommand $vin "charging-set-amps $msg" "Set charging Amps to 5A then to $msg"
           sleep 1
-          send_command $vin "charging-set-amps $msg" "Set charging Amps to $msg"
+          teslaCtrlSendCommand $vin "charging-set-amps $msg" "Set charging Amps to $msg"
         fi
         ;;
 
       charging-set-amps-override)
         # Command to send a single Amps request
         # Ref: https://github.com/tesla-local-control/tesla_ble_mqtt_core/issues/19
-        send_command $vin "charging-set-amps $msg" "Set charging Amps to $msg"
+        teslaCtrlSendCommand $vin "charging-set-amps $msg" "Set charging Amps to $msg"
         ;;
 
       charging-set-limit)
-        send_command $vin "charging-set-limit $msg" "Set charging limit to ${msg}%"
+        teslaCtrlSendCommand $vin "charging-set-limit $msg" "Set charging limit to ${msg}%"
         ;;
 
       climate-set-temp)
         [ ${msg} -le 50 ] && T="${msg}ºC" || T="${msg}ºF"
-        send_command $vin "climate-set-temp $msg" "Set climate temperature to ${T}"
+        teslaCtrlSendCommand $vin "climate-set-temp $msg" "Set climate temperature to ${T}"
         ;;
 
       heater-seat-front-left)
-        send_command $vin "seat-heater front-left $msg" "Turn $msg front left seat heater"
+        teslaCtrlSendCommand $vin "seat-heater front-left $msg" "Turn $msg front left seat heater"
         ;;
 
       heater-seat-front-right)
-        send_command $vin "seat-heater front-right $msg" "Turn $msg front right seat heater"
+        teslaCtrlSendCommand $vin "seat-heater front-right $msg" "Turn $msg front right seat heater"
         ;;
 
       media-set-volume)
-        send_command $vin $msg "Set volume to $msg"
+        teslaCtrlSendCommand $vin $msg "Set volume to $msg"
         ;;
 
       sentry-mode)
         msg_lower=$(echo "$msg" | tr '[:upper:]' '[:lower:]')
-        send_command $vin "sentry-mode $msg_lower" "Set sentry mode to $msg_lower"
+        teslaCtrlSendCommand $vin "sentry-mode $msg_lower" "Set sentry mode to $msg_lower"
         ;;
 
       steering-wheel-heater)
         msg_lower=$(echo "$msg" | tr '[:upper:]' '[:lower:]')
-        send_command $vin "steering-wheel-heater $msg_lower" "Set steering wheel mode to $msg_lower"
+        teslaCtrlSendCommand $vin "steering-wheel-heater $msg_lower" "Set steering wheel mode to $msg_lower"
         ;;
 
       *)
