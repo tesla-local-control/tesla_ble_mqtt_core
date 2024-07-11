@@ -43,12 +43,36 @@ function setupHADevicePanelCardsMain() {
   log_debug "setupHADevicePanelCardsMain() entering vin:$vin"
   configHADeviceEnvVars $vin
 
-  # Setup all device's cards
-  setupHADevicePresenceSensor $vin
-  setupHADeviceDeployKeyButton $vin
-  setupHADeviceGenerateKeysButton $vin
-  setupHADeviceControlsCard $vin
-  setupHADeviceScanBLElnButton $vin
+  keysDir=/share/tesla_ble_mqtt
+
+  # If detection is enable, show presence
+  if [ $PRESENCE_DETECTION_TTL -gt 0 ] && [ -n "$BLE_MAC_LIST" ]; then
+    log_debug "setupHADevicePanelCardsMain() vin:$vin presence detection enable"
+    setupHADevicePresenceSensor $vin
+  fi
+
+  # Newly added car?
+  if [ -f $keysDir/${vin}_pubkey_accepted ]; then
+    log_debug "setupHADevicePanelCardsMain() found vehicle with pubkey deployed vin:$vin"
+    setupHADeviceDeployKeyButton $vin
+    setupHADeviceGenerateKeysButton $vin
+    setupHADeviceControlsCard $vin
+    setupHADeviceScanBLElnButton $vin
+  elif [ ! -f $keysDir/${vin}_private.pem ] && [ ! -f $keysDir/${vin}_public.pem ]; then
+
+    log_debug "setupHADevicePanelCardsMain() found new vehicle, need to generate keys set vin:$vin"
+    # Show button to Generate Keys
+    setupHADeviceGenerateKeysButton $vin
+    setupHADeviceScanBLElnButton $vin
+
+    # listen_to_mqtt call setupHADeviceDeployKeyButton once the keys are generated
+
+  else
+    log_debug "setupHADevicePanelCardsMain() found new vehicle, need to deploy public key vin:$vin"
+    setupHADeviceDeployKeyButton $vin
+    setupHADeviceGenerateKeysButton $vin
+    setupHADeviceScanBLElnButton $vin
+  fi
 
   log_debug "setupHADevicePanelCardsMain() leaving vin:$vin"
 
@@ -515,7 +539,6 @@ function setupHADeviceControlsCard() {
 ###
 ##
 #   Setup Configuration Generate Keys Button
-#   Setup Configuration Deploy Key Button
 ##
 ###
 function setupHADeviceGenerateKeysButton() {
