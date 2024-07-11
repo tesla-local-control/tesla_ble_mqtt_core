@@ -43,12 +43,30 @@ function setupHADevicePanelCardsMain() {
   log_debug "setupHADevicePanelCardsMain() entering vin:$vin"
   configHADeviceEnvVars $vin
 
-  # Setup all device's cards
-  setupHADevicePresenceSensor $vin
-  setupHADeviceDeployKeyButton $vin
-  setupHADeviceGenerateKeysButton $vin
-  setupHADeviceControlsCard $vin
-  setupHADeviceScanBLElnButton $vin
+  keysDir=/share/tesla_ble_mqtt
+
+  # If detection is enable, show presence
+  if [ $PRESENCE_DETECTION_TTL -gt 0 ] && [ -n "$BLE_MAC_LIST" ]; then
+    log_debug "setupHADevicePanelCardsMain() vin:$vin presence detection enable"
+    setupHADevicePresenceSensor $vin
+  fi
+
+  # Newly added car?
+  if [ ! -f $keysDir/${vin}_private.pem ] && [ ! -f $keysDir/${vin}_public.pem ]; then
+
+    log_debug "setupHADevicePanelCardsMain() vin:$vin newly added car, adding Generate Key menu"
+    # Show button to Generate Keys
+    setupHADeviceGenerateKeysButton $vin
+
+    # listen_to_mqtt call setupHADeviceDeployKeyButton once the keys are generated
+
+  else
+    log_debug "setupHADevicePanelCardsMain() vin:$vin old car"
+    setupHADeviceDeployKeyButton $vin
+    setupHADeviceGenerateKeysButton $vin
+    setupHADeviceControlsCard $vin
+    setupHADeviceScanBLElnButton $vin
+  fi
 
   log_debug "setupHADevicePanelCardsMain() leaving vin:$vin"
 

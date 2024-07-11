@@ -244,7 +244,7 @@ listen_to_mqtt() {
 }
 
 # Function
-listen_for_HA_start() {
+listenForHAstatus() {
   eval $MOSQUITTO_SUB_BASE --nodelay -t homeassistant/status -F \"%t %p\" |
     while read -r payload; do
       topic=$(echo "$payload" | cut -d ' ' -f 1)

@@ -58,10 +58,10 @@ fi
 discardMessages=yes
 setupHADeviceAllVINsLoop $discardMessages
 
-# IF HA backend is enable, call listen_for_HA_start()
+# IF HA backend is enable, call listenForHAstatus()
 if [ "$ENABLE_HA_FEATURES" == "true" ]; then
   log_notice "Listening for Home Assistant Start (in background)"
-  listen_for_HA_start &
+  listenForHAstatus &
 else
   log_info "HA backend is disable, not listening for Home Assistant Start"
 fi
