@@ -22,28 +22,27 @@ retryMQTTpub() {
   log_debug "retryMQTTpub; entering..."
 
   # read topic json fom stdin
-  read -r tapic_json
+  read -r topic_json
 
   # loop for topic json fom stdin
   cmdCounterLoop=0
 
   # Retry loop
-  max_retries=6
-  for cmdCounterLoop++ in $(seq $retryMQTTAttemptCount); do
+  for cmdCounterLoop in $(seq $retryMQTTAttemptCount); do
 
-    log_debug "retryMQTTpub; calling mosquitto_sub $args"
-    echo "$tapic_json" | eval $MOSQUITTO_SUB_BASE $args
+    log_debug "retryMQTTpub; calling mosquitto_pub $args"
+    echo "$topic_json" | eval $MOSQUITTO_PUB_BASE $args
     exit_code=$?
 
-    if [ $exit_code -eq 0 ];
-      log_debug "mosquitto_sub successfully sent $args"
+    if [ $exit_code -eq 0 ]; then
+      log_debug "mosquitto_pub successfully sent $args"
       break
     else
       if [ $retryMQTTAttemptCount -eq $cmdCounterLoop ]; then
-        log_error "mosquitto_sub could not sent $args, no more retries"
+        log_error "mosquitto_pub could not sent $args, no more retries"
         return 1
       fi
-      log_warning "mosquitto_sub could not sent $args, retrying in $retryMQTTpubDelay""
+      log_warning "mosquitto_pub could not sent $args, retrying in $retryMQTTpubDelay"
       sleep $retryMQTTpubDelay
     fi
   done
