@@ -182,7 +182,6 @@ delete_legacies() {
 
 }
 
-
 ### scanBLEforMACaddr
 ##
 #   Uses BLE Local Name derived from the VIN to match a MAC addr in the output
