@@ -1,12 +1,10 @@
-<!-- https://developers.home-assistant.io/docs/add-ons/presentation#keeping-a-changelog -->
 ## 0.0.11
 
 ### Changed
 
-
-<p>${\color{red}WARNING}$<br>
-${\color{red}WARNING}$<br>
-DO NOT UPGRADE PRIOR TO READ THE BELOW UPGRADE INSTRUCTIONS, SEE AFTER LIST OF CHANGES</p>
+<p>${\textsf{\color{red}WARNING WARNING WARNING}}$<br>
+DO NOT UPGRADE PRIOR TO READ THE BELOW UPGRADE INSTRUCTIONS, SEE AFTER LIST OF CHANGES
+<br>${\textsf{\color{red}WARNING WARNING WARNING}}$</p>
 
 - NEW Feature: Support for unlimited cars (VINs + MAC Addrs)
 - NEW Feature: Added a TTL for car presence, when gone the sensor in HA stays ON until the TTL expires
@@ -18,10 +16,10 @@ DO NOT UPGRADE PRIOR TO READ THE BELOW UPGRADE INSTRUCTIONS, SEE AFTER LIST OF C
 - CHG: Support bashio::log w/ timestamp (HA add-on)
 - CHG: Reduce logging; Improved colors consistency; More to be removed once code is considered stable
 - CHG: Add bluez-deprecated pkg (ciptool hciattach hciconfig hcidump hcitool meshctl rfcomm sdptool)
-- CHG: Rename entities for consistency & better wording
+- CHG: Rename entities for consistency & better wording (see table below)
 - WARNING: [BLE device possible overheating](https://github.com/tesla-local-control/tesla-local-control-addon/issues/27) causing performance issues
 
-#### BREAKING CHANGES & Upgrade Instructions
+#### Upgrade Instructions & ${\textsf{\color{red}BREAKING CHANGES}}$
 - **Before update** save your configuration values (VIN, MAC address and MQTT values)
 - You will need to adjust your configuration
 - Now supports **list** of VINS and MAC addresses.
