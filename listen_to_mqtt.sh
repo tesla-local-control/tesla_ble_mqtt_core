@@ -217,7 +217,7 @@ listen_to_mqtt() {
         ;;
 
       media-set-volume)
-        teslaCtrlSendCommand $vin $msg "Set volume to $msg"
+        teslaCtrlSendCommand $vin "media-set-volume $msg" "Set volume to $msg"
         ;;
 
       sentry-mode)
