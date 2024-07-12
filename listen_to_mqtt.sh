@@ -51,7 +51,7 @@ listen_to_mqtt() {
 
           if [ "$ENABLE_HA_FEATURES" == "true" ]; then
             log_notice "Adding Home Assistant 'Deploy Key' button"
-            setupHADeployKey $vin
+            setupHADeviceDeployKeyButton $vin
           fi
 
           log_warning "Private and Public keys were generated; Next:
