@@ -17,7 +17,7 @@ vin_count=0
 for vin in $VIN_LIST; do
   # Populate BLE Local Names list
   vin_count=$((vin_count + 1))
-  BLE_LN=$(eval vinToBLEln $vin)
+  BLE_LN=$(vinToBLEln $vin)
   log_debug "Adding $BLE_LN to BLE_LN_LIST, count $vin_count"
   BLE_LN_LIST="$BLE_LN_LIST $BLE_LN"
 
