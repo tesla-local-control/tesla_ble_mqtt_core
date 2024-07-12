@@ -116,29 +116,29 @@ pingVehicle() {
 #   Loop for 5 minutes for key to be accepted
 ##
 ###
-AcceptKeyConfirmationLoop() {
+acceptKeyConfirmationLoop() {
   vin=$1
-  log_debug "AcceptKeyConfirmationLoop; entering vin:$vin"
+  log_debug "acceptKeyConfirmationLoop; entering vin:$vin"
 
-  AcceptKeyConfirmationLoopSeconds=300
-  acceptKeyExpireTime=$(($(date +%s) + AcceptKeyConfirmationLoopSeconds))
+  acceptKeyConfirmationLoopSeconds=300
+  acceptKeyExpireTime=$(($(date +%s) + acceptKeyConfirmationLoopSeconds))
 
-  log_info "AcceptKeyConfirmationLoop; check if key was accepted by sending a ping command vin:$vin"
+  log_info "acceptKeyConfirmationLoop; check if key was accepted by sending a ping command vin:$vin"
   # Retry loop
   # shellcheck disable=SC1073
   while [ "$(date +%s)" -lt $acceptKeyExpireTime ]; do
     if pingVehicle $vin; then
-      log_info "AcceptKeyConfirmationLoop; congratulation, the public key has been  accepted vin:$vin"
+      log_info "acceptKeyConfirmationLoop; congratulation, the public key has been  accepted vin:$vin"
       log_debug "touch /share/tesla_blemqtt/${vin}_pubkey_accepted"
       touch /share/tesla_blemqtt/${vin}_pubkey_accepted
-      log_debug "AcceptKeyConfirmationLoop; leaving vin:$vin ret:0"
+      log_debug "acceptKeyConfirmationLoop; leaving vin:$vin ret:0"
       return 0
     else
-      log_notice "AcceptKeyConfirmationLoop; sleeping 5 seconds before retrying key vin:$vin"
+      log_notice "acceptKeyConfirmationLoop; sleeping 5 seconds before retrying key vin:$vin"
       sleep 5
     fi
   done
-  log_debug "AcceptKeyConfirmationLoop; leaving vin:$vin ret:1"
+  log_debug "acceptKeyConfirmationLoop; leaving vin:$vin ret:1"
   return 1
 }
 
@@ -147,7 +147,7 @@ AcceptKeyConfirmationLoop() {
 #    Send the key to the car then check if it was accepted
 ##
 ###
-DeployKey() {
+deployKey() {
   vin=$1
 
   log_debug "DeployKey; calling teslaCtrlSendKey()"
@@ -157,8 +157,8 @@ DeployKey() {
     return 1
   fi
 
-  log_debug "DeployKey; calling AcceptKeyConfirmationLoop()"
-  if AcceptKeyConfirmationLoop $vin; then
+  log_debug "DeployKey; calling acceptKeyConfirmationLoop()"
+  if acceptKeyConfirmationLoop $vin; then
     log_info "Setting up Home Assistant device's panel"
     setupHAAutoDiscovery $vin
   else
