@@ -12,7 +12,8 @@ for fSource in discovery.sh \
   listen_to_mqtt.sh \
   mqtt.sh \
   subroutines.sh \
-  tesla.sh; do
+  tesla.sh \
+  version.h; do
 
   if [ -f /app/$fSource ]; then
     log_debug "Loading /app/$fSource"
