@@ -26,7 +26,6 @@ function configHADeviceEnvVars() {
   TOPIC_ROOT=tesla_ble/${vin}
 
   QOS_LEVEL=1
-  SW_VERSION=0.1.0
 
   log_debug "DEV_ID=$DEV_ID"
   log_debug "DEV_NAME=$DEV_NAME"
