@@ -147,22 +147,22 @@ acceptKeyConfirmationLoop() {
 #    Send the key to the car then check if it was accepted
 ##
 ###
-deployKey() {
+deployKeyMain() {
   vin=$1
 
-  log_debug "DeployKey; calling teslaCtrlSendKey()"
+  log_debug "deployKeyMain; calling teslaCtrlSendKey()"
 
   if ! teslaCtrlSendKey $vin; then
-    log_debug "DeployKey; key was not delivered"
+    log_debug "deployKeyMain; key was not delivered"
     return 1
   fi
 
-  log_debug "DeployKey; calling acceptKeyConfirmationLoop()"
+  log_debug "deployKeyMain; calling acceptKeyConfirmationLoop()"
   if acceptKeyConfirmationLoop $vin; then
     log_info "Setting up Home Assistant device's panel"
     setupHAAutoDiscovery $vin
   else
-    log_debug "DeployKey; key was not accepted"
+    log_debug "deployKeyMain; key was not accepted"
     return 1
   fi
 

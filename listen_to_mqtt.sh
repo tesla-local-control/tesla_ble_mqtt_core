@@ -62,8 +62,8 @@ listen_to_mqtt() {
           ;;
 
         deploy-key)
-          log_debug "deploy-key; calling deployKey()"
-          deployKey $vin
+          log_debug "deploy-key; calling deployKeyMain()"
+          deployKeyMain $vin
           ;;
 
         scan-bleln-macaddr)
