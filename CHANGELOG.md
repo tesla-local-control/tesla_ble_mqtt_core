@@ -1,10 +1,12 @@
 <!-- https://developers.home-assistant.io/docs/add-ons/presentation#keeping-a-changelog -->
-
 ## 0.0.11
 
 ### Changed
 
-**WARNING WARNING - DO NOT UPGRADE PRIOR TO READ THE BELOW UPGRADE INSTRUCTIONS, SEE AFTER LIST OF CHANGES**
+
+<p>${\color{red}WARNING}$<br>
+${\color{red}WARNING}$<br>
+DO NOT UPGRADE PRIOR TO READ THE BELOW UPGRADE INSTRUCTIONS, SEE AFTER LIST OF CHANGES</p>
 
 - NEW Feature: Support for unlimited cars (VINs + MAC Addrs)
 - NEW Feature: Added a TTL for car presence, when gone the sensor in HA stays ON until the TTL expires
