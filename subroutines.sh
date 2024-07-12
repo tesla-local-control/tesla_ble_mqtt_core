@@ -269,8 +269,8 @@ scanBLEforMACaddr() {
   if ! bltctl_out=$(bluetoothctl --timeout 2 devices | grep $ble_ln | grep -Eo $mac_regex); then
     log_notice "Couldn't find a match in the cache for ble_ln:$ble_ln for vin:$vin"
     # Look for a BLE adverstisement matching ble_ln
-    log_notice "Scanning (10 seconds) for BLE advertisement that matches ble_ln:$ble_ln for vin:$vin"
-    if ! bltctl_out=$(bluetoothctl --timeout 10 "scan on" | grep $ble_ln | grep -Eo $mac_regex); then
+    log_notice "Scanning (10 seconds) for BLE advertisement that matches ble_ln:$ble_ln vin:$vin"
+    if ! bltctl_out=$(bluetoothctl --timeout 10 scan on | grep $ble_ln | grep -Eo $mac_regex); then
       log_notice "Couldn't find a BLE advertisement for ble_ln:$ble_ln vin:$vin"
       return 1
     fi
