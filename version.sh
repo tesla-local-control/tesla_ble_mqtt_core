@@ -2,4 +2,4 @@
 #
 # shellcheck shell=dash
 #
-export SW_VERSION=0.0.10f
+export SW_VERSION=0.1.0

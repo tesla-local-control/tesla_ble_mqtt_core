@@ -2,7 +2,6 @@
 #
 # shellcheck shell=dash
 #
-export SW_VERSION=0.1.0
 
 ### LOAD LIBRARIES (FUNCTIONS & ENVIRONMENT ) #################################
 echo "[$(date +%H:%M:%S)] loading libproduct.sh"
@@ -10,8 +9,10 @@ echo "[$(date +%H:%M:%S)] loading libproduct.sh"
 log_debug "Loading environment & functions..."
 for fSource in discovery.sh \
   listen_to_mqtt.sh \
+  mqtt.sh \
   subroutines.sh \
-  tesla.sh"; do
+  tesla.sh
+  version.sh"; do
 
   if [ -f /app/$fSource ]; then
     log_debug "Loading /app/$fSource"
@@ -61,14 +62,3 @@ if [ ! -d /share/tesla_ble_mqtt ]; then
 else
   log_debug "/share/tesla_ble_mqtt already exists"
 fi
-
-
-### MQTT clients anonymous or authentication mode #############################
-if [ -n "$MQTT_USERNAME" ]; then
-  log_notice "Setting up MQTT clients with authentication"
-  export MOSQUITTO_PUB_BASE="mosquitto_pub -h $MQTT_SERVER -p $MQTT_PORT -u '${MQTT_USERNAME}' -P '${MQTT_PASSWORD}'"
-  export MOSQUITTO_SUB_BASE="mosquitto_sub -h $MQTT_SERVER -p $MQTT_PORT -u '${MQTT_USERNAME}' -P '${MQTT_PASSWORD}'"
-else
-  log_notice "Setting up MQTT clients using anonymous mode"
-  export MOSQUITTO_PUB_BASE="mosquitto_pub -h $MQTT_SERVER -p $MQTT_PORT"
-  export MOSQUITTO_SUB_BASE="mosquitto_sub -h $MQTT_SERVER -p $MQTT_PORT"
