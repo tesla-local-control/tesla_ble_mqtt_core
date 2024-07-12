@@ -89,7 +89,7 @@ check_presence() {
     log_info "VIN $VIN $TYPE $MATCH presence detected"
 
     if [ $CURRENT_TIME_EPOCH -ge $PRESENCE_EXPIRE_TIME ]; then
-      log_info "VIN $VIN $MATCH TTL expired, refresh MQTT topic presence ON"
+      log_info "VIN $VIN $MATCH TTL expired, set presence ON"
       set +e
       # We need a function for mosquitto_pub w/ retry
       MQTT_OUT=$(eval $MOSQUITTO_PUB_BASE --nodelay -t "$MQTT_TOPIC" -m ON 2>&1)
@@ -98,7 +98,7 @@ check_presence() {
       [ $EXIT_STATUS -ne 0 ] &&
         log_error "$(MQTT_OUT)" &&
         return
-      log_info "mqtt topic $MQTT_TOPIC succesfully updated to ON"
+      log_debug "mqtt topic $MQTT_TOPIC succesfully updated to ON"
     fi
 
     # Update presence expire time
@@ -108,9 +108,9 @@ check_presence() {
       $position $EPOCH_EXPIRE_TIME)
     # END if MATCH
   else
-    log_notice "VIN $VIN $TYPE $MATCH presence not detected"
+    log_debug "VIN $VIN $TYPE $MATCH presence not detected"
     if [ $CURRENT_TIME_EPOCH -ge $PRESENCE_EXPIRE_TIME ]; then
-      log_info "VIN $VIN $TYPE $MATCH presence not detected, setting presence OFF"
+      log_info "VIN $VIN $TYPE $MATCH presence has expired, setting presence OFF"
       set +e
       MQTT_OUT=$(eval $MOSQUITTO_PUB_BASE --nodelay -t "$MQTT_TOPIC" -m OFF 2>&1)
       EXIT_STATUS=$?
@@ -118,7 +118,7 @@ check_presence() {
       [ $EXIT_STATUS -ne 0 ] &&
         log_error "$MQTT_OUT" &&
         return
-      log_info "mqtt topic $MQTT_TOPIC succesfully updated to OFF"
+      log_debug "mqtt topic $MQTT_TOPIC succesfully updated to OFF"
     else
       log_info "VIN $VIN $TYPE $MATCH presence not expired"
     fi # END if expired time
