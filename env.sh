@@ -8,11 +8,11 @@ export SW_VERSION=0.1.0
 echo "[$(date +%H:%M:%S)] loading libproduct.sh"
 . /app/libproduct.sh
 log_debug "Loading environment & functions..."
-for fSource in discovery.sh \
-  listen_to_mqtt.sh \
-  mqtt.sh \
+for fSource in mqtt.sh \
+  mqtt_discovery.sh \
+  mqtt_listen.sh \
   subroutines.sh \
-  tesla.sh \
+  tesla_commands.sh \
   version.sh; do
 
   if [ -f /app/$fSource ]; then

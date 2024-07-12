@@ -129,7 +129,7 @@ acceptKeyConfirmationLoop() {
   while [ "$(date +%s)" -lt $acceptKeyExpireTime ]; do
     if pingVehicle $vin; then
       log_info "acceptKeyConfirmationLoop; congratulation, the public key has been  accepted vin:$vin"
-      log_debug "touch /share/tesla_blemqtt/${vin}_pubkey_accepted"
+      log_debug "touch /share/tesla_ble_mqtt/${vin}_pubkey_accepted"
       touch /share/tesla_blemqtt/${vin}_pubkey_accepted
       log_debug "acceptKeyConfirmationLoop; leaving vin:$vin ret:0"
       return 0
@@ -160,7 +160,7 @@ deployKeyMain() {
   log_debug "deployKeyMain; calling acceptKeyConfirmationLoop()"
   if acceptKeyConfirmationLoop $vin; then
     log_info "Setting up Home Assistant device's panel"
-    setupHAAutoDiscovery $vin
+    setupHADevicePanelCardsMain $vin
   else
     log_debug "deployKeyMain; key was not accepted"
     return 1

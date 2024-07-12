@@ -28,11 +28,14 @@ retryMQTTpub() {
   cmdCounterLoop=0
 
   # Retry loop
-  for cmdCounterLoop in $(seq $retryMQTTAttemptCount); do
+  cmdCounterLoop=0
+  while [ $((cmdCounterLoop += 1)) -lt $retryMQTTAttemptCount ]; do
 
     log_debug "retryMQTTpub; calling mosquitto_pub $args"
+    set +e
     echo "$topic_json" | eval $MOSQUITTO_PUB_BASE $args
     exit_code=$?
+    set -e
 
     if [ $exit_code -eq 0 ]; then
       log_debug "mosquitto_pub successfully sent $args"
