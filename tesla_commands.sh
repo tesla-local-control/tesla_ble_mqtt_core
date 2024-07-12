@@ -14,7 +14,7 @@ teslaCtrlSendCommand() {
   commandDescription=$3
 
   # shellcheck disable=SC2016
-  TESLA_CONTROL_CMD='/usr/bin/tesla-control -ble -vin $vin -key-name /share/tesla_blemqtt/${vin}_private.pem -key-file /share/tesla_ble_mqtt/${vin}_private.pem $command 2>&1'
+  TESLA_CONTROL_CMD='/usr/bin/tesla-control -ble -vin $vin -key-name $KEYS_DIR/${vin}_private.pem -key-file $KEYS_DIR/${vin}_private.pem $command 2>&1'
 
   # Retry loop
   max_retries=5
@@ -59,7 +59,7 @@ teslaCtrlSendKey() {
   vin=$1
 
   # shellcheck disable=SC2016
-  TESLA_ADD_KEY_CMD='/usr/bin/tesla-control -vin $vin -ble add-key-request /share/tesla_ble_mqtt/${vin}_public.pem owner cloud_key 2>&1'
+  TESLA_ADD_KEY_CMD='/usr/bin/tesla-control -vin $vin -ble add-key-request $KEYS_DIR/${vin}_public.pem owner cloud_key 2>&1'
 
   log_info "Trying to deploy the public key to vin:$vin"
 
@@ -129,8 +129,8 @@ acceptKeyConfirmationLoop() {
   while [ "$(date +%s)" -lt $acceptKeyExpireTime ]; do
     if pingVehicle $vin; then
       log_info "acceptKeyConfirmationLoop; congratulation, the public key has been  accepted vin:$vin"
-      log_debug "touch /share/tesla_ble_mqtt/${vin}_pubkey_accepted"
-      touch /share/tesla_blemqtt/${vin}_pubkey_accepted
+      log_debug "touch $KEYS_DIR/${vin}_pubkey_accepted"
+      touch $KEYS_DIR/${vin}_pubkey_accepted
       log_debug "acceptKeyConfirmationLoop; leaving vin:$vin ret:0"
       return 0
     else

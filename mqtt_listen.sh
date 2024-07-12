@@ -41,13 +41,13 @@ listen_to_mqtt() {
         case $msg in
         generate-keys)
           log_notice "Generating the private key..."
-          openssl ecparam -genkey -name prime256v1 -noout >/share/tesla_ble_mqtt/${vin}_private.pem
-          log_debug "$(cat /share/tesla_ble_mqtt/${vin}_private.pem)"
+          openssl ecparam -genkey -name prime256v1 -noout >$KEYS_DIR/${vin}_private.pem
+          log_debug "$(cat $KEYS_DIR/${vin}_private.pem)"
           [ "$DEBUG" != "true" ] &&
             log_notice "The private key is shown only in debug mode"
           log_notice "Generating the public key..."
-          openssl ec -in /share/tesla_ble_mqtt/${vin}_private.pem -pubout >/share/tesla_ble_mqtt/${vin}_public.pem
-          log_notice "$(cat /share/tesla_ble_mqtt/${vin}_public.pem)"
+          openssl ec -in $KEYS_DIR/${vin}_private.pem -pubout >$KEYS_DIR/${vin}_public.pem
+          log_notice "$(cat $KEYS_DIR/${vin}_public.pem)"
 
           if [ "$ENABLE_HA_FEATURES" == "true" ]; then
             log_notice "Adding Home Assistant 'Deploy Key' button"

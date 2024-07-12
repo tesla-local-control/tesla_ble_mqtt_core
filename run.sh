@@ -21,8 +21,8 @@ for vin in $VIN_LIST; do
   log_debug "Adding $BLE_LN to BLE_LN_LIST, count $vin_count"
   BLE_LN_LIST="$BLE_LN_LIST $BLE_LN"
 
-  if [ -f /share/tesla_ble_mqtt/${vin}_private.pem ] &&
-    [ -f /share/tesla_ble_mqtt/${vin}_public.pem ]; then
+  if [ -f $KEYS_DIR/${vin}_private.pem ] &&
+    [ -f $KEYS_DIR/${vin}_public.pem ]; then
     log_debug "Found public and private keys set for vin:$vin"
   else
     log_debug "Did not find public and private keys for vin:$vin"
@@ -31,11 +31,11 @@ for vin in $VIN_LIST; do
   ################ HANDLE CONFIG CHANGE #######################################
   ### TODO TEMPORARY - Move original "vin" key to "vin{1}"
   ###
-  if [ -f /share/tesla_ble_mqtt/private.pem ] && [ $vin_count -eq 1 ]; then
+  if [ -f $KEYS_DIR/private.pem ] && [ $vin_count -eq 1 ]; then
     log_warning "Keys exist from a previous installation with single VIN which is deprecated"
     log_warning "This module migrates the key files to attribute them to $vin and remove old MQTT entities"
-    log_warning "/share/tesla_ble_mqtt/private.pem /share/tesla_ble_mqtt/${vin}_private.pem"
-    log_warning "/share/tesla_ble_mqtt/public.pem /share/tesla_ble_mqtt/${vin}_public.pem"
+    log_warning "$KEYS_DIR/private.pem $KEYS_DIR/${vin}_private.pem"
+    log_warning "$KEYS_DIR/public.pem $KEYS_DIR/${vin}_public.pem"
     delete_legacies $vin
   fi # END TEMPORARY
 done

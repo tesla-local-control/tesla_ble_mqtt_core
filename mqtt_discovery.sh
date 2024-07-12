@@ -45,8 +45,6 @@ function setupHADevicePanelCardsMain() {
   log_debug "setupHADevicePanelCardsMain() entering vin:$vin"
   configHADeviceEnvVars $vin
 
-  keysDir=/share/tesla_ble_mqtt
-
   # If detection is enable, show presence
   if [ $PRESENCE_DETECTION_TTL -gt 0 ] && [ -n "$BLE_MAC_LIST" ]; then
     log_debug "setupHADevicePanelCardsMain() vin:$vin presence detection enable"
@@ -54,13 +52,13 @@ function setupHADevicePanelCardsMain() {
   fi
 
   # Newly added car?
-  if [ -f $keysDir/${vin}_pubkey_accepted ]; then
+  if [ -f $KEYS_DIR/${vin}_pubkey_accepted ]; then
     log_debug "setupHADevicePanelCardsMain() found vehicle with pubkey deployed vin:$vin"
     setupHADeviceDeployKeyButton $vin
     setupHADeviceGenerateKeysButton $vin
     setupHADeviceControlsCard $vin
     setupHADeviceScanBLElnButton $vin
-  elif [ ! -f $keysDir/${vin}_private.pem ] && [ ! -f $keysDir/${vin}_public.pem ]; then
+  elif [ ! -f $KEYS_DIR/${vin}_private.pem ] && [ ! -f $KEYS_DIR/${vin}_public.pem ]; then
 
     log_debug "setupHADevicePanelCardsMain() found new vehicle, need to generate keys set vin:$vin"
     # Show button to Generate Keys
@@ -738,10 +736,10 @@ delete_legacies() {
   eval $MOSQUITTO_PUB_BASE -t homeassistant/button/tesla_ble/windows-close/config -n
   eval $MOSQUITTO_PUB_BASE -t homeassistant/button/tesla_ble/windows-vent/config -n
 
-  if [ -f /share/tesla_ble_mqtt/private.pem ]; then
+  if [ -f $KEYS_DIR/private.pem ]; then
     log_notice "Renaming legacy keys"
-    mv /share/tesla_ble_mqtt/private.pem /share/tesla_ble_mqtt/${vin}_private.pem
-    mv /share/tesla_ble_mqtt/public.pem /share/tesla_ble_mqtt/${vin}_public.pem
+    mv $KEYS_DIR/private.pem $KEYS_DIR/${vin}_private.pem
+    mv $KEYS_DIR/public.pem $KEYS_DIR/${vin}_public.pem
   fi
 
 }

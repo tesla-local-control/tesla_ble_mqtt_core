@@ -34,6 +34,7 @@ export PRESENCE_DETECTION_LOOP_DELAY=${PRESENCE_DETECTION_LOOP_DELAY:-120}
 export PRESENCE_DETECTION_TTL=${PRESENCE_DETECTION_TTL:-240}
 
 export BLE_LN_REGEX='S[0-9A-Fa-f]{16}C'
+export KEYS_DIR=/share/tesla_ble_mqtt
 export MAC_REGEX='([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})'
 export VIN_REGEX='[A-HJ-NPR-Z0-9]{17}'
 
@@ -54,9 +55,9 @@ log_info "Configuration Options are:
 [ -n "$BLECTL_FILE_INPUT" ] && log_info "  BLECTL_FILE_INPUT=$BLECTL_FILE_INPUT"
 
 ### SETUP DIRECTORY ###########################################################
-if [ ! -d /share/tesla_ble_mqtt ]; then
-  log_info "Creating directory /share/tesla_ble_mqtt"
-  mkdir -p /share/tesla_ble_mqtt
+if [ ! -d $KEYS_DIR ]; then
+  log_info "Creating directory $KEYS_DIR"
+  mkdir -p $KEYS_DIR
 else
-  log_debug "/share/tesla_ble_mqtt already exists"
+  log_debug "$KEYS_DIR already exists"
 fi
