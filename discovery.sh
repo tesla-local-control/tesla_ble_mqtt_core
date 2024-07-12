@@ -11,7 +11,7 @@ setup_auto_discovery() {
   DEV_NAME=Tesla_BLE_${vin}
 
   TOPIC_ROOT=tesla_ble/${vin}
-  SW_VERSION=0.0.10f
+  SW_VERSION=0.1.0
 
   log_debug "DEV_ID=$DEV_ID"
   log_debug "DEV_NAME=$DEV_NAME"
