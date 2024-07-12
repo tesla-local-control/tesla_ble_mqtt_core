@@ -539,7 +539,6 @@ function setupHADeviceControlsCard() {
 ###
 ##
 #   Setup Configuration Generate Keys Button
-#   Setup Configuration Deploy Key Button
 ##
 ###
 function setupHADeviceGenerateKeysButton() {
