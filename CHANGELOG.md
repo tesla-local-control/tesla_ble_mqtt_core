@@ -48,7 +48,7 @@ DO NOT UPGRADE PRIOR TO READ THE BELOW UPGRADE INSTRUCTIONS, SEE AFTER LIST OF C
    * in preparation "someday" for rear seats
 
 #### Contributors - Thank you!
-@epenet Code Quality Linting
+- @epenet Code Quality Linting
 
 ## 0.0.10
 
