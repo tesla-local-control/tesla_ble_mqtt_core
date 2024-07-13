@@ -110,7 +110,6 @@ bluetoothctl_read() {
     # Extract nPick lines starting from line startLine
     BLTCTL_OUT=$(sed -n "${startLine},$((startLine + nPick - 1))p" "$BLECTL_FILE_INPUT")
   fi
-  log_debug "${BLTCTL_OUT}"
 }
 
 # Function
@@ -133,6 +132,7 @@ listen_to_ble() {
       MQTT_TOPIC="tesla_ble/$VIN/binary_sensor/presence"
 
       # Check the presence using both MAC Addr and BLE Local Name
+      log_debug "$(echo "$BLTCTL_OUT" | grep -E "($BLE_MAC|$BLE_LN)")"
       check_presence "BLE MAC & LN" "($BLE_MAC|$BLE_LN)"
 
     done
