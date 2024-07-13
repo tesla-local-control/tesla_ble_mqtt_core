@@ -9,10 +9,10 @@ echo "[$(date +%H:%M:%S)] loading libproduct.sh"
 . /app/libproduct.sh
 log_debug "Loading environment & functions..."
 for fSource in mqtt.sh \
-  mqtt_discovery.sh \
-  mqtt_listen.sh \
+  mqtt-discovery.sh \
+  mqtt-listen.sh \
   subroutines.sh \
-  tesla_commands.sh \
+  tesla-commands.sh \
   version.sh; do
 
   if [ -f /app/$fSource ]; then
