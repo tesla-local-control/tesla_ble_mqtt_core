@@ -4673,26 +4673,14 @@
 [0;94m[bluetooth][0m# [[0;93mCHG[0m] Device 1C:B3:C9:11:77:6C RSSI: 0xffffffac (-84)
 [0;94m[bluetooth][0m# [[0;93mCHG[0m] Device C9:D5:1A:89:F3:80 RSSI: 0xffffffa2 (-94)
 [0;94m[bluetooth][0m# [[0;93mCHG[0m] Device FF:EE:DD:CC:BB:AA RSSI: 0xffffff98 (-104)
-[0;94m[bluetooth][0m#
-[0;94m[bluetooth][0m# vi t[Khci1 34:6B:46:FE:F6:FE type BR/EDR connect failed (status 0x04, Connect Failed)
-[0;94m[bluetooth][0m# vi tuuu
-[?2004l[1;39mInvalid command in menu main: vi[0m
-[1;39m
-Use "help" for a list of available commands in a menu.
-Use "menu <submenu>" if you want to enter any submenu.
-Use "back" if you want to return to menu main.[0m
-[?2004h[0;94m[bluetooth][0m# [K[?2004l[?2004h[0;94m[bluetooth][0m#
 [0;94m[bluetooth][0m# hci1 type 6 discovering off
 [0;94m[bluetooth][0m# hci1 type 6 discovering on
-[0;94m[bluetooth][0m#
 [0;94m[bluetooth][0m# [[0;93mCHG[0m] Device 60:8B:D8:B5:2A:14 RSSI: 0xffffffa6 (-90)
 [0;94m[bluetooth][0m# [[0;93mCHG[0m] Device AA:BB:CC:DD:EE:FF RSSI: 0xffffffa4 (-92)
 [0;94m[bluetooth][0m# [[0;93mCHG[0m] Device 57:22:FE:33:75:C1 RSSI: 0xffffffa6 (-90)
 [0;94m[bluetooth][0m# [[0;93mCHG[0m] Device AA:BB:CC:DD:EE:FF RSSI: 0xffffffa8 (-88)
 [0;94m[bluetooth][0m# [[0;93mCHG[0m] Device 44:C3:9C:9C:0C:FD RSSI: 0xffffffaa (-86)
 [0;94m[bluetooth][0m# [[0;93mCHG[0m] Device 5B:62:F4:F9:03:BA RSSI: 0xffffffac (-84)
-[0;94m[bluetooth][0m#
-[0;94m[bluetooth][0m#
 [0;94m[bluetooth][0m# [[0;93mCHG[0m] Device 60:2B:CE:1A:43:EC RSSI: 0xffffffa0 (-96)
 [0;94m[bluetooth][0m# [[0;93mCHG[0m] Device 53:FF:AC:FE:1C:5F RSSI: 0xffffffa8 (-88)
 [0;94m[bluetooth][0m# [K[?2004l[?2004h[0;94m[bluetooth][0m# [K[?2004l[?2004h[0;94m[bluetooth][0m# [[0;93mCHG[0m] Device 60:2B:CE:1A:43:EC RSSI: 0xffffffa0 (-96)
