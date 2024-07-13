@@ -434,7 +434,7 @@ function setupHADeviceControlsCard() {
    },
    "name": "Charging Limit",
    "unique_id": "'${DEV_ID}'_charging-set-limit",
-   "min": "0",
+   "min": "50",
    "max": "100",
    "mode": "slider",
    "unit_of_measurement": "%",
