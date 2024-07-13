@@ -4,52 +4,6 @@
 #
 
 # Function
-send_command() {
-  vin=$1
-  shift
-
-  max_retries=5
-  for count in $(seq $max_retries); do
-    log_notice "Sending command $* to vin $vin, attempt $count/${max_retries}"
-    set +e
-    # shellcheck disable=SC2068
-    tesla_ctrl_out=$(tesla-control -vin $vin -ble -key-name /share/tesla_blemqtt/${vin}_private.pem -key-file /share/tesla_ble_mqtt/${vin}_private.pem $@ 2>&1)
-    EXIT_STATUS=$?
-    set -e
-    if [ $EXIT_STATUS -eq 0 ]; then
-      log_info "tesla-control send command succeeded"
-      break
-    else
-      if [[ "$tesla_ctrl_out" == *"Failed to execute command: car could not execute command"* ]]; then
-        log_warning "$tesla_ctrl_out"
-        log_warning "Skipping command $* to vin $vin"
-        break
-      else
-        log_error "tesla-control send command failed exit status $EXIT_STATUS."
-        log_error "$tesla_ctrl_out"
-        # Don't continue if we've reached max retries
-        [ $max_retries -eq $count ] && break
-        log_notice "Retrying in $BLE_CMD_RETRY_DELAY seconds"
-      fi
-      sleep $BLE_CMD_RETRY_DELAY
-    fi
-  done
-}
-
-# Function
-# Tesla VIN to BLE Local Name
-tesla_vin2ble_ln() {
-  vin=$1
-  ble_ln=""
-
-  # BLE Local Name
-  ble_ln="S$(echo -n ${vin} | sha1sum | cut -c 1-16)C"
-
-  echo $ble_ln
-
-}
-
-# Function
 replace_value_at_position() {
 
   original_list="$1"
@@ -186,70 +140,6 @@ listen_to_ble() {
   done
 }
 
-# Function
-send_key() {
-  vin=$1
-
-  max_retries=5
-  for count in $(seq $max_retries); do
-    echo "Attempt $count/${max_retries}"
-    log_notice "Sending key to vin $vin, attempt $count/${max_retries}"
-    set +e
-    tesla-control -ble -vin $vin add-key-request /share/tesla_ble_mqtt/${vin}_public.pem owner cloud_key
-    EXIT_STATUS=$?
-    set -e
-    if [ $EXIT_STATUS -eq 0 ]; then
-      log_notice "KEY SENT TO VEHICLE: PLEASE CHECK YOU TESLA'S SCREEN AND ACCEPT WITH YOUR CARD"
-      break
-    else
-      log_notice "COULD NOT SEND THE KEY. Is the car awake and sufficiently close to the bluetooth device?"
-      sleep $BLE_CMD_RETRY_DELAY
-    fi
-  done
-}
-
-# Function
-delete_legacies() {
-  vin=$1
-
-  log_notice "Deleting Legacy MQTT Topics"
-  eval $MOSQUITTO_PUB_BASE -t homeassistant/switch/tesla_ble/sw-heater/config -n
-  eval $MOSQUITTO_PUB_BASE -t homeassistant/switch/tesla_ble/sentry-mode/config -n
-  eval $MOSQUITTO_PUB_BASE -t homeassistant/select/tesla_ble/heated_seat_left/config -n
-  eval $MOSQUITTO_PUB_BASE -t homeassistant/select/tesla_ble/heated_seat_right/config -n
-  eval $MOSQUITTO_PUB_BASE -t homeassistant/binary_sensor/tesla_ble/presence/config -n
-  eval $MOSQUITTO_PUB_BASE -t homeassistant/number/tesla_ble/charging-set-amps/config -n
-  eval $MOSQUITTO_PUB_BASE -t homeassistant/number/tesla_ble/charging-set-limit/config -n
-  eval $MOSQUITTO_PUB_BASE -t homeassistant/number/tesla_ble/climate-temp/config -n
-  eval $MOSQUITTO_PUB_BASE -t homeassistant/button/tesla_ble/generate_keys/config -n
-  eval $MOSQUITTO_PUB_BASE -t homeassistant/button/tesla_ble/deploy_key/config -n
-  eval $MOSQUITTO_PUB_BASE -t homeassistant/button/tesla_ble/scan_bluetooth/config -n
-  eval $MOSQUITTO_PUB_BASE -t homeassistant/button/tesla_ble/wake/config -n
-  eval $MOSQUITTO_PUB_BASE -t homeassistant/button/tesla_ble/flash-lights/config -n
-  eval $MOSQUITTO_PUB_BASE -t homeassistant/button/tesla_ble/honk/config -n
-  eval $MOSQUITTO_PUB_BASE -t homeassistant/button/tesla_ble/lock/config -n
-  eval $MOSQUITTO_PUB_BASE -t homeassistant/button/tesla_ble/unlock/config -n
-  eval $MOSQUITTO_PUB_BASE -t homeassistant/button/tesla_ble/auto-seat-climate/config -n
-  eval $MOSQUITTO_PUB_BASE -t homeassistant/button/tesla_ble/climate-on/config -n
-  eval $MOSQUITTO_PUB_BASE -t homeassistant/button/tesla_ble/climate-off/config -n
-  eval $MOSQUITTO_PUB_BASE -t homeassistant/button/tesla_ble/trunk-open/config -n
-  eval $MOSQUITTO_PUB_BASE -t homeassistant/button/tesla_ble/trunk-close/config -n
-  eval $MOSQUITTO_PUB_BASE -t homeassistant/button/tesla_ble/frunk-open/config -n
-  eval $MOSQUITTO_PUB_BASE -t homeassistant/button/tesla_ble/charging-start/config -n
-  eval $MOSQUITTO_PUB_BASE -t homeassistant/button/tesla_ble/charging-stop/config -n
-  eval $MOSQUITTO_PUB_BASE -t homeassistant/button/tesla_ble/charge-port-open/config -n
-  eval $MOSQUITTO_PUB_BASE -t homeassistant/button/tesla_ble/charge-port-close/config -n
-  eval $MOSQUITTO_PUB_BASE -t homeassistant/button/tesla_ble/windows-close/config -n
-  eval $MOSQUITTO_PUB_BASE -t homeassistant/button/tesla_ble/windows-vent/config -n
-
-  if [ -f /share/tesla_ble_mqtt/private.pem ]; then
-    log_notice "Renaming legacy keys"
-    mv /share/tesla_ble_mqtt/private.pem /share/tesla_ble_mqtt/${vin}_private.pem
-    mv /share/tesla_ble_mqtt/public.pem /share/tesla_ble_mqtt/${vin}_public.pem
-  fi
-
-}
-
 ### scanBLEforMACaddr
 ##
 #   Uses BLE Local Name derived from the VIN to match a MAC addr in the output
@@ -263,7 +153,7 @@ scanBLEforMACaddr() {
 
   mac_regex='([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})'
 
-  ble_ln=$(tesla_vin2ble_ln $vin)
+  ble_ln=$(vinToBLEln $vin)
 
   log_info "Looking for vin:$vin in the BLE cache that matches ble_ln:$ble_ln"
   if ! bltctl_out=$(bluetoothctl --timeout 2 devices | grep $ble_ln | grep -Eo $mac_regex); then
