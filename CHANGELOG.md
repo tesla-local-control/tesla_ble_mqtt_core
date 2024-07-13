@@ -17,7 +17,7 @@ DO NOT UPGRADE PRIOR TO READ THE BELOW UPGRADE INSTRUCTIONS, SEE AFTER LIST OF C
 - CHG: Improved presence detection reliability (using car's MAC addr and BLE Local Name)
 - CHG: Added retry functionality on MQTT publish failure (service/network issue)
 - CHG: Rename entities for consistency & better wording (see table below)
-- CHG: Code Quality Linting (shellcheck & shfmt)
+- CHG: Code Quality Linting (shellcheck & shfmt) [@epenet contribution]
 - CHG: Support bashio::log w/ timestamp (HA add-on)
 - CHG: Reduce logging; Improved colors consistency; More to be removed in next release
 - CHG: Add bluez-deprecated pkg (ciptool hciattach hciconfig hcidump hcitool meshctl rfcomm sdptool)
