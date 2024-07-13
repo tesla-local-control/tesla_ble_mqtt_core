@@ -589,12 +589,12 @@ function setupHADevicePresenceSensor {
     ],
     "manufacturer": "tesla-local-control",
     "model": "Tesla_BLE",
-    "name": "'${DEV_NAME}'"
+    "name": "'${DEV_NAME}'",
+    "sw_version": "'${SW_VERSION}'"
    },
    "device_class": "presence",
    "name": "Presence",
    "unique_id": "'${DEV_ID}'_presence",
-   "sw_version": "'${SW_VERSION}'"
   }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub -t homeassistant/binary_sensor/${DEV_ID}/presence/config -l
 
   log_debug "setupHADevicePresenceSensor() leaving vin:$vin"
@@ -620,15 +620,15 @@ function setupHADeviceDeployKeyButton() {
     ],
     "manufacturer": "tesla-local-control",
     "model": "Tesla_BLE",
-    "name": "'${DEV_NAME}'"
+    "name": "'${DEV_NAME}'",
+    "sw_version": "'${SW_VERSION}'"
    },
    "device_class": "update",
    "name": "Deploy Key",
    "payload_press": "deploy-key",
    "qos": "'${QOS_LEVEL}'",
    "unique_id": "'${DEV_ID}'_deploy-key",
-   "entity_category": "config",
-   "sw_version": "'${SW_VERSION}'"
+   "entity_category": "config"
   }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub -t homeassistant/button/${DEV_ID}/deploy-key/config -l
 
   log_debug "setupHADeviceDeployKeyButton() leaving vin:$vin"
