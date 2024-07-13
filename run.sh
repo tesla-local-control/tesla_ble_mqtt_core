@@ -24,6 +24,8 @@ for vin in $VIN_LIST; do
   if [ -f $KEYS_DIR/${vin}_private.pem ] &&
     [ -f $KEYS_DIR/${vin}_public.pem ]; then
     log_debug "Found public and private keys set for vin:$vin"
+    # TODO Remove in next release
+    touch $KEYS_DIR/${vin}_pubkey_accepted
   else
     log_debug "Did not find public and private keys for vin:$vin"
   fi
