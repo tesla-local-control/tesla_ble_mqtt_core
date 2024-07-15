@@ -57,13 +57,13 @@ function setupHADevicePanelCardsMain() {
     setupHADeviceDeployKeyButton $vin
     setupHADeviceGenerateKeysButton $vin
     setupHADeviceControlsCard $vin
-    setupHADeviceScanBLElnButton $vin
+    setupHADeviceInfoBTadapter $vin
   elif [ ! -f $KEYS_DIR/${vin}_private.pem ] && [ ! -f $KEYS_DIR/${vin}_public.pem ]; then
 
     log_debug "setupHADevicePanelCardsMain() found new vehicle, need to generate keys set vin:$vin"
     # Show button to Generate Keys
     setupHADeviceGenerateKeysButton $vin
-    setupHADeviceScanBLElnButton $vin
+    setupHADeviceInfoBTadapter $vin
 
     # listen_to_mqtt call setupHADeviceDeployKeyButton once the keys are generated
 
@@ -71,7 +71,7 @@ function setupHADevicePanelCardsMain() {
     log_debug "setupHADevicePanelCardsMain() found new vehicle, need to deploy public key vin:$vin"
     setupHADeviceDeployKeyButton $vin
     setupHADeviceGenerateKeysButton $vin
-    setupHADeviceScanBLElnButton $vin
+    setupHADeviceInfoBTadapter $vin
   fi
 
   log_debug "setupHADevicePanelCardsMain() leaving vin:$vin"
@@ -640,10 +640,10 @@ function setupHADeviceDeployKeyButton() {
 #   Setup Scan BLE LN Button
 ##
 ###
-function setupHADeviceScanBLElnButton() {
+function setupHADeviceInfoBTadapter() {
   vin=$1
 
-  log_debug "setupHADeviceScanBLElnButton() entering vin:$vin"
+  log_debug "setupHADeviceInfoBTadapter() entering vin:$vin"
   configHADeviceEnvVars $vin
 
   echo '{
@@ -658,14 +658,14 @@ function setupHADeviceScanBLElnButton() {
     "sw_version": "'${SW_VERSION}'"
    },
    "device_class": "update",
-   "name": "Scan Bluetooth",
-   "payload_press": "scan-bleln-macaddr",
+   "name": "Info Bluetooth Adapter",
+   "payload_press": "info-bt-adapter",
    "qos": "'${QOS_LEVEL}'",
-   "unique_id": "'${DEV_ID}'_scan-bleln-macaddr",
+   "unique_id": "'${DEV_ID}'_info-bt-adapter",
    "entity_category": "diagnostic"
-  }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub -t homeassistant/button/${DEV_ID}/scan-bleln-macaddr/config -l
+  }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub -t homeassistant/button/${DEV_ID}/info-bt-adapter/config -l
 
-  log_debug "setupHADeviceScanBLElnButton() leaving vin:$vin"
+  log_debug "setupHADeviceInfoBTadapter() leaving vin:$vin"
 
 }
 
