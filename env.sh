@@ -2,7 +2,7 @@
 #
 # shellcheck shell=dash
 #
-export SW_VERSION=0.1.1
+export SW_VERSION=0.2.0
 
 ### LOAD LIBRARIES (FUNCTIONS & ENVIRONMENT ) #################################
 echo "[$(date +%H:%M:%S)] loading libproduct.sh"
@@ -34,14 +34,14 @@ export PRESENCE_DETECTION_LOOP_DELAY=${PRESENCE_DETECTION_LOOP_DELAY:-120}
 export PRESENCE_DETECTION_TTL=${PRESENCE_DETECTION_TTL:-240}
 
 export BLE_LN_REGEX='S[0-9A-Fa-f]{16}C'
+export BLTCTL_COMMAND_DEVICES=false
 export KEYS_DIR=/share/tesla_ble_mqtt
-export MAC_REGEX='([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})'
+export MAC_REGEX='([0-9A-Fa-f]{2}[:]){5}([0-9A-Fa-f]{2})'
 export VIN_REGEX='[A-HJ-NPR-Z0-9]{17}'
 
 ### LOG CONFIG VARS ###########################################################
 log_info "Configuration Options are:
   BLE_CMD_RETRY_DELAY=$BLE_CMD_RETRY_DELAY
-  BLE_MAC_LIST=$BLE_MAC_LIST
   DEBUG=$DEBUG
   MQTT_SERVER=$MQTT_SERVER
   MQTT_PORT=$MQTT_PORT

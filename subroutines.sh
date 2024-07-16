@@ -34,16 +34,29 @@ replace_value_at_position() {
 
 # Function
 check_presence() {
-  TYPE="$1" # BLE MAC, LN
-  MATCH="$2"
+  BLE_LN="$1"
+  BLE_MAC="$1"
 
   CURRENT_TIME_EPOCH=$(date +%s)
+  MATCH="($BLE_LN|$BLE_MAC)"
+
+  if [ $BLE_MAC == "FF:FF:FF:FF:FF:FF" ]; then
+    log_debug "check_presence; looking BLE_MAC for BLE_LN:$BLE_LN"
+    if grepOutput=$(echo "${BLTCTL_OUT}" | grep $BLE_LN | tail -1); then
+      BLE_MAC=$(echo $grepOutput | grep -Eo $MAC_REGEX)
+      log_info "check_presence; found BLE MAC addr:$BLE_MAC for BLE_LN:$BLE_LN"
+    else
+      log_debug "check_presence; did not find BLE MAC addr for BLE_LN:$BLE_LN"
+    fi
+  fi
+  # return value to calling function
+  echo $BLE_MAC
 
   if echo "${BLTCTL_OUT}" | grep -Eq "$MATCH"; then
-    log_info "VIN $VIN $TYPE $MATCH presence detected"
+    log_info "vin:$VIN ble_ln:$BLE_LN match:$MATCH presence detected"
 
     if [ $CURRENT_TIME_EPOCH -ge $PRESENCE_EXPIRE_TIME ]; then
-      log_info "VIN $VIN $MATCH TTL expired, set presence ON"
+      log_info "vin:$VIN ble_ln:$BLE_LN TTL expired, set presence ON"
       set +e
       # We need a function for mosquitto_pub w/ retry
       MQTT_OUT=$(eval $MOSQUITTO_PUB_BASE --nodelay -t "$MQTT_TOPIC" -m ON 2>&1)
@@ -57,14 +70,14 @@ check_presence() {
 
     # Update presence expire time
     EPOCH_EXPIRE_TIME=$((CURRENT_TIME_EPOCH + PRESENCE_DETECTION_TTL))
-    log_debug "VIN $VIN $MATCH update presence expire time to $EPOCH_EXPIRE_TIME"
+    log_debug "vin:$VIN ble_ln:$BLE_LN update presence expire time to $EPOCH_EXPIRE_TIME"
     PRESENCE_EXPIRE_TIME_LIST=$(replace_value_at_position "$PRESENCE_EXPIRE_TIME_LIST" \
       $position $EPOCH_EXPIRE_TIME)
     # END if MATCH
   else
-    log_debug "VIN $VIN $TYPE $MATCH presence not detected"
+    log_debug "vin:$VIN ble_ln:$BLE_LN match:$MATCH presence not detected"
     if [ $CURRENT_TIME_EPOCH -ge $PRESENCE_EXPIRE_TIME ]; then
-      log_info "VIN $VIN $TYPE $MATCH presence has expired, setting presence OFF"
+      log_info "vin:$VIN ble_ln:$BLE_LN presence has expired, setting presence OFF"
       set +e
       MQTT_OUT=$(eval $MOSQUITTO_PUB_BASE --nodelay -t "$MQTT_TOPIC" -m OFF 2>&1)
       EXIT_STATUS=$?
@@ -74,7 +87,7 @@ check_presence() {
         return
       log_debug "mqtt topic $MQTT_TOPIC succesfully updated to OFF"
     else
-      log_info "VIN $VIN $TYPE $MATCH presence not expired"
+      log_info "vin:$VIN ble_ln:$BLE_LN presence not expired"
     fi # END if expired time
   fi   # END if ! MATCH
 }
@@ -85,9 +98,26 @@ bluetoothctl_read() {
   # Read BLE data from bluetoothctl or an input file
   if [ -z $BLECTL_FILE_INPUT ]; then
     log_debug "Launching bluetoothctl to check for BLE presence"
-    BLECTL_TIMEOUT=11
     set +e
-    BLTCTL_OUT=$(bluetoothctl --timeout $BLECTL_TIMEOUT scan on 2>&1 | grep -v DEL)
+    BLTCTL_OUT=$({
+      if [ $BLTCTL_COMMAND_DEVICES == "true" ]; then
+        bltctlCommands="power on,devices,scan on"
+      else
+        bltctlCommands="power on,scan on"
+      fi
+      IFS=','
+      for bltctlCommand in $bltctlCommands; do
+        echo "$bltctlCommand"
+        sleep 0.2
+      done
+
+      # scan for 10 seconds (Tesla adverstisement each ~9s)
+      sleep 10
+
+      echo "scan off"
+      echo "power off"
+      echo "exit"
+    } | bluetoothctl)
     set -e
   else
     # Read from file, great for testing w/ no Bluetooth adapter
@@ -119,6 +149,7 @@ listen_to_ble() {
   while :; do
     bluetoothctl_read
 
+    BLTCTL_COMMAND_DEVICES=false
     for position in $(seq $n_vins); do
       set -- $BLE_LN_LIST
       BLE_LN=$(eval "echo \$${position}")
@@ -132,8 +163,18 @@ listen_to_ble() {
       MQTT_TOPIC="tesla_ble/$VIN/binary_sensor/presence"
 
       # Check the presence using both MAC Addr and BLE Local Name
-      log_debug "$(echo "$BLTCTL_OUT" | grep -E "($BLE_MAC|$BLE_LN)")"
-      check_presence "BLE MAC & LN" "($BLE_MAC|$BLE_LN)"
+      log_debug "BLTCTL_OUT:$(echo "$BLTCTL_OUT" | grep -E "($BLE_MAC|$BLE_LN)")"
+      macAddr=$(check_presence $BLE_LN $BLE_MAC)
+
+      # Add the MAC address to BLE_MAC_LIST if it's not already present at the position
+      if [ "$macAddr" != "$BLE_MAC" ]; then
+        eval "BLE_MAC_LIST=\$(echo \$BLE_MAC_LIST | awk '{\$${position}=\"$macAddr\"; print}')"
+        log_debug "listen_to_ble; BLE_MAC_LIST:$BLE_MAC_LIST"
+        [ ! -f $KEYS_DIR/${VIN}_macaddr ] && echo $macAddr >$KEYS_DIR/${VIN}_macaddr
+      fi
+
+      # If a MAC addr is unknown, request "bltctl devices"
+      [ $macAddr == "FF:FF:FF:FF:FF:FF" ] && BLTCTL_COMMAND_DEVICES=true
 
     done
     sleep $PRESENCE_DETECTION_LOOP_DELAY
@@ -151,16 +192,14 @@ scanBLEforMACaddr() {
   # quite old, but has the principles for auto populating the BLE MAC Address with only the VIN
   vin=$1
 
-  mac_regex='([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})'
-
   ble_ln=$(vinToBLEln $vin)
 
   log_info "Looking for vin:$vin in the BLE cache that matches ble_ln:$ble_ln"
-  if ! bltctl_out=$(bluetoothctl --timeout 2 devices | grep $ble_ln | grep -Eo $mac_regex); then
+  if ! bltctl_out=$(bluetoothctl --timeout 2 devices | grep $ble_ln | grep -Eo $MAC_REGEX); then
     log_notice "Couldn't find a match in the cache for ble_ln:$ble_ln for vin:$vin"
     # Look for a BLE adverstisement matching ble_ln
     log_notice "Scanning (10 seconds) for BLE advertisement that matches ble_ln:$ble_ln vin:$vin"
-    if ! bltctl_out=$(bluetoothctl --timeout 10 scan on | grep $ble_ln | grep -Eo $mac_regex); then
+    if ! bltctl_out=$(bluetoothctl --timeout 10 scan on | grep $ble_ln | grep -Eo $MAC_REGEX); then
       log_notice "Couldn't find a BLE advertisement for ble_ln:$ble_ln vin:$vin"
       return 1
     fi
