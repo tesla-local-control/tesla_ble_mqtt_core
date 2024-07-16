@@ -46,7 +46,7 @@ function setupHADevicePanelCardsMain() {
   configHADeviceEnvVars $vin
 
   # If detection is enable, show presence
-  if [ $PRESENCE_DETECTION_TTL -gt 0 ] && [ -n "$BLE_MAC_LIST" ]; then
+  if [ $PRESENCE_DETECTION_TTL -gt 0 ]; then
     log_debug "setupHADevicePanelCardsMain() vin:$vin presence detection enable"
     setupHADevicePresenceSensor $vin
   fi

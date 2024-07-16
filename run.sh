@@ -10,7 +10,6 @@ echo "[$(date +%H:%M:%S)] Starting... loading /app/env.sh"
 . /app/env.sh
 
 # Replace | with ' ' white space
-BLE_MAC_LIST=$(echo $BLE_MAC_LIST | sed -e 's/[|,;]/ /g')
 VIN_LIST=$(echo $VIN_LIST | sed -e 's/[|,;]/ /g')
 
 vin_count=0
@@ -18,8 +17,21 @@ for vin in $VIN_LIST; do
   # Populate BLE Local Names list
   vin_count=$((vin_count + 1))
   BLE_LN=$(vinToBLEln $vin)
-  log_debug "Adding $BLE_LN to BLE_LN_LIST, count $vin_count"
+  log_debug "Adding $BLE_LN to BLE_LN_LIST, vin_count:$vin_count"
   BLE_LN_LIST="$BLE_LN_LIST $BLE_LN"
+  if [ -f $KEYS_DIR/${vin}_macaddr ]; then
+    BLE_MAC=$(cat $KEYS_DIR/${vin}_macaddr)
+    log_debug "Found BLE_MAC:$BLE_MAC in $KEYS_DIR/${vin}_macaddr; adding to BLE_MAC_LIST"
+    BLE_MAC_LIST="$BLE_MAC_LIST $BLE_MAC"
+  else
+    log_debug "Adding default value FF:FF:FF:FF:FF:FF to BLE_MAC_LIST"
+    BLE_MAC_LIST="$BLE_MAC_LIST FF:FF:FF:FF:FF:FF"
+    # Request bluetooth_read to run the "devices" command
+    # shellcheck disable=SC2034
+    BLTCTL_COMMAND_DEVICES=true
+  fi
+  log_debug "Adding default value 0 to PRESENCE_EXPIRE_TIME_LIST"
+  PRESENCE_EXPIRE_TIME_LIST="$PRESENCE_EXPIRE_TIME_LIST 0"
 
   if [ -f $KEYS_DIR/${vin}_private.pem ] &&
     [ -f $KEYS_DIR/${vin}_public.pem ]; then
@@ -41,20 +53,17 @@ for vin in $VIN_LIST; do
     delete_legacies $vin
   fi # END TEMPORARY
 done
+# remove leading white space
+BLE_LN_LIST=$(echo $BLE_LN_LIST | sed -e 's/^ //g')
+BLE_MAC_LIST=$(echo $BLE_MAC_LIST | sed -e 's/^ //g')
+PRESENCE_EXPIRE_TIME_LIST=$(echo $PRESENCE_EXPIRE_TIME_LIST | sed -e 's/^ //g')
 
-# Populate PRESENCE_EXPIRE_TIME_LIST only if Presence Detection is enable
-if [ $PRESENCE_DETECTION_TTL -gt 0 ]; then
-  log_info "Presence detection is enable with a TTL of $PRESENCE_DETECTION_TTL seconds"
-  ble_mac_addr_count=0
-  # shellcheck disable=SC2034
-  for ble_mac in $BLE_MAC_LIST; do
-    ble_mac_addr_count=$((ble_mac_addr_count + 1))
-    log_debug "Adding 0 to PRESENCE_EXPIRE_TIME_LIST, count $ble_mac_addr_count"
-    PRESENCE_EXPIRE_TIME_LIST="$PRESENCE_EXPIRE_TIME_LIST 0"
-  done
-else
-  log_info "Presence detection is not enabled due to TTL of $PRESENCE_DETECTION_TTL seconds"
-fi
+# log _LIST values
+log_debug "VIN_LIST:$VIN_LIST"
+log_debug "BLE_LN:$BLE_LN"
+log_debug "BLE_LN_LIST:$BLE_LN_LIST"
+log_debug "BLE_MAC_LIST:$BLE_MAC_LIST"
+log_debug "PRESENCE_EXPIRE_TIME_LIST:$PRESENCE_EXPIRE_TIME_LIST"
 
 # Setup HA auto discovery, or skip if HA backend is disable, and discard old MQTT messages
 discardMessages=yes
@@ -79,7 +88,7 @@ while :; do
   # Don't run presence detection if TTL is 0
 
   # If PRESENCE_DETECTION_TTL > 0 and BLE_MAC_LIST is not empty
-  if [ $PRESENCE_DETECTION_TTL -gt 0 ] && [ -n "$BLE_MAC_LIST" ]; then
+  if [ $PRESENCE_DETECTION_TTL -gt 0 ]; then
     log_info "Launch BLE scanning for car presence every $PRESENCE_DETECTION_LOOP_DELAY seconds"
     listen_to_ble $vin_count
     # Run listen_to_ble every 3m
