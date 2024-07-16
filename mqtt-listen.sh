@@ -67,11 +67,9 @@ listen_to_mqtt() {
           deployKeyMain $vin
           ;;
 
-        scan-bleln-macaddr)
-          log_notice 'scan-bleln-macaddr; calling scanBLEforMACaddr()'
-          if ble_mac_addr=$(scanBLEforMACaddr $vin); then
-            log_notice "Found BLE MAC addr for vin:$vin is $ble_mac_addr"
-          fi
+        info-bt-adapter)
+          log_notice 'info-bt-adapter; launching infoBluetoothAdapter(); results in ~10 seconds"'
+          infoBluetoothAdapter $vin
           ;;
 
         *)
