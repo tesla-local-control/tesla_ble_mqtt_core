@@ -682,6 +682,9 @@ function setupHADeviceInfoBTadapter() {
   log_debug "setupHADeviceInfoBTadapter() entering vin:$vin"
   configHADeviceEnvVars $vin
 
+  # TODO TEPORARILY - To be removed
+  eval $MOSQUITTO_PUB_BASE -t homeassistant/button/tesla_ble_${vin}/scan-bleln-macaddr/config -n
+
   echo '{
    "command_topic": "'${TOPIC_ROOT}'/config",
    "device": {
