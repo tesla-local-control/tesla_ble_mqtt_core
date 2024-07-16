@@ -25,7 +25,7 @@ function configHADeviceEnvVars() {
 
   TOPIC_ROOT=tesla_ble/${vin}
 
-  QOS_LEVEL=1
+  QOS_LEVEL=0
 
   log_debug "DEV_ID=$DEV_ID"
   log_debug "DEV_NAME=$DEV_NAME"
@@ -55,22 +55,22 @@ function setupHADevicePanelCardsMain() {
   if [ -f $KEYS_DIR/${vin}_pubkey_accepted ]; then
     log_debug "setupHADevicePanelCardsMain() found vehicle with pubkey deployed vin:$vin"
     setupHADeviceDeployKeyButton $vin
-    setupHADeviceGenerateKeysButton $vin
+    setupHADeviceReGenerateKeysButton $vin
     setupHADeviceControlsCard $vin
     setupHADeviceScanBLElnButton $vin
-  elif [ ! -f $KEYS_DIR/${vin}_private.pem ] && [ ! -f $KEYS_DIR/${vin}_public.pem ]; then
+  elif [ ! -f $KEYS_DIR/${vin}_private.pem ] || [ ! -f $KEYS_DIR/${vin}_public.pem ]; then
 
     log_debug "setupHADevicePanelCardsMain() found new vehicle, need to generate keys set vin:$vin"
     # Show button to Generate Keys
-    setupHADeviceGenerateKeysButton $vin
     setupHADeviceScanBLElnButton $vin
+    setupHADeviceGenerateKeysButton $vin
 
     # listen_to_mqtt call setupHADeviceDeployKeyButton once the keys are generated
 
   else
     log_debug "setupHADevicePanelCardsMain() found new vehicle, need to deploy public key vin:$vin"
     setupHADeviceDeployKeyButton $vin
-    setupHADeviceGenerateKeysButton $vin
+    setupHADeviceReGenerateKeysButton $vin
     setupHADeviceScanBLElnButton $vin
   fi
 
@@ -567,6 +567,42 @@ function setupHADeviceGenerateKeysButton() {
   }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub -t homeassistant/button/${DEV_ID}/generate-keys/config -l
 
   log_debug "setupHADeviceGenerateKeysButton() leaving vin:$vin"
+
+}
+
+###
+##
+#   Setup Configuration ReGenerate Keys Button
+##
+###
+function setupHADeviceReGenerateKeysButton() {
+  vin=$1
+
+  log_debug "setupHADeviceReGenerateKeysButton() entering vin:$vin"
+  configHADeviceEnvVars $vin
+
+  eval $MOSQUITTO_PUB_BASE -t homeassistant/button/tesla_ble_${vin}/generate-keys/config -n
+
+  echo '{
+   "command_topic": "'${TOPIC_ROOT}'/config",
+   "device": {
+    "identifiers": [
+    "'${DEV_ID}'"
+    ],
+    "manufacturer": "tesla-local-control",
+    "model": "Tesla_BLE",
+    "name": "'${DEV_NAME}'"
+   },
+   "device_class": "update",
+   "name": "ReGenerate Keys",
+   "payload_press": "generate-keys",
+   "qos": "'${QOS_LEVEL}'",
+   "unique_id": "'${DEV_ID}'_regenerate-keys",
+   "entity_category": "config",
+   "sw_version": "'${SW_VERSION}'"
+  }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub -t homeassistant/button/${DEV_ID}/regenerate-keys/config -l
+
+  log_debug "setupHADeviceReGenerateKeysButton() leaving vin:$vin"
 
 }
 
