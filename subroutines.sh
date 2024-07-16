@@ -181,29 +181,40 @@ listen_to_ble() {
   done
 }
 
-### scanBLEforMACaddr
+### infoBluetoothAdapter
 ##
-#   Uses BLE Local Name derived from the VIN to match a MAC addr in the output
-##  of the command bluetoothctl "devices" and "scan on"
+#   Get Bluetooth adapter information for diagnostic
+##  Note: scan on in bltctlCommands must be the last command.
 ###
-scanBLEforMACaddr() {
-  # copied from legacy "scan_bluetooth" function. To decide if still relevant
-  # note there is this PR https://github.com/tesla-local-control/tesla-local-control-addon/pull/32
-  # quite old, but has the principles for auto populating the BLE MAC Address with only the VIN
-  vin=$1
+infoBluetoothAdapter() {
 
-  ble_ln=$(vinToBLEln $vin)
+  log_debug "Launching bluetoothctl to check for BLE presence"
+  set +e
+  BLTCTL_OUT=$({
+    bltctlCommands="version,list,show,menu mgmt,info,back,power on,scan on"
+    IFS=','
+    for bltctlCommand in $bltctlCommands; do
+      echo "##################################################################"
+      echo "$bltctlCommand"
+      sleep 0.2
+    done
 
-  log_info "Looking for vin:$vin in the BLE cache that matches ble_ln:$ble_ln"
-  if ! bltctl_out=$(bluetoothctl --timeout 2 devices | grep $ble_ln | grep -Eo $MAC_REGEX); then
-    log_notice "Couldn't find a match in the cache for ble_ln:$ble_ln for vin:$vin"
-    # Look for a BLE adverstisement matching ble_ln
-    log_notice "Scanning (10 seconds) for BLE advertisement that matches ble_ln:$ble_ln vin:$vin"
-    if ! bltctl_out=$(bluetoothctl --timeout 10 scan on | grep $ble_ln | grep -Eo $MAC_REGEX); then
-      log_notice "Couldn't find a BLE advertisement for ble_ln:$ble_ln vin:$vin"
-      return 1
-    fi
+    # scan for 10 seconds (Tesla adverstisement each ~9s)
+    sleep 10
+
+    echo "scan off"
+    echo "exit"
+  } | bluetoothctl | sed -r 's/\x1b\[[0-9;]*m//g' | grep -E '(^Version|bluetooth)')
+  set -e
+
+  log_notice "\n# INFO BLUETOOTH ADAPTER\n$BLTCTL_OUT\n##################################################################"
+
+  bltctlVersion=$(echo "$BLTCTL_OUT" | grep ^Version | sed -e 's/^Version //g')
+  bltctlMinVersion=5.63
+  if awk -v n1="$bltctlMinVersion" -v n2="$bltctlVersion" 'BEGIN {exit !(n1 > n2)}'; then
+    log_warning "Minimum recommended version of Bluez:$bltctlMinVersion; your system version:$bltctlVersion"
+  else
+    log_debug "Minimum recommended version of Bluez:$bltctlMinVersion; your system version:$bltctlVersion"
   fi
-  echo $bltctl_out
-  return 0
+
 }
