@@ -31,7 +31,7 @@ retryMQTTpub() {
 
   # Retry loop
   cmdCounterLoop=0
-  while [ $((cmdCounterLoop += 1)) -lt $retryMQTTAttemptCount ]; do
+  while [ $((cmdCounterLoop += 1)) -le $retryMQTTAttemptCount ]; do
 
     log_debug "Attempt $cmdCounterLoop/${retryMQTTAttemptCount} retryMQTTpub; calling mosquitto_pub $args"
     set +e
