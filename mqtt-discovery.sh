@@ -600,7 +600,7 @@ function setupHADeviceReGenerateKeysButton() {
    "unique_id": "'${DEV_ID}'_regenerate-keys",
    "entity_category": "config",
    "sw_version": "'${SW_VERSION}'"
-  }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub -t homeassistant/button/${DEV_ID}/regenerate-keys/config -l
+  }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 6 10 -t homeassistant/button/${DEV_ID}/regenerate-keys/config -l
 
   log_debug "setupHADeviceReGenerateKeysButton() leaving vin:$vin"
 
@@ -673,7 +673,7 @@ function setupHADeviceDeployKeyButton() {
 
 ###
 ##
-#   Setup Scan BLE LN Button
+#   Setup Info Bluetooth Adapter
 ##
 ###
 function setupHADeviceInfoBTadapter() {
@@ -699,7 +699,7 @@ function setupHADeviceInfoBTadapter() {
    "qos": "'${QOS_LEVEL}'",
    "unique_id": "'${DEV_ID}'_info-bt-adapter",
    "entity_category": "diagnostic"
-  }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 6 10 -t homeassistant/button/${DEV_ID}/scan-bleln-macaddr/config -l
+  }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 6 10 -t homeassistant/button/${DEV_ID}/info-bt-adapter/config -l
 
   log_debug "setupHADeviceInfoBTadapter() leaving vin:$vin"
 
