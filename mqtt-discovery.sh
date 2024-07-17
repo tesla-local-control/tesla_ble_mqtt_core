@@ -581,8 +581,6 @@ function setupHADeviceReGenerateKeysButton() {
   log_debug "setupHADeviceReGenerateKeysButton() entering vin:$vin"
   configHADeviceEnvVars $vin
 
-  eval $MOSQUITTO_PUB_BASE -t homeassistant/button/tesla_ble_${vin}/generate-keys/config -n
-
   echo '{
    "command_topic": "'${TOPIC_ROOT}'/config",
    "device": {
@@ -601,6 +599,8 @@ function setupHADeviceReGenerateKeysButton() {
    "entity_category": "config",
    "sw_version": "'${SW_VERSION}'"
   }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 6 10 -t homeassistant/button/${DEV_ID}/regenerate-keys/config -l
+
+  eval $MOSQUITTO_PUB_BASE -t homeassistant/button/tesla_ble_${vin}/generate-keys/config -n
 
   log_debug "setupHADeviceReGenerateKeysButton() leaving vin:$vin"
 

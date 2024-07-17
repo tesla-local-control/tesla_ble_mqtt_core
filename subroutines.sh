@@ -35,22 +35,25 @@ replace_value_at_position() {
 # Function
 check_presence() {
   BLE_LN="$1"
-  BLE_MAC="$1"
+  BLE_MAC="$2"
+  macAddr="$3"
 
   CURRENT_TIME_EPOCH=$(date +%s)
   MATCH="($BLE_LN|$BLE_MAC)"
 
   if [ $BLE_MAC == "FF:FF:FF:FF:FF:FF" ]; then
     log_debug "check_presence; looking BLE_MAC for BLE_LN:$BLE_LN"
-    if grepOutput=$(echo "${BLTCTL_OUT}" | grep $BLE_LN | tail -1); then
-      BLE_MAC=$(echo $grepOutput | grep -Eo $MAC_REGEX)
-      log_info "check_presence; found BLE MAC addr:$BLE_MAC for BLE_LN:$BLE_LN"
+    if grepOutput=$(echo "${BLTCTL_OUT}" | grep $BLE_LN | tail -1 | grep -Eo $MAC_REGEX); then
+      # return value to calling function
+      eval "$macAddr=$grepOutput"
+      log_info "check_presence; found BLE MAC addr:$grepOutput for BLE_LN:$BLE_LN"
     else
       log_debug "check_presence; did not find BLE MAC addr for BLE_LN:$BLE_LN"
+      eval "$macAddr=$BLE_MAC"
     fi
+  else
+    eval "$macAddr=$BLE_MAC"
   fi
-  # return value to calling function
-  echo $BLE_MAC
 
   if echo "${BLTCTL_OUT}" | grep -Eq "$MATCH"; then
     log_info "vin:$VIN ble_ln:$BLE_LN match:$MATCH presence detected"
@@ -115,7 +118,6 @@ bluetoothctl_read() {
       sleep 10
 
       echo "scan off"
-      echo "power off"
       echo "exit"
     } | bluetoothctl)
     set -e
@@ -162,18 +164,23 @@ listen_to_ble() {
 
       MQTT_TOPIC="tesla_ble/$VIN/binary_sensor/presence"
 
-      # Check the presence using both MAC Addr and BLE Local Name
-      log_debug "BLTCTL_OUT:$(echo "$BLTCTL_OUT" | grep -E "($BLE_MAC|$BLE_LN)")"
-      macAddr=$(check_presence $BLE_LN $BLE_MAC)
+      # If something matches or BLE_MAC is default
+      if echo "$BLTCTL_OUT" | grep -Eq "($BLE_MAC|$BLE_LN)" ||
+        [ $BLE_MAC == "FF:FF:FF:FF:FF:FF" ]; then
+        # Check the presence using both BLE Local Name & MAC Addr
+        check_presence $BLE_LN $BLE_MAC macAddr
+        log_debug "macAddr:$macAddr BLE_MAC:$BLE_MAC"
 
-      # Add the MAC address to BLE_MAC_LIST if it's not already present at the position
-      if [ "$macAddr" != "$BLE_MAC" ]; then
-        eval "BLE_MAC_LIST=\$(echo \$BLE_MAC_LIST | awk '{\$${position}=\"$macAddr\"; print}')"
-        log_debug "listen_to_ble; BLE_MAC_LIST:$BLE_MAC_LIST"
-        [ ! -f $KEYS_DIR/${VIN}_macaddr ] && echo $macAddr >$KEYS_DIR/${VIN}_macaddr
+        # If BLE_MAC is default value & macAddr is not
+        if [ "$macAddr" != "$BLE_MAC" ]; then
+          # Replace the MAC address for this car in BLE_MAC_LIST
+          eval "BLE_MAC_LIST=\$(echo \$BLE_MAC_LIST | awk '{\$${position}=\"$macAddr\"; print}')"
+          log_debug "listen_to_ble; BLE_MAC_LIST:$BLE_MAC_LIST"
+          [ ! -f $KEYS_DIR/${VIN}_macaddr ] && echo $macAddr >$KEYS_DIR/${VIN}_macaddr
+        fi
       fi
 
-      # If a MAC addr is unknown, request "bltctl devices"
+      # If macAddr is default, on next run request "bltctl devices"
       [ $macAddr == "FF:FF:FF:FF:FF:FF" ] && BLTCTL_COMMAND_DEVICES=true
 
     done
@@ -191,7 +198,7 @@ infoBluetoothAdapter() {
   log_debug "Launching bluetoothctl to check for BLE presence"
   set +e
   BLTCTL_OUT=$({
-    bltctlCommands="version,list,show,menu mgmt,info,back,power on,scan on"
+    bltctlCommands="version,list,show,menu mgmt,info,back"
     IFS=','
     for bltctlCommand in $bltctlCommands; do
       echo "##################################################################"
@@ -199,12 +206,8 @@ infoBluetoothAdapter() {
       sleep 0.2
     done
 
-    # scan for 10 seconds (Tesla adverstisement each ~9s)
-    sleep 10
-
-    echo "scan off"
     echo "exit"
-  } | bluetoothctl | sed -r 's/\x1b\[[0-9;]*m//g' | grep -E '(^Version|bluetooth)')
+  } | bluetoothctl | sed -r 's/\x1b\[[0-9;]*m//g' | grep -Ev '(\[CHG]|\[DEL]|\[NEW]|^  )' | grep -E '(^Version|bluetooth|^Controller|^Advertis|^	)')
   set -e
 
   log_notice "\n# INFO BLUETOOTH ADAPTER\n$BLTCTL_OUT\n##################################################################"

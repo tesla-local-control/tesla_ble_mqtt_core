@@ -26,9 +26,6 @@ retryMQTTpub() {
   # read topic json fom stdin
   read -r topic_json
 
-  # loop for topic json fom stdin
-  cmdCounterLoop=0
-
   # Retry loop
   cmdCounterLoop=0
   while [ $((cmdCounterLoop += 1)) -le $retryMQTTAttemptCount ]; do
