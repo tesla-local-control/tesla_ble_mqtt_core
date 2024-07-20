@@ -49,6 +49,11 @@ function setupHADevicePanelCardsMain() {
   if [ $PRESENCE_DETECTION_TTL -gt 0 ]; then
     log_debug "setupHADevicePanelCardsMain() vin:$vin presence detection enable"
     setupHADevicePresenceSensor $vin
+
+    [ -f $KEYS_DIR/${vin}_presence ]  &&
+      lastPresenceValue=$(cat $KEYS_DIR/${vin}_presence) &&
+      presenceMQTTpub $vin $lastPresenceValue
+
   fi
 
   # Newly added car?
@@ -715,25 +720,22 @@ function setupHADeviceInfoBTadapter() {
 ###
 setupHADeviceAllVINsLoop() {
 
-  discardMessages=$1
-
   # Setup or skip HA auto discovery & Discard old MQTT messages
   for vin in $VIN_LIST; do
 
     # IF HA backend is enable, setup HA Auto Discover
     if [ "$ENABLE_HA_FEATURES" == "true" ]; then
-      log_debug "Calling setupHADevicePanelCardsMain() $vin"
+      log_debug "setupHADeviceAllVINsLoop; calling setupHADevicePanelCardsMain() $vin"
       setupHADevicePanelCardsMain $vin
     else
-      log_info "HA backend is disable, skipping setup for HA Auto Discovery"
-    fi
-
-    # Discard or not awaiting messages
-    if [ "$discardMessages" = "yes" ]; then
-      log_notice "Discarding any unread MQTT messages for $vin"
-      eval $MOSQUITTO_SUB_BASE -E -i tesla_ble_mqtt -t tesla_ble_mqtt/$vin/+
+      log_info "setupHADeviceAllVINsLoop; HA backend is disable, skipping setup for HA Auto Discovery"
     fi
   done
+
+  # Discard /config messages
+  topic=tesla_ble/$vin/config
+  log_notice "setupHADeviceAllVINsLoop; Discarding any unread MQTT messages for topic:$topic"
+  eval $MOSQUITTO_SUB_BASE -E -i tesla_ble_mqtt -t tesla_ble/$vin/config
 }
 
 ###

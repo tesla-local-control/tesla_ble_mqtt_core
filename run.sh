@@ -65,9 +65,8 @@ log_debug "BLE_LN_LIST:$BLE_LN_LIST"
 log_debug "BLE_MAC_LIST:$BLE_MAC_LIST"
 log_debug "PRESENCE_EXPIRE_TIME_LIST:$PRESENCE_EXPIRE_TIME_LIST"
 
-# Setup HA auto discovery, or skip if HA backend is disable, and discard old MQTT messages
-discardMessages=yes
-setupHADeviceAllVINsLoop $discardMessages
+# Setup HA auto discovery, or skip if HA backend is disable and discard old /config MQTT messages
+setupHADeviceAllVINsLoop
 
 # IF HA backend is enable, call listenForHAstatus()
 if [ "$ENABLE_HA_FEATURES" == "true" ]; then
