@@ -198,7 +198,7 @@ infoBluetoothAdapter() {
   log_debug "Launching bluetoothctl to check for BLE presence"
   set +e
   BLTCTL_OUT=$({
-    bltctlCommands="version,list,show,mgmt.info,back"
+    bltctlCommands="version,list,mgmt.info,show"
     IFS=','
     for bltctlCommand in $bltctlCommands; do
       echo "##################################################################"
