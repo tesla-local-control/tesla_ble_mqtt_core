@@ -43,6 +43,7 @@ presenceMQTTpub() {
   echo $presenceState >$KEYS_DIR/${vin}_presence
   set +e
   # We need a function for mosquitto_pub w/ retry
+  # shellcheck disable=SC2034
   MQTT_OUT=$(eval $MOSQUITTO_PUB_BASE --nodelay -t "$MQTT_TOPIC" -m $presenceState 2>&1)
   EXIT_STATUS=$?
   set -e
