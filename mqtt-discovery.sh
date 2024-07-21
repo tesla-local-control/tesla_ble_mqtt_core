@@ -681,11 +681,6 @@ delete_legacies() {
   log_notice "Deleting Legacy MQTT Topics"
   eval $MOSQUITTO_PUB_BASE -t homeassistant/switch/tesla_ble/sw-heater/config -n
   eval $MOSQUITTO_PUB_BASE -t homeassistant/switch/tesla_ble/sentry-mode/config -n
-  eval $MOSQUITTO_PUB_BASE -t homeassistant/switch/tesla_ble/charging/config -n
-  eval $MOSQUITTO_PUB_BASE -t homeassistant/switch/tesla_ble/climate/config -n
-  eval $MOSQUITTO_PUB_BASE -t homeassistant/cover/tesla_ble/charge-port/config -n
-  eval $MOSQUITTO_PUB_BASE -t homeassistant/cover/tesla_ble/windows/config -n
-  eval $MOSQUITTO_PUB_BASE -t homeassistant/cover/tesla_ble/trunk/config -n
   eval $MOSQUITTO_PUB_BASE -t homeassistant/select/tesla_ble/heated_seat_left/config -n
   eval $MOSQUITTO_PUB_BASE -t homeassistant/select/tesla_ble/heated_seat_right/config -n
   eval $MOSQUITTO_PUB_BASE -t homeassistant/binary_sensor/tesla_ble/presence/config -n
@@ -718,5 +713,22 @@ delete_legacies() {
     mv $KEYS_DIR/private.pem $KEYS_DIR/${vin}_private.pem
     mv $KEYS_DIR/public.pem $KEYS_DIR/${vin}_public.pem
   fi
+
+}
+
+delete_legacies_singles() {
+  vin=$1
+
+  log_notice "Deleting single MQTT entities topics"
+  eval $MOSQUITTO_PUB_BASE -t homeassistant/button/tesla_ble/climate-on/config -n
+  eval $MOSQUITTO_PUB_BASE -t homeassistant/button/tesla_ble/climate-off/config -n
+  eval $MOSQUITTO_PUB_BASE -t homeassistant/button/tesla_ble/trunk-open/config -n
+  eval $MOSQUITTO_PUB_BASE -t homeassistant/button/tesla_ble/trunk-close/config -n
+  eval $MOSQUITTO_PUB_BASE -t homeassistant/button/tesla_ble/charging-start/config -n
+  eval $MOSQUITTO_PUB_BASE -t homeassistant/button/tesla_ble/charging-stop/config -n
+  eval $MOSQUITTO_PUB_BASE -t homeassistant/button/tesla_ble/charge-port-open/config -n
+  eval $MOSQUITTO_PUB_BASE -t homeassistant/button/tesla_ble/charge-port-close/config -n
+  eval $MOSQUITTO_PUB_BASE -t homeassistant/button/tesla_ble/windows-close/config -n
+  eval $MOSQUITTO_PUB_BASE -t homeassistant/button/tesla_ble/windows-vent/config -n
 
 }
