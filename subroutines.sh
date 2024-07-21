@@ -100,7 +100,7 @@ bluetoothctl_read() {
 
   # Read BLE data from bluetoothctl or an input file
   if [ -z $BLECTL_FILE_INPUT ]; then
-    log_debug "Launching bluetoothctl to check for BLE presence"
+    log_debug "bluetoothctl_read; check presence, launch bluetoothctl power on,devices,scan on"
     set +e
     BLTCTL_OUT=$({
       if [ $BLTCTL_COMMAND_DEVICES == "true" ]; then
@@ -147,6 +147,7 @@ bluetoothctl_read() {
 # Function
 listen_to_ble() {
   n_vins=$1
+  macAddr=""
 
   while :; do
     bluetoothctl_read
@@ -164,24 +165,23 @@ listen_to_ble() {
 
       MQTT_TOPIC="tesla_ble/$VIN/binary_sensor/presence"
 
-      # If something matches or BLE_MAC is default
-      if echo "$BLTCTL_OUT" | grep -Eq "($BLE_MAC|$BLE_LN)" ||
-        [ $BLE_MAC == "FF:FF:FF:FF:FF:FF" ]; then
-        # Check the presence using both BLE Local Name & MAC Addr
-        check_presence $BLE_LN $BLE_MAC macAddr
-        log_debug "macAddr:$macAddr BLE_MAC:$BLE_MAC"
+      log_debug "VIN:$VIN"
+      log_debug "PRESENCE_EXPIRE_TIME:$PRESENCE_EXPIRE_TIME"
 
-        # If BLE_MAC is default value & macAddr is not
-        if [ "$macAddr" != "$BLE_MAC" ]; then
-          # Replace the MAC address for this car in BLE_MAC_LIST
-          eval "BLE_MAC_LIST=\$(echo \$BLE_MAC_LIST | awk '{\$${position}=\"$macAddr\"; print}')"
-          log_debug "listen_to_ble; BLE_MAC_LIST:$BLE_MAC_LIST"
-          [ ! -f $KEYS_DIR/${VIN}_macaddr ] && echo $macAddr >$KEYS_DIR/${VIN}_macaddr
-        fi
+      log_debug "listen_to_ble; calling check_presence() BLE_LN:$BLE_LN BLE_MAC:BLE_MAC"
+      check_presence $BLE_LN $BLE_MAC macAddr
+      log_debug "listen_to_ble; macAddr:$macAddr BLE_MAC:$BLE_MAC"
+
+      # If BLE_MAC is default value & macAddr is not
+      if [ "$macAddr" != "BLE_MAC" ]; then
+        # Replace the MAC address for this car in BLE_MAC_LIST
+        eval "BLE_MAC_LIST=\$(echo \$BLE_MAC_LIST | awk '{\$${position}=\"$macAddr\"; print}')"
+        log_debug "listen_to_ble; BLE_MAC_LIST:$BLE_MAC_LIST"
+        [ ! -f $KEYS_DIR/${VIN}_macaddr ] && echo $macAddr >$KEYS_DIR/${VIN}_macaddr
       fi
 
       # If macAddr is default, on next run request "bltctl devices"
-      [ $macAddr == "FF:FF:FF:FF:FF:FF" ] && BLTCTL_COMMAND_DEVICES=true
+      [ "$macAddr" == "FF:FF:FF:FF:FF:FF" ] && BLTCTL_COMMAND_DEVICES=true
 
     done
     sleep $PRESENCE_DETECTION_LOOP_DELAY
@@ -195,7 +195,7 @@ listen_to_ble() {
 ###
 infoBluetoothAdapter() {
 
-  log_debug "Launching bluetoothctl to check for BLE presence"
+  log_debug "Launching bluetoothctl version,list,mgmt.info,show"
   set +e
   BLTCTL_OUT=$({
     bltctlCommands="version,list,mgmt.info,show"
@@ -207,7 +207,7 @@ infoBluetoothAdapter() {
     done
 
     echo "exit"
-  } | bluetoothctl | sed -r 's/\x1b\[[0-9;]*m//g' | grep -Ev '(\[CHG]|\[DEL]|\[NEW]|^  )' | grep -E '(^Version|bluetooth|^Controller|^Advertis|^	)')
+  } | bluetoothctl | sed -r 's/\x1b\[[0-9;]*m//g' | grep -Ev '(\[CHG]|\[DEL]|\[NEW]|^  )' | grep -E '(^Version|bluetooth|^Controller|^Advertis|^\t)')
   set -e
 
   log_notice "\n# INFO BLUETOOTH ADAPTER\n$BLTCTL_OUT\n##################################################################"
@@ -216,8 +216,6 @@ infoBluetoothAdapter() {
   bltctlMinVersion=5.63
   if awk -v n1="$bltctlMinVersion" -v n2="$bltctlVersion" 'BEGIN {exit !(n1 > n2)}'; then
     log_warning "Minimum recommended version of Bluez:$bltctlMinVersion; your system version:$bltctlVersion"
-  else
-    log_debug "Minimum recommended version of Bluez:$bltctlMinVersion; your system version:$bltctlVersion"
   fi
 
 }
