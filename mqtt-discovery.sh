@@ -635,6 +635,7 @@ function setupHADevicePresenceSensor {
    },
    "device_class": "presence",
    "name": "Presence",
+   "qos": "1",
    "unique_id": "'${DEV_ID}'_presence"
   }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 36 10 -t homeassistant/binary_sensor/${DEV_ID}/presence/config -l
 

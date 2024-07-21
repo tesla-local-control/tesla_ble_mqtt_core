@@ -52,6 +52,13 @@ for vin in $VIN_LIST; do
     log_warning "$KEYS_DIR/public.pem $KEYS_DIR/${vin}_public.pem"
     delete_legacies $vin
   fi # END TEMPORARY
+
+  if [ $PRESENCE_DETECTION_TTL -eq 0 ]; then
+    MQTT_TOPIC=tesla_ble/$vin/binary_sensor/presence
+    eval $MOSQUITTO_PUB_BASE --nodelay -t "$MQTT_TOPIC" -m Unknown
+    log_notice "Presence detection disable; Deleting MQTT topic $MQTT_TOPIC"
+    eval $MOSQUITTO_PUB_BASE -t $MQTT_TOPIC/config -n
+  fi
 done
 # remove leading white space
 BLE_LN_LIST=$(echo $BLE_LN_LIST | sed -e 's/^ //g')
@@ -93,6 +100,7 @@ while :; do
     # Run listen_to_ble every 3m
     sleep $PRESENCE_DETECTION_LOOP_DELAY
   else
+    log_info "Presence detection is disable"
     while :; do
       sleep 86400
     done
