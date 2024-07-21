@@ -50,7 +50,7 @@ function setupHADevicePanelCardsMain() {
     log_debug "setupHADevicePanelCardsMain() vin:$vin presence detection enable"
     setupHADevicePresenceSensor $vin
 
-    [ -f $KEYS_DIR/${vin}_presence ]  &&
+    [ -f $KEYS_DIR/${vin}_presence ] &&
       lastPresenceValue=$(cat $KEYS_DIR/${vin}_presence) &&
       presenceMQTTpub $vin $lastPresenceValue
 
