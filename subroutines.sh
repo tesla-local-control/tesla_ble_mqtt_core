@@ -87,11 +87,6 @@ check_presence() {
         log_error "$MQTT_OUT" &&
         return
       log_debug "mqtt topic $MQTT_TOPIC succesfully updated to OFF"
-      # Update presence expire time
-      EPOCH_EXPIRE_TIME=$((CURRENT_TIME_EPOCH + PRESENCE_DETECTION_TTL))
-      log_debug "vin:$VIN ble_ln:$BLE_LN update presence expire time to $EPOCH_EXPIRE_TIME"
-      PRESENCE_EXPIRE_TIME_LIST=$(replace_value_at_position "$PRESENCE_EXPIRE_TIME_LIST" \
-        $position $EPOCH_EXPIRE_TIME)
     else
       log_info "vin:$VIN ble_ln:$BLE_LN presence not expired"
     fi # END if expire time
