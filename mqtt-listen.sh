@@ -57,9 +57,9 @@ listen_to_mqtt() {
 
           log_warning "Private and Public keys were generated; Next:
 
-            1/ Remove any previously deployed BLE keys from vehicle before deploying this one
-            2/ Open the Tesla App on your smartphone and make sure the vehicule is awake
-            3/ In Home Assistant device Tesla_BLE_${vin}, push the button 'Deploy Key'"
+           1/ Remove any previously deployed BLE keys from vehicle before deploying this one
+           2/ Open the Tesla App on your smartphone and make sure the vehicule is awake
+           3/ In Home Assistant device Tesla_BLE_${vin}, push the button 'Deploy Key'"
           ;;
 
         deploy-key)

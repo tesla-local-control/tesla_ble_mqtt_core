@@ -409,8 +409,6 @@ function setupHADeviceReGenerateKeysButton() {
   log_debug "setupHADeviceReGenerateKeysButton() entering vin:$vin"
   configHADeviceEnvVars $vin
 
-  eval $MOSQUITTO_PUB_BASE -t homeassistant/button/tesla_ble_${vin}/generate-keys/config -n
-
   echo '{
    "command_topic": "'${TOPIC_ROOT}'/config",
    "device": {
@@ -429,6 +427,8 @@ function setupHADeviceReGenerateKeysButton() {
    "entity_category": "config",
    "sw_version": "'${SW_VERSION}'"
   }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 6 10 -t homeassistant/button/${DEVICE_ID}/regenerate-keys/config -l
+
+  eval $MOSQUITTO_PUB_BASE -t homeassistant/button/tesla_ble_${vin}/generate-keys/config -n
 
   log_debug "setupHADeviceReGenerateKeysButton() leaving vin:$vin"
 
@@ -459,6 +459,7 @@ function setupHADevicePresenceSensor {
    "device_class": "presence",
    "icon": "mdi:car-connected",
    "name": "Presence",
+   "qos": "1",
    "unique_id": "'${DEVICE_ID}'_presence"
   }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 36 10 -t homeassistant/binary_sensor/${DEVICE_ID}/presence/config -l
 

@@ -35,22 +35,25 @@ replace_value_at_position() {
 # Function
 check_presence() {
   BLE_LN="$1"
-  BLE_MAC="$1"
+  BLE_MAC="$2"
+  macAddr="$3"
 
   CURRENT_TIME_EPOCH=$(date +%s)
   MATCH="($BLE_LN|$BLE_MAC)"
 
   if [ $BLE_MAC == "FF:FF:FF:FF:FF:FF" ]; then
     log_debug "check_presence; looking BLE_MAC for BLE_LN:$BLE_LN"
-    if grepOutput=$(echo "${BLTCTL_OUT}" | grep $BLE_LN | tail -1); then
-      BLE_MAC=$(echo $grepOutput | grep -Eo $MAC_REGEX)
-      log_info "check_presence; found BLE MAC addr:$BLE_MAC for BLE_LN:$BLE_LN"
+    if grepOutput=$(echo "${BLTCTL_OUT}" | grep $BLE_LN | tail -1 | grep -Eo $MAC_REGEX); then
+      # return value to calling function
+      eval "$macAddr=$grepOutput"
+      log_info "check_presence; found BLE MAC addr:$grepOutput for BLE_LN:$BLE_LN"
     else
       log_debug "check_presence; did not find BLE MAC addr for BLE_LN:$BLE_LN"
+      eval "$macAddr=$BLE_MAC"
     fi
+  else
+    eval "$macAddr=$BLE_MAC"
   fi
-  # return value to calling function
-  echo $BLE_MAC
 
   if echo "${BLTCTL_OUT}" | grep -Eq "$MATCH"; then
     log_info "vin:$VIN ble_ln:$BLE_LN match:$MATCH presence detected"
@@ -97,7 +100,7 @@ bluetoothctl_read() {
 
   # Read BLE data from bluetoothctl or an input file
   if [ -z $BLECTL_FILE_INPUT ]; then
-    log_debug "Launching bluetoothctl to check for BLE presence"
+    log_debug "bluetoothctl_read; check presence, launch bluetoothctl power on,devices,scan on"
     set +e
     BLTCTL_OUT=$({
       if [ $BLTCTL_COMMAND_DEVICES == "true" ]; then
@@ -115,7 +118,6 @@ bluetoothctl_read() {
       sleep 10
 
       echo "scan off"
-      echo "power off"
       echo "exit"
     } | bluetoothctl)
     set -e
@@ -145,6 +147,7 @@ bluetoothctl_read() {
 # Function
 listen_to_ble() {
   n_vins=$1
+  macAddr=""
 
   while :; do
     bluetoothctl_read
@@ -162,19 +165,23 @@ listen_to_ble() {
 
       MQTT_TOPIC="tesla_ble/$VIN/binary_sensor/presence"
 
-      # Check the presence using both MAC Addr and BLE Local Name
-      log_debug "BLTCTL_OUT:$(echo "$BLTCTL_OUT" | grep -E "($BLE_MAC|$BLE_LN)")"
-      macAddr=$(check_presence $BLE_LN $BLE_MAC)
+      log_debug "VIN:$VIN"
+      log_debug "PRESENCE_EXPIRE_TIME:$PRESENCE_EXPIRE_TIME"
 
-      # Add the MAC address to BLE_MAC_LIST if it's not already present at the position
-      if [ "$macAddr" != "$BLE_MAC" ]; then
+      log_debug "listen_to_ble; calling check_presence() BLE_LN:$BLE_LN BLE_MAC:BLE_MAC"
+      check_presence $BLE_LN $BLE_MAC macAddr
+      log_debug "listen_to_ble; macAddr:$macAddr BLE_MAC:$BLE_MAC"
+
+      # If BLE_MAC is default value & macAddr is not
+      if [ "$macAddr" != "BLE_MAC" ]; then
+        # Replace the MAC address for this car in BLE_MAC_LIST
         eval "BLE_MAC_LIST=\$(echo \$BLE_MAC_LIST | awk '{\$${position}=\"$macAddr\"; print}')"
         log_debug "listen_to_ble; BLE_MAC_LIST:$BLE_MAC_LIST"
         [ ! -f $KEYS_DIR/${VIN}_macaddr ] && echo $macAddr >$KEYS_DIR/${VIN}_macaddr
       fi
 
-      # If a MAC addr is unknown, request "bltctl devices"
-      [ $macAddr == "FF:FF:FF:FF:FF:FF" ] && BLTCTL_COMMAND_DEVICES=true
+      # If macAddr is default, on next run request "bltctl devices"
+      [ "$macAddr" == "FF:FF:FF:FF:FF:FF" ] && BLTCTL_COMMAND_DEVICES=true
 
     done
     sleep $PRESENCE_DETECTION_LOOP_DELAY
@@ -188,10 +195,10 @@ listen_to_ble() {
 ###
 infoBluetoothAdapter() {
 
-  log_debug "Launching bluetoothctl to check for BLE presence"
+  log_debug "Launching bluetoothctl version,list,mgmt.info,show"
   set +e
   BLTCTL_OUT=$({
-    bltctlCommands="version,list,show,menu mgmt,info,back,power on,scan on"
+    bltctlCommands="version,list,mgmt.info,show"
     IFS=','
     for bltctlCommand in $bltctlCommands; do
       echo "##################################################################"
@@ -199,12 +206,8 @@ infoBluetoothAdapter() {
       sleep 0.2
     done
 
-    # scan for 10 seconds (Tesla adverstisement each ~9s)
-    sleep 10
-
-    echo "scan off"
     echo "exit"
-  } | bluetoothctl | sed -r 's/\x1b\[[0-9;]*m//g' | grep -E '(^Version|bluetooth)')
+  } | bluetoothctl | sed -r 's/\x1b\[[0-9;]*m//g' | grep -Ev '(\[CHG]|\[DEL]|\[NEW]|^  )' | grep -E '(^Version|bluetooth|^Controller|^Advertis|^\t)')
   set -e
 
   log_notice "\n# INFO BLUETOOTH ADAPTER\n$BLTCTL_OUT\n##################################################################"
@@ -213,8 +216,6 @@ infoBluetoothAdapter() {
   bltctlMinVersion=5.63
   if awk -v n1="$bltctlMinVersion" -v n2="$bltctlVersion" 'BEGIN {exit !(n1 > n2)}'; then
     log_warning "Minimum recommended version of Bluez:$bltctlMinVersion; your system version:$bltctlVersion"
-  else
-    log_debug "Minimum recommended version of Bluez:$bltctlMinVersion; your system version:$bltctlVersion"
   fi
 
 }
