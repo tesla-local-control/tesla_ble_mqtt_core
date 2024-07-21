@@ -194,20 +194,20 @@ listen_to_mqtt() {
         ;;
 
       charge-port)
-		teslaCtrlSendCommand $vin "$cmd-$msg" "Set $cmd mode to $msg"
+        teslaCtrlSendCommand $vin "$cmd-$msg" "Set $cmd mode to $msg"
         ;;
 
       trunk)
-		teslaCtrlSendCommand $vin "$cmd-$msg" "Set $cmd mode to $msg"
+        teslaCtrlSendCommand $vin "$cmd-$msg" "Set $cmd mode to $msg"
         ;;
 
       tonneau)
-	    # not declared in MQTT yet
-		teslaCtrlSendCommand $vin "$cmd-$msg" "Set $cmd mode to $msg"
+        # not declared in MQTT yet
+        teslaCtrlSendCommand $vin "$cmd-$msg" "Set $cmd mode to $msg"
         ;;
 
       windows)
-		teslaCtrlSendCommand $vin "$cmd-$msg" "Set $cmd mode to $msg"
+        teslaCtrlSendCommand $vin "$cmd-$msg" "Set $cmd mode to $msg"
         ;;
 
       *)
