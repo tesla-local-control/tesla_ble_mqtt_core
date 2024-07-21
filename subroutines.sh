@@ -74,7 +74,7 @@ check_presence() {
       log_debug "vin:$VIN ble_ln:$BLE_LN update presence expire time to $EPOCH_EXPIRE_TIME"
       PRESENCE_EXPIRE_TIME_LIST=$(replace_value_at_position "$PRESENCE_EXPIRE_TIME_LIST" \
         $position $EPOCH_EXPIRE_TIME)
-    fi
+    fi # END if expired time
   else
     log_debug "vin:$VIN ble_ln:$BLE_LN match:$MATCH presence not detected"
     if [ $CURRENT_TIME_EPOCH -ge $PRESENCE_EXPIRE_TIME ]; then
