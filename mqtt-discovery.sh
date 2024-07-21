@@ -192,7 +192,7 @@ function setupHADeviceControlsCard() {
    }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 6 10 -t homeassistant/button/${DEV_ID}/auto-seat-and-climate/config -l
 
   echo '{
-   "command_topic": "'${TOPIC_ROOT}'/command",
+   "command_topic": "'${TOPIC_ROOT}'/climate",
    "device": {
     "identifiers": [
     "'${DEV_ID}'"
@@ -202,14 +202,16 @@ function setupHADeviceControlsCard() {
     "name": "'${DEV_NAME}'",
     "sw_version": "'${SW_VERSION}'"
    },
-   "name": "Climate Off",
-   "payload_press": "climate-off",
+   "name": "Climate",
+   "device_class": "switch",
+   "payload_on": "on",
+   "payload_off": "off",
    "qos": "'${QOS_LEVEL}'",
-   "unique_id": "'${DEV_ID}'_climate-off"
-   }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 6 10 -t homeassistant/button/${DEV_ID}/climate-off/config -l
+   "unique_id": "'${DEV_ID}'_climate"
+   }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 6 10 -t homeassistant/switch/${DEV_ID}/climate/config -l
 
   echo '{
-   "command_topic": "'${TOPIC_ROOT}'/command",
+   "command_topic": "'${TOPIC_ROOT}'/trunk",
    "device": {
     "identifiers": [
     "'${DEV_ID}'"
@@ -219,45 +221,14 @@ function setupHADeviceControlsCard() {
     "name": "'${DEV_NAME}'",
     "sw_version": "'${SW_VERSION}'"
    },
-   "name": "Climate On",
-   "payload_press": "climate-on",
+   "name": "Trunk",
+   "device_class": "door",
+   "payload_open": "open",
+   "payload_close": "close",
+   "payload_stop": null,
    "qos": "'${QOS_LEVEL}'",
-   "unique_id": "'${DEV_ID}'_climate-on"
-   }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 6 10 -t homeassistant/button/${DEV_ID}/climate-on/config -l
-
-  echo '{
-   "command_topic": "'${TOPIC_ROOT}'/command",
-   "device": {
-    "identifiers": [
-    "'${DEV_ID}'"
-    ],
-    "manufacturer": "tesla-local-control",
-    "model": "Tesla_BLE",
-    "name": "'${DEV_NAME}'",
-    "sw_version": "'${SW_VERSION}'"
-   },
-   "name": "Open Trunk",
-   "payload_press": "trunk-open",
-   "qos": "'${QOS_LEVEL}'",
-   "unique_id": "'${DEV_ID}'_trunk-open"
-   }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 6 10 -t homeassistant/button/${DEV_ID}/trunk-open/config -l
-
-  echo '{
-   "command_topic": "'${TOPIC_ROOT}'/command",
-   "device": {
-    "identifiers": [
-    "'${DEV_ID}'"
-    ],
-    "manufacturer": "tesla-local-control",
-    "model": "Tesla_BLE",
-    "name": "'${DEV_NAME}'",
-    "sw_version": "'${SW_VERSION}'"
-   },
-   "name": "Close Trunk",
-   "payload_press": "trunk-close",
-   "qos": "'${QOS_LEVEL}'",
-   "unique_id": "'${DEV_ID}'_trunk-close"
-   }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 6 10 -t homeassistant/button/${DEV_ID}/trunk-close/config -l
+   "unique_id": "'${DEV_ID}'_trunk"
+   }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 6 10 -t homeassistant/cover/${DEV_ID}/trunk/config -l
 
   echo '{
    "command_topic": "'${TOPIC_ROOT}'/command",
@@ -277,7 +248,7 @@ function setupHADeviceControlsCard() {
    }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 6 10 -t homeassistant/button/${DEV_ID}/frunk-open/config -l
 
   echo '{
-   "command_topic": "'${TOPIC_ROOT}'/command",
+   "command_topic": "'${TOPIC_ROOT}'/charging",
    "device": {
     "identifiers": [
     "'${DEV_ID}'"
@@ -287,14 +258,16 @@ function setupHADeviceControlsCard() {
     "name": "'${DEV_NAME}'",
     "sw_version": "'${SW_VERSION}'"
    },
-   "name": "Start Charging",
-   "payload_press": "charging-start",
+   "name": "Charger",
+   "device_class": "switch",
+   "payload_on": "start",
+   "payload_off": "stop",
    "qos": "'${QOS_LEVEL}'",
-   "unique_id": "'${DEV_ID}'_charging-start"
-   }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 6 10 -t homeassistant/button/${DEV_ID}/charging-start/config -l
+   "unique_id": "'${DEV_ID}'_charging"
+   }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 6 10 -t homeassistant/switch/${DEV_ID}/charging/config -l
 
   echo '{
-   "command_topic": "'${TOPIC_ROOT}'/command",
+   "command_topic": "'${TOPIC_ROOT}'/charge-port",
    "device": {
     "identifiers": [
     "'${DEV_ID}'"
@@ -304,14 +277,17 @@ function setupHADeviceControlsCard() {
     "name": "'${DEV_NAME}'",
     "sw_version": "'${SW_VERSION}'"
    },
-   "name": "Stop Charging",
-   "payload_press": "charging-stop",
+   "name": "Charge port",
+   "device_class": "door",
+   "payload_open": "open",
+   "payload_close": "close",
+   "payload_stop": null,
    "qos": "'${QOS_LEVEL}'",
-   "unique_id": "'${DEV_ID}'_charging-stop"
-   }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 6 10 -t homeassistant/button/${DEV_ID}/charging-stop/config -l
+   "unique_id": "'${DEV_ID}'_charge-port"
+   }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 6 10 -t homeassistant/cover/${DEV_ID}/charge-port/config -l
 
   echo '{
-   "command_topic": "'${TOPIC_ROOT}'/command",
+   "command_topic": "'${TOPIC_ROOT}'/windows",
    "device": {
     "identifiers": [
     "'${DEV_ID}'"
@@ -321,62 +297,14 @@ function setupHADeviceControlsCard() {
     "name": "'${DEV_NAME}'",
     "sw_version": "'${SW_VERSION}'"
    },
-   "name": "Open Charge Port",
-   "payload_press": "charge-port-open",
+   "name": "Windows",
+   "device_class": "awning",
+   "payload_open": "vent",
+   "payload_close": "close",
+   "payload_stop": null,
    "qos": "'${QOS_LEVEL}'",
-   "unique_id": "'${DEV_ID}'_charge-port-open"
-   }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 6 10 -t homeassistant/button/${DEV_ID}/charge-port-open/config -l
-
-  echo '{
-   "command_topic": "'${TOPIC_ROOT}'/command",
-   "device": {
-    "identifiers": [
-    "'${DEV_ID}'"
-    ],
-    "manufacturer": "tesla-local-control",
-    "model": "Tesla_BLE",
-    "name": "'${DEV_NAME}'",
-    "sw_version": "'${SW_VERSION}'"
-   },
-   "name": "Close Charge Port",
-   "payload_press": "charge-port-close",
-   "qos": "'${QOS_LEVEL}'",
-   "unique_id": "'${DEV_ID}'_charge-port-close"
-   }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 6 10 -t homeassistant/button/${DEV_ID}/charge-port-close/config -l
-
-  echo '{
-   "command_topic": "'${TOPIC_ROOT}'/command",
-   "device": {
-    "identifiers": [
-    "'${DEV_ID}'"
-    ],
-    "manufacturer": "tesla-local-control",
-    "model": "Tesla_BLE",
-    "name": "'${DEV_NAME}'",
-    "sw_version": "'${SW_VERSION}'"
-   },
-   "name": "Close Windows",
-   "payload_press": "windows-close",
-   "qos": "'${QOS_LEVEL}'",
-   "unique_id": "'${DEV_ID}'_windows-close"
-   }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 6 10 -t homeassistant/button/${DEV_ID}/windows-close/config -l
-
-  echo '{
-   "command_topic": "'${TOPIC_ROOT}'/command",
-   "device": {
-    "identifiers": [
-    "'${DEV_ID}'"
-    ],
-    "manufacturer": "tesla-local-control",
-    "model": "Tesla_BLE",
-    "name": "'${DEV_NAME}'",
-    "sw_version": "'${SW_VERSION}'"
-   },
-   "name": "Vent Windows",
-   "payload_press": "windows-vent",
-   "qos": "'${QOS_LEVEL}'",
-   "unique_id": "'${DEV_ID}'_windows-vent"
-   }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 6 10 -t homeassistant/button/${DEV_ID}/windows-vent/config -l
+   "unique_id": "'${DEV_ID}'_windows"
+   }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 6 10 -t homeassistant/cover/${DEV_ID}/windows/config -l
 
   echo '{
    "command_topic": "'${TOPIC_ROOT}'/charging-set-amps",
@@ -410,7 +338,7 @@ function setupHADeviceControlsCard() {
     "name": "'${DEV_NAME}'",
     "sw_version": "'${SW_VERSION}'"
    },
-   "name": "Charging Current",
+   "name": "Charging Current single",
    "unique_id": "'${DEV_ID}'_charging-set-amps-override",
    "min": "0",
    "max": "48",
@@ -476,6 +404,8 @@ function setupHADeviceControlsCard() {
    },
    "name": "Steering Wheel Heater",
    "device_class": "switch",
+   "payload_on": "on",
+   "payload_off": "off",
    "qos": "'${QOS_LEVEL}'",
    "unique_id": "'${DEV_ID}'_steering-wheel-heater"
    }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 6 10 -t homeassistant/switch/${DEV_ID}/steering-wheel-heater/config -l
@@ -493,6 +423,8 @@ function setupHADeviceControlsCard() {
    },
    "name": "Sentry Mode",
    "device_class": "switch",
+   "payload_on": "on",
+   "payload_off": "off",
    "qos": "'${QOS_LEVEL}'",
    "unique_id": "'${DEV_ID}'_sentry-mode"
    }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 6 10 -t homeassistant/switch/${DEV_ID}/sentry-mode/config -l
@@ -766,15 +698,20 @@ delete_legacies() {
   eval $MOSQUITTO_PUB_BASE -t homeassistant/button/tesla_ble/auto-seat-climate/config -n
   eval $MOSQUITTO_PUB_BASE -t homeassistant/button/tesla_ble/climate-on/config -n
   eval $MOSQUITTO_PUB_BASE -t homeassistant/button/tesla_ble/climate-off/config -n
+  eval $MOSQUITTO_PUB_BASE -t homeassistant/button/tesla_ble/climate/config -n
   eval $MOSQUITTO_PUB_BASE -t homeassistant/button/tesla_ble/trunk-open/config -n
   eval $MOSQUITTO_PUB_BASE -t homeassistant/button/tesla_ble/trunk-close/config -n
+  eval $MOSQUITTO_PUB_BASE -t homeassistant/button/tesla_ble/trunk/config -n
   eval $MOSQUITTO_PUB_BASE -t homeassistant/button/tesla_ble/frunk-open/config -n
   eval $MOSQUITTO_PUB_BASE -t homeassistant/button/tesla_ble/charging-start/config -n
   eval $MOSQUITTO_PUB_BASE -t homeassistant/button/tesla_ble/charging-stop/config -n
+  eval $MOSQUITTO_PUB_BASE -t homeassistant/button/tesla_ble/charging/config -n
   eval $MOSQUITTO_PUB_BASE -t homeassistant/button/tesla_ble/charge-port-open/config -n
   eval $MOSQUITTO_PUB_BASE -t homeassistant/button/tesla_ble/charge-port-close/config -n
+  eval $MOSQUITTO_PUB_BASE -t homeassistant/button/tesla_ble/charge-port/config -n
   eval $MOSQUITTO_PUB_BASE -t homeassistant/button/tesla_ble/windows-close/config -n
   eval $MOSQUITTO_PUB_BASE -t homeassistant/button/tesla_ble/windows-vent/config -n
+  eval $MOSQUITTO_PUB_BASE -t homeassistant/button/tesla_ble/windows/config -n
 
   if [ -f $KEYS_DIR/private.pem ]; then
     log_notice "Renaming legacy keys"
