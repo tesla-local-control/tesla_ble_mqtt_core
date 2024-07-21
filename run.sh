@@ -63,7 +63,7 @@ for vin in $VIN_LIST; do
   log_notice "Removing single buttons to be replaced by switches & covers:"
   log_notice "windows, charger, cherge-port, climate, trunk"
   delete_legacies_singles $vin
-  
+
 done
 # remove leading white space
 BLE_LN_LIST=$(echo $BLE_LN_LIST | sed -e 's/^ //g')
