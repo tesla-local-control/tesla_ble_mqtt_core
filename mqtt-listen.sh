@@ -86,26 +86,8 @@ listen_to_mqtt() {
         body-controller-state)
           teslaCtrlSendCommand $vin $msg "Fetch limited vehicle state information. Works over BLE when infotainment is asleep"
           ;;
-        charge-port-close)
-          teslaCtrlSendCommand $vin $msg "Close charge port"
-          ;;
-        charge-port-open)
-          teslaCtrlSendCommand $vin $msg "Open charge port"
-          ;;
         charging-schedule-cancel)
           teslaCtrlSendCommand $vin $msg "Cancel scheduled charge start"
-          ;;
-        charging-start)
-          teslaCtrlSendCommand $vin $msg "Start charging"
-          ;;
-        charging-stop)
-          teslaCtrlSendCommand $vin $msg "Stop charging"
-          ;;
-        climate-off)
-          teslaCtrlSendCommand $vin $msg "Turn off climate control"
-          ;;
-        climate-on)
-          teslaCtrlSendCommand $vin $msg "Turn on climate control"
           ;;
         drive)
           teslaCtrlSendCommand $vin $msg "Remote start vehicle"
@@ -137,35 +119,11 @@ listen_to_mqtt() {
         software-update-start)
           teslaCtrlSendCommand $vin $msg "Start software update after delay"
           ;;
-        tonneau-close)
-          teslaCtrlSendCommand $vin $msg "Close Cybertruck tonneau"
-          ;;
-        tonneau-open)
-          teslaCtrlSendCommand $vin $msg "Open Cybertruck tonneau"
-          ;;
-        tonneau-stop)
-          teslaCtrlSendCommand $vin $msg "Stop moving Cybertruck tonneau"
-          ;;
-        trunk-close)
-          teslaCtrlSendCommand $vin $msg "Close vehicle trunk"
-          ;;
-        trunk-move)
-          teslaCtrlSendCommand $vin $msg "Toggle trunk open/closed"
-          ;;
-        trunk-open)
-          teslaCtrlSendCommand $vin $msg "Open vehicle trunk"
-          ;;
         unlock)
           teslaCtrlSendCommand $vin $msg "Unlock vehicle"
           ;;
         wake)
           teslaCtrlSendCommand $vin "-domain vcsec $msg" "Wake up vehicule"
-          ;;
-        windows-close)
-          teslaCtrlSendCommand $vin $msg "Close all windows"
-          ;;
-        windows-vent)
-          teslaCtrlSendCommand $vin $msg "Vent all windows"
           ;;
         *)
           log_error "Invalid command request; vin:$vin topic:$topic msg:$msg"
@@ -220,13 +178,36 @@ listen_to_mqtt() {
         ;;
 
       sentry-mode)
-        msg_lower=$(echo "$msg" | tr '[:upper:]' '[:lower:]')
-        teslaCtrlSendCommand $vin "sentry-mode $msg_lower" "Set sentry mode to $msg_lower"
+        teslaCtrlSendCommand $vin "sentry-mode $msg" "Set sentry mode to $msg"
         ;;
 
       steering-wheel-heater)
-        msg_lower=$(echo "$msg" | tr '[:upper:]' '[:lower:]')
-        teslaCtrlSendCommand $vin "steering-wheel-heater $msg_lower" "Set steering wheel mode to $msg_lower"
+        teslaCtrlSendCommand $vin "steering-wheel-heater $msg" "Set steering wheel mode to $msg"
+        ;;
+
+      climate)
+        teslaCtrlSendCommand $vin "$cmd-$msg" "Set $cmd mode to $msg"
+        ;;
+
+      charging)
+        teslaCtrlSendCommand $vin "$cmd-$msg" "Set $cmd mode to $msg"
+        ;;
+
+      charge-port)
+        teslaCtrlSendCommand $vin "$cmd-$msg" "Set $cmd mode to $msg"
+        ;;
+
+      trunk)
+        teslaCtrlSendCommand $vin "$cmd-$msg" "Set $cmd mode to $msg"
+        ;;
+
+      tonneau)
+        # not declared in MQTT yet
+        teslaCtrlSendCommand $vin "$cmd-$msg" "Set $cmd mode to $msg"
+        ;;
+
+      windows)
+        teslaCtrlSendCommand $vin "$cmd-$msg" "Set $cmd mode to $msg"
         ;;
 
       *)

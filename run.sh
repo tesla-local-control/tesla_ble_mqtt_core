@@ -59,6 +59,11 @@ for vin in $VIN_LIST; do
     log_notice "Presence detection disable; Deleting MQTT topic $MQTT_TOPIC"
     eval $MOSQUITTO_PUB_BASE -t $MQTT_TOPIC/config -n
   fi
+  # Remove single entities (brute force command, no easy way to collect declared MQTT topics crossplatform)
+  log_notice "Removing single buttons to be replaced by switches & covers:"
+  log_notice "windows, charger, cherge-port, climate, trunk"
+  delete_legacies_singles $vin
+
 done
 # remove leading white space
 BLE_LN_LIST=$(echo $BLE_LN_LIST | sed -e 's/^ //g')
