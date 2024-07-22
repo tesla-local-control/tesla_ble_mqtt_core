@@ -64,7 +64,7 @@ function setupHADevicePanelCardsMain() {
     setupHADeviceDeployKeyButton $vin
     setupHADeviceReGenerateKeysButton $vin
     setupHADeviceInfoBTadapter $vin
-    setupHADevicePanelControlCommands $vin
+    setupHADevicePanelControlCommands $vin 1
     setupHADevicePanelControlExtendedCommands $vin
   elif [ ! -f $KEYS_DIR/${vin}_private.pem ] && [ ! -f $KEYS_DIR/${vin}_public.pem ]; then
 
@@ -72,6 +72,7 @@ function setupHADevicePanelCardsMain() {
     # Show button to Generate Keys
     setupHADeviceGenerateKeysButton $vin
     setupHADeviceInfoBTadapter $vin
+    setupHADevicePanelControlCommands $vin 0
 
     # listen_to_mqtt call setupHADeviceDeployKeyButton once the keys are generated
 
@@ -80,6 +81,7 @@ function setupHADevicePanelCardsMain() {
     setupHADeviceGenerateKeysButton $vin
     setupHADeviceDeployKeyButton $vin
     setupHADeviceInfoBTadapter $vin
+    setupHADevicePanelControlCommands $vin 0
   fi
 
   log_debug "setupHADevicePanelCardsMain() leaving vin:$vin"
@@ -129,7 +131,7 @@ teslaControlCommands="\
 generateCommandJson() {
   UNIQUE_ID=$1
   MDI_ICON=$2
-  DESCRIPTION="$4"
+  DESCRIPTION="$3"
 
   PAYLOAD=$UNIQUE_ID
 
@@ -164,13 +166,16 @@ function setupHADevicePanelControlCommands() {
 
   configHADeviceEnvVars $vin
 
+  log_debug "setupHADevicePanelControlCommands; vin:$vin carKeyState:$carKeyState"
+
   # Read and process each line from the teslaControlCommands string
   echo "$teslaControlCommands" | while IFS=, read -r keyState model uniqueID mdiIcon description; do
     if [ $carKeyState -ge $keyState ]; then
       if [ "$model" == "*" ] || [ $CAR_MODEL == $model ]; then
         commandJson=$(generateCommandJson $uniqueID "$mdiIcon" "$description")
+        log_debug "uniqueID:$uniqueID DEVICE_ID:$DEVICE_ID"
         log_debug "$commandJson"
-        echo $commandJson | retryMQTTpub -t homeassistant/button/${DEVICE_ID}/$uniqueID/config -l
+        echo $commandJson | retryMQTTpub 6 10 -t homeassistant/button/${DEVICE_ID}/$uniqueID/config -l
       else
         log_debug "Skipping; car model:$model description:$description"
       fi
