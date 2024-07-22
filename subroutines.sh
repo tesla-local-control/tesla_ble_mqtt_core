@@ -32,6 +32,30 @@ replace_value_at_position() {
   echo "$new_list"
 }
 
+presenceMQTTpub() {
+  vin=$1
+  presenceState=$2
+
+  MQTT_TOPIC="tesla_ble/$vin/binary_sensor/presence"
+
+  log_info "vin:$vin presence has expired, set presence $presenceState"
+  # save presence to disk for ha/status listener to have access
+  echo $presenceState >$KEYS_DIR/${vin}_presence
+  set +e
+  # We need a function for mosquitto_pub w/ retry
+  # shellcheck disable=SC2034
+  MQTT_OUT=$(eval $MOSQUITTO_PUB_BASE --nodelay -t "$MQTT_TOPIC" -m $presenceState 2>&1)
+  EXIT_STATUS=$?
+  set -e
+  [ $EXIT_STATUS -ne 0 ] &&
+    log_error "$(MQTT_OUT)" &&
+    return 1
+  log_debug "mqtt topic $MQTT_TOPIC succesfully updated to $presenceState"
+
+  return 0
+
+}
+
 # Function
 check_presence() {
   BLE_LN="$1"
@@ -59,18 +83,8 @@ check_presence() {
     log_info "vin:$VIN ble_ln:$BLE_LN match:$MATCH presence detected"
 
     if [ $CURRENT_TIME_EPOCH -ge $PRESENCE_EXPIRE_TIME ]; then
-      log_info "vin:$VIN ble_ln:$BLE_LN TTL expired, set presence ON"
-      set +e
-      # We need a function for mosquitto_pub w/ retry
-      MQTT_OUT=$(eval $MOSQUITTO_PUB_BASE --nodelay -t "$MQTT_TOPIC" -m ON 2>&1)
-      EXIT_STATUS=$?
-      set -e
-      [ $EXIT_STATUS -ne 0 ] &&
-        log_error "$(MQTT_OUT)" &&
-        return
-      log_debug "mqtt topic $MQTT_TOPIC succesfully updated to ON"
+      presenceMQTTpub $VIN ON
     fi
-
     # Update presence expire time
     EPOCH_EXPIRE_TIME=$((CURRENT_TIME_EPOCH + PRESENCE_DETECTION_TTL))
     log_debug "vin:$VIN ble_ln:$BLE_LN update presence expire time to $EPOCH_EXPIRE_TIME"
@@ -80,15 +94,7 @@ check_presence() {
   else
     log_debug "vin:$VIN ble_ln:$BLE_LN match:$MATCH presence not detected"
     if [ $CURRENT_TIME_EPOCH -ge $PRESENCE_EXPIRE_TIME ]; then
-      log_info "vin:$VIN ble_ln:$BLE_LN presence has expired, setting presence OFF"
-      set +e
-      MQTT_OUT=$(eval $MOSQUITTO_PUB_BASE --nodelay -t "$MQTT_TOPIC" -m OFF 2>&1)
-      EXIT_STATUS=$?
-      set -e
-      [ $EXIT_STATUS -ne 0 ] &&
-        log_error "$MQTT_OUT" &&
-        return
-      log_debug "mqtt topic $MQTT_TOPIC succesfully updated to OFF"
+      presenceMQTTpub $VIN OFF
     else
       log_info "vin:$VIN ble_ln:$BLE_LN presence not expired"
     fi # END if expired time
@@ -162,8 +168,6 @@ listen_to_ble() {
       PRESENCE_EXPIRE_TIME=$(eval "echo \$${position}")
       set -- $VIN_LIST
       VIN=$(eval "echo \$${position}")
-
-      MQTT_TOPIC="tesla_ble/$VIN/binary_sensor/presence"
 
       log_debug "VIN:$VIN"
       log_debug "PRESENCE_EXPIRE_TIME:$PRESENCE_EXPIRE_TIME"
