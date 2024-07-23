@@ -700,7 +700,6 @@ setupHADiscoveryAllVINsMain() {
 ###
 # Function
 delete_legacies() {
-  vin=$1
 
   log_notice "delete_legacies; deleting legacy MQTT topics"
   eval $MOSQUITTO_PUB_BASE -t homeassistant/binary_sensor/tesla_ble/presence/config -n
@@ -727,34 +726,32 @@ delete_legacies() {
   eval $MOSQUITTO_PUB_BASE -t homeassistant/button/tesla_ble/unlock/config -n
   eval $MOSQUITTO_PUB_BASE -t homeassistant/switch/tesla_ble/sentry-mode/config -n
   eval $MOSQUITTO_PUB_BASE -t homeassistant/button/tesla_ble/scan_bluetooth/config -n
-  eval $MOSQUITTO_PUB_BASE -t homeassistant/button/tesla_ble_${vin}/scan-bleln-macaddr/config -n
   eval $MOSQUITTO_PUB_BASE -t homeassistant/switch/tesla_ble/sw-heater/config -n
   eval $MOSQUITTO_PUB_BASE -t homeassistant/button/tesla_ble/wake/config -n
   eval $MOSQUITTO_PUB_BASE -t homeassistant/button/tesla_ble/windows-close/config -n
   eval $MOSQUITTO_PUB_BASE -t homeassistant/button/tesla_ble/windows-vent/config -n
-
-  # TODO TEMPORARILY
-  if [ -f $KEYS_DIR/private.pem ]; then
-    log_notice "delete_legacies; renaming legacy keys"
-    mv $KEYS_DIR/private.pem $KEYS_DIR/${vin}_private.pem
-    mv $KEYS_DIR/public.pem $KEYS_DIR/${vin}_public.pem
-  fi
 
 }
 
 delete_legacies_singles() {
   vin=$1
 
+  # If a vin is provided, add it
+  if [ -n "$vin" ]; then
+    add_vin=_${vin}
+  fi
+
   log_notice "delete_legacies_singles; deleting legacy single MQTT entities topics"
-  eval $MOSQUITTO_PUB_BASE -t homeassistant/button/tesla_ble/climate-on/config -n
-  eval $MOSQUITTO_PUB_BASE -t homeassistant/button/tesla_ble/climate-off/config -n
-  eval $MOSQUITTO_PUB_BASE -t homeassistant/button/tesla_ble/trunk-open/config -n
-  eval $MOSQUITTO_PUB_BASE -t homeassistant/button/tesla_ble/trunk-close/config -n
-  eval $MOSQUITTO_PUB_BASE -t homeassistant/button/tesla_ble/charging-start/config -n
-  eval $MOSQUITTO_PUB_BASE -t homeassistant/button/tesla_ble/charging-stop/config -n
-  eval $MOSQUITTO_PUB_BASE -t homeassistant/button/tesla_ble/charge-port-open/config -n
-  eval $MOSQUITTO_PUB_BASE -t homeassistant/button/tesla_ble/charge-port-close/config -n
-  eval $MOSQUITTO_PUB_BASE -t homeassistant/button/tesla_ble/windows-close/config -n
-  eval $MOSQUITTO_PUB_BASE -t homeassistant/button/tesla_ble/windows-vent/config -n
+  eval $MOSQUITTO_PUB_BASE -t homeassistant/button/tesla_ble${add_vin}/charge-port-close/config -n
+  eval $MOSQUITTO_PUB_BASE -t homeassistant/button/tesla_ble${add_vin}/charge-port-open/config -n
+  eval $MOSQUITTO_PUB_BASE -t homeassistant/button/tesla_ble${add_vin}/charging-start/config -n
+  eval $MOSQUITTO_PUB_BASE -t homeassistant/button/tesla_ble${add_vin}/charging-stop/config -n
+  eval $MOSQUITTO_PUB_BASE -t homeassistant/button/tesla_ble${add_vin}/climate-off/config -n
+  eval $MOSQUITTO_PUB_BASE -t homeassistant/button/tesla_ble${add_vin}/climate-on/config -n
+  eval $MOSQUITTO_PUB_BASE -t homeassistant/button/tesla_ble${add_vin}/scan-bleln-macaddr/config -n
+  eval $MOSQUITTO_PUB_BASE -t homeassistant/button/tesla_ble${add_vin}/trunk-close/config -n
+  eval $MOSQUITTO_PUB_BASE -t homeassistant/button/tesla_ble${add_vin}/trunk-open/config -n
+  eval $MOSQUITTO_PUB_BASE -t homeassistant/button/tesla_ble${add_vin}/windows-close/config -n
+  eval $MOSQUITTO_PUB_BASE -t homeassistant/button/tesla_ble${add_vin}/windows-vent/config -n
 
 }

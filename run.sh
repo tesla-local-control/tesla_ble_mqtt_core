@@ -48,9 +48,19 @@ for vin in $VIN_LIST; do
   if [ -f $KEYS_DIR/private.pem ] && [ $vin_count -eq 1 ]; then
     log_warning "Keys exist from a previous installation with single VIN which is deprecated"
     log_warning "This module migrates the key files to attribute them to $vin and remove old MQTT entities"
-    log_warning "$KEYS_DIR/private.pem $KEYS_DIR/${vin}_private.pem"
-    log_warning "$KEYS_DIR/public.pem $KEYS_DIR/${vin}_public.pem"
-    delete_legacies $vin
+
+    log_warning "rename $KEYS_DIR/private.pem -> $KEYS_DIR/${vin}_private.pem"
+    mv $KEYS_DIR/private.pem $KEYS_DIR/${vin}_private.pem
+    log_warning "rename $KEYS_DIR/public.pem -> $KEYS_DIR/${vin}_public.pem"
+    mv $KEYS_DIR/public.pem $KEYS_DIR/${vin}_public.pem
+
+    delete_legacies
+    delete_legacies_singles ""
+  else
+    # Remove single entities (brute force command, no easy way to collect declared MQTT topics crossplatform)
+    log_notice "Removing single buttons to be replaced by switches & covers:"
+    log_notice "windows, charger, cherge-port, climate, trunk"
+    delete_legacies_singles $vin
   fi # END TEMPORARY
 
   if [ $PRESENCE_DETECTION_TTL -eq 0 ]; then
@@ -59,10 +69,6 @@ for vin in $VIN_LIST; do
     log_notice "Presence detection disable; Deleting MQTT topic $MQTT_TOPIC"
     eval $MOSQUITTO_PUB_BASE -t $MQTT_TOPIC/config -n
   fi
-  # Remove single entities (brute force command, no easy way to collect declared MQTT topics crossplatform)
-  log_notice "Removing single buttons to be replaced by switches & covers:"
-  log_notice "windows, charger, cherge-port, climate, trunk"
-  delete_legacies_singles $vin
 
 done
 # remove leading white space
