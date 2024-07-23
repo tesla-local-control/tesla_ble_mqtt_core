@@ -27,6 +27,7 @@ On/off and Open/Close entities have been grouped under switches and covers.</p>
 
 - NEW Feature: Car's BLE MAC address is now auto-detected
 - NEW Feature: Info Bluetooth Adapter, view in add-on's Log tab Bluetooth adapter's info/state
+- NEW Feature: Icons!
 - CHG Removed: setting ble\_mac\_list; obsoleted by BLE MAC address auto-detection
 - CHG Removed: scan-bleln-macaddr, obsoleted by BLE MAC address auto-detection
 - CHG Feature: grouped buttons into switches and covers

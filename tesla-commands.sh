@@ -160,7 +160,7 @@ deployKeyMain() {
   log_debug "deployKeyMain; calling acceptKeyConfirmationLoop()"
   if acceptKeyConfirmationLoop $vin; then
     log_info "Setting up Home Assistant device's panel"
-    setupHADevicePanelCardsMain $vin
+    setupPanelMain $vin
   else
     log_debug "deployKeyMain; key was not accepted"
     return 1

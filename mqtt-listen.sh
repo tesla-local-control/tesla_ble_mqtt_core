@@ -26,7 +26,7 @@ listen_to_mqtt_loop() {
 
 listen_to_mqtt() {
   log_info "Listening to MQTT"
-  eval $MOSQUITTO_SUB_BASE --nodelay -t tesla_ble/+/+ -F \"%t %p\" -c -i tesla_ble_mqtt -q 0 |
+  eval $MOSQUITTO_SUB_BASE --nodelay --disable-clean-session --qos 1 --topic tesla_ble/+/+ -F \"%t %p\" --id tesla_ble_mqtt |
     while read -r payload; do
       topic=${payload%% *}
       msg=${payload#* }
@@ -51,8 +51,8 @@ listen_to_mqtt() {
 
           if [ "$ENABLE_HA_FEATURES" == "true" ]; then
             log_notice "Adding Home Assistant 'Deploy Key' button"
-            setupHADeviceDeployKeyButton $vin
-            setupHADeviceReGenerateKeysButton $vin
+            setupDeployKeyButton $vin
+            setupReGenerateKeysButton $vin
           fi
 
           log_warning "Private and Public keys were generated; Next:
@@ -238,9 +238,8 @@ listenForHAstatus() {
           ;;
         online)
           # Ref: https://github.com/iainbullock/tesla_ble_mqtt_docker/discussions/6
-          log_notice "Home Assistant is now online, calling setupHADeviceAllVINsLoop()"
-          discardMessages=no
-          setupHADeviceAllVINsLoop $discardMessages
+          log_notice "Home Assistant is now online, calling setupHADiscoveryAllVINsMain()"
+          setupHADiscoveryAllVINsMain
           ;;
         *)
           log_error "Invalid status; topic:$topic status:$status"

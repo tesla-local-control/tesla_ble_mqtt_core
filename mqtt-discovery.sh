@@ -20,15 +20,17 @@ function configHADeviceEnvVars() {
 
   LastVIN=$1
 
-  DEV_ID=tesla_ble_${vin}
-  DEV_NAME=Tesla_BLE_${vin}
+  CAR_MODEL=$(echo "$vin" | cut -c 4)
+
+  DEVICE_ID=tesla_ble_${vin}
+  DEVICE_NAME=Tesla_BLE_${vin}
 
   TOPIC_ROOT=tesla_ble/${vin}
 
-  QOS_LEVEL=0
+  QOS_LEVEL=1
 
-  log_debug "DEV_ID=$DEV_ID"
-  log_debug "DEV_NAME=$DEV_NAME"
+  log_debug "DEVICE_ID=$DEVICE_ID"
+  log_debug "DEVICE_NAME=$DEVICE_NAME"
   log_debug "TOPIC_ROOT=$TOPIC_ROOT"
   log_debug "configHADeviceEnvVars() leaving vin:$vin"
 
@@ -36,436 +38,424 @@ function configHADeviceEnvVars() {
 
 ###
 ##
-#
+#   setupPanelMain
 ##
 ###
-function setupHADevicePanelCardsMain() {
+function setupPanelMain() {
   vin=$1
 
-  log_debug "setupHADevicePanelCardsMain() entering vin:$vin"
+  log_debug "setupPanelMain() entering vin:$vin"
   configHADeviceEnvVars $vin
 
   # If detection is enable, show presence
   if [ $PRESENCE_DETECTION_TTL -gt 0 ]; then
-    log_debug "setupHADevicePanelCardsMain() vin:$vin presence detection enable"
-    setupHADevicePresenceSensor $vin
+    log_debug "setupPanelMain() vin:$vin presence detection enable"
+    setupPresenceSensor $vin
+
+    [ -f $KEYS_DIR/${vin}_presence ] &&
+      lastPresenceValue=$(cat $KEYS_DIR/${vin}_presence) &&
+      presenceMQTTpub $vin $lastPresenceValue
+
   fi
 
   # Newly added car?
   if [ -f $KEYS_DIR/${vin}_pubkey_accepted ]; then
-    log_debug "setupHADevicePanelCardsMain() found vehicle with pubkey deployed vin:$vin"
-    setupHADeviceDeployKeyButton $vin
-    setupHADeviceReGenerateKeysButton $vin
-    setupHADeviceControlsCard $vin
-    setupHADeviceInfoBTadapter $vin
+    log_debug "setupPanelMain() found vehicle with pubkey deployed vin:$vin"
+    setupDeployKeyButton $vin
+    setupReGenerateKeysButton $vin
+    setupDiagnostic $vin
+    setupButtonControls $vin 1
+    setupExtendedControls $vin
   elif [ ! -f $KEYS_DIR/${vin}_private.pem ] && [ ! -f $KEYS_DIR/${vin}_public.pem ]; then
 
-    log_debug "setupHADevicePanelCardsMain() found new vehicle, need to generate keys set vin:$vin"
+    log_debug "setupPanelMain() found new vehicle, need to generate keys set vin:$vin"
     # Show button to Generate Keys
-    setupHADeviceGenerateKeysButton $vin
-    setupHADeviceInfoBTadapter $vin
+    setupGenerateKeysButton $vin
+    setupDiagnostic $vin
+    setupButtonControls $vin 0
 
-    # listen_to_mqtt call setupHADeviceDeployKeyButton once the keys are generated
+    # listen_to_mqtt call setupDeployKeyButton once the keys are generated
 
   else
-    log_debug "setupHADevicePanelCardsMain() found new vehicle, need to deploy public key vin:$vin"
-    setupHADeviceDeployKeyButton $vin
-    setupHADeviceGenerateKeysButton $vin
-    setupHADeviceInfoBTadapter $vin
+    log_debug "setupPanelMain() found new vehicle, need to deploy public key vin:$vin"
+    setupGenerateKeysButton $vin
+    setupDeployKeyButton $vin
+    setupButtonControls $vin 0
+    setupDiagnostic $vin
   fi
 
-  log_debug "setupHADevicePanelCardsMain() leaving vin:$vin"
+  log_debug "setupPanelMain() leaving vin:$vin"
+
+}
+
+# Tesla Control Commands (no arguments)
+#
+# Key,         Model,   mdi:icon, Unique ID,Description
+# 0 No Key       *
+# 1 Accepted     S
+#                3
+#                X
+#                Y
+#                C
+teslaControlCommands="\
+1,X,autosecure-modelx,mdi:car-door-lock,Close falcon-wing doors and lock vehicle
+1,*,auto-seat-and-climate,mdi:fan-auto,Set climate mode to auto
+1,*,charging-schedule-cancel,mdi:timer-cancel-outline,Cancel scheduled charge start
+1,*,drive,car-wireless,mdi:car-wireless,Remote start car
+1,*,flash-lights,mdi:car-light-high,Flash lights
+1,*,frunk-open,mdi:car-select,Open car frunk
+1,*,honk,mdi:bugle,Honk horn
+1,*,lock,mdi:car-door-lock,Lock car
+2,*,media-toggle-playback,mdi:motion-play,Toggle between play/pause
+1,*,ping,mdi:check-network,Ping car
+2,*,software-update-cancel,mdi:close-circle,Cancel pending software update
+2,*,software-update-start,mdi:update,Start software update after delay
+1,C,tonneau-close,mdi:shutter,Close Cybertruck tonneau
+1,C,tonneau-open,mdi:shutter,Open Cybertruck tonneau
+1,C,tonneau-stop,mdi:shutter,Stop moving Cybertruck tonneau
+1,*,unlock,mdi:lock-open,Unlock car
+0,*,wake,mdi:hand-wave,Wake up car"
+
+generateCommandJson() {
+  UNIQUE_ID=$1
+  MDI_ICON=$2
+  DESCRIPTION="$3"
+
+  PAYLOAD=$UNIQUE_ID
+
+  # Using sed, output single line JSON
+  echo '{
+    "command_topic": "'${TOPIC_ROOT}'/command",
+    "device": {
+      "identifiers": [
+      "'${DEVICE_ID}'"
+      ],
+      "manufacturer": "tesla-local-control",
+      "model": "Tesla_BLE",
+      "name": "'${DEVICE_NAME}'",
+      "sw_version": "'${SW_VERSION}'"
+    },
+    "icon": "'${MDI_ICON}'",
+    "name": "'${DESCRIPTION}'",
+    "payload_press": "'${PAYLOAD}'",
+    "qos": "'${QOS_LEVEL}'",
+    "unique_id": "'${DEVICE_ID}'_'${UNIQUE_ID}'"
+  }' | sed ':a;N;$!ba;s/\n//g'
+}
+
+###
+##
+#   setupButtonControls
+##
+###
+function setupButtonControls() {
+  vin=$1
+  carKeyState=$2
+
+  configHADeviceEnvVars $vin
+
+  log_debug "setupButtonControls; vin:$vin carKeyState:$carKeyState"
+
+  # Read and process each line from the teslaControlCommands string
+  echo "$teslaControlCommands" | while IFS=, read -r keyState model uniqueID mdiIcon description; do
+    if [ $carKeyState -ge $keyState ]; then
+      if [ "$model" == "*" ] || [ $CAR_MODEL == $model ]; then
+        commandJson=$(generateCommandJson $uniqueID "$mdiIcon" "$description")
+        log_debug "$commandJson"
+        echo $commandJson | retryMQTTpub 6 10 -t homeassistant/button/${DEVICE_ID}/$uniqueID/config -l
+      else
+        log_debug "setupButtonControls; skipping car model:$model description:$description"
+      fi
+    else
+      log_debug "setupButtonControls; skipping no key accepted description:$description"
+    fi
+  done
 
 }
 
 ###
 ##
-#
+#   setupExtendedControls
 ##
 ###
-function setupHADeviceControlsCard() {
+function setupExtendedControls() {
   vin=$1
 
-  log_debug "setupHADeviceControlsCard() entering vin:$vin"
+  log_debug "setupExtendedControls() entering vin:$vin"
   configHADeviceEnvVars $vin
 
-  echo '{
-   "command_topic": "'${TOPIC_ROOT}'/command",
-   "device": {
-    "identifiers": [
-    "'${DEV_ID}'"
-    ],
-    "manufacturer": "tesla-local-control",
-    "model": "Tesla_BLE",
-    "name": "'${DEV_NAME}'",
-    "sw_version": "'${SW_VERSION}'"
-   },
-   "name": "Wake Car",
-   "payload_press": "wake",
-   "qos": "'${QOS_LEVEL}'",
-   "unique_id": "'${DEV_ID}'_wake"
-  }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 6 10 -t homeassistant/button/${DEV_ID}/wake/config -l
-
-  echo '{
-   "command_topic": "'${TOPIC_ROOT}'/command",
-   "device": {
-    "identifiers": [
-    "'${DEV_ID}'"
-    ],
-    "manufacturer": "tesla-local-control",
-    "model": "Tesla_BLE",
-    "name": "'${DEV_NAME}'",
-    "sw_version": "'${SW_VERSION}'"
-   },
-   "name": "Flash Lights",
-   "payload_press": "flash-lights",
-   "qos": "'${QOS_LEVEL}'",
-   "unique_id": "'${DEV_ID}'_flash-lights"
-  }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 6 10 -t homeassistant/button/${DEV_ID}/flash-lights/config -l
-
-  echo '{
-   "command_topic": "'${TOPIC_ROOT}'/command",
-   "device": {
-    "identifiers": [
-    "'${DEV_ID}'"
-    ],
-    "manufacturer": "tesla-local-control",
-    "model": "Tesla_BLE",
-    "name": "'${DEV_NAME}'",
-    "sw_version": "'${SW_VERSION}'"
-   },
-   "name": "Honk",
-   "payload_press": "honk",
-   "qos": "'${QOS_LEVEL}'",
-   "unique_id": "'${DEV_ID}'_honk"
-  }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 6 10 -t homeassistant/button/${DEV_ID}/honk/config -l
-
-  echo '{
-   "command_topic": "'${TOPIC_ROOT}'/command",
-   "device": {
-    "identifiers": [
-    "'${DEV_ID}'"
-    ],
-    "manufacturer": "tesla-local-control",
-    "model": "Tesla_BLE",
-    "name": "'${DEV_NAME}'",
-    "sw_version": "'${SW_VERSION}'"
-   },
-   "name": "Lock Car",
-   "payload_press": "lock",
-   "qos": "'${QOS_LEVEL}'",
-   "unique_id": "'${DEV_ID}'_lock"
-  }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 6 10 -t homeassistant/button/${DEV_ID}/lock/config -l
-
-  echo '{
-   "command_topic": "'${TOPIC_ROOT}'/command",
-   "device": {
-    "identifiers": [
-    "'${DEV_ID}'"
-    ],
-    "manufacturer": "tesla-local-control",
-    "model": "Tesla_BLE",
-    "name": "'${DEV_NAME}'",
-    "sw_version": "'${SW_VERSION}'"
-   },
-   "name": "Unlock Car",
-   "payload_press": "unlock",
-   "qos": "'${QOS_LEVEL}'",
-   "unique_id": "'${DEV_ID}'_unlock"
-   }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 6 10 -t homeassistant/button/${DEV_ID}/unlock/config -l
-
-  echo '{
-   "command_topic": "'${TOPIC_ROOT}'/auto-seat-and-climate",
-   "device": {
-    "identifiers": [
-    "'${DEV_ID}'"
-    ],
-    "manufacturer": "tesla-local-control",
-    "model": "Tesla_BLE",
-    "name": "'${DEV_NAME}'",
-    "sw_version": "'${SW_VERSION}'"
-   },
-   "name": "Auto Seat & Climate",
-   "payload_press": "auto-seat-and-climate",
-   "qos": "'${QOS_LEVEL}'",
-   "unique_id": "'${DEV_ID}'_auto_seat-climate"
-   }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 6 10 -t homeassistant/button/${DEV_ID}/auto-seat-and-climate/config -l
-
-  echo '{
-   "command_topic": "'${TOPIC_ROOT}'/climate",
-   "device": {
-    "identifiers": [
-    "'${DEV_ID}'"
-    ],
-    "manufacturer": "tesla-local-control",
-    "model": "Tesla_BLE",
-    "name": "'${DEV_NAME}'",
-    "sw_version": "'${SW_VERSION}'"
-   },
-   "name": "Climate",
-   "device_class": "switch",
-   "payload_on": "on",
-   "payload_off": "off",
-   "qos": "'${QOS_LEVEL}'",
-   "unique_id": "'${DEV_ID}'_climate"
-   }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 6 10 -t homeassistant/switch/${DEV_ID}/climate/config -l
-
-  echo '{
-   "command_topic": "'${TOPIC_ROOT}'/trunk",
-   "device": {
-    "identifiers": [
-    "'${DEV_ID}'"
-    ],
-    "manufacturer": "tesla-local-control",
-    "model": "Tesla_BLE",
-    "name": "'${DEV_NAME}'",
-    "sw_version": "'${SW_VERSION}'"
-   },
-   "name": "Trunk",
-   "device_class": "door",
-   "payload_open": "open",
-   "payload_close": "close",
-   "payload_stop": null,
-   "qos": "'${QOS_LEVEL}'",
-   "unique_id": "'${DEV_ID}'_trunk"
-   }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 6 10 -t homeassistant/cover/${DEV_ID}/trunk/config -l
-
-  echo '{
-   "command_topic": "'${TOPIC_ROOT}'/command",
-   "device": {
-    "identifiers": [
-    "'${DEV_ID}'"
-    ],
-    "manufacturer": "tesla-local-control",
-    "model": "Tesla_BLE",
-    "name": "'${DEV_NAME}'",
-    "sw_version": "'${SW_VERSION}'"
-   },
-   "name": "Open Frunk",
-   "payload_press": "frunk-open",
-   "qos": "'${QOS_LEVEL}'",
-   "unique_id": "'${DEV_ID}'_frunk-open"
-   }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 6 10 -t homeassistant/button/${DEV_ID}/frunk-open/config -l
+  # Switches
 
   echo '{
    "command_topic": "'${TOPIC_ROOT}'/charging",
    "device": {
     "identifiers": [
-    "'${DEV_ID}'"
+    "'${DEVICE_ID}'"
     ],
     "manufacturer": "tesla-local-control",
     "model": "Tesla_BLE",
-    "name": "'${DEV_NAME}'",
+    "name": "'${DEVICE_NAME}'",
     "sw_version": "'${SW_VERSION}'"
    },
+   "icon": "mdi:flash",
    "name": "Charger",
    "device_class": "switch",
    "payload_on": "start",
    "payload_off": "stop",
    "qos": "'${QOS_LEVEL}'",
-   "unique_id": "'${DEV_ID}'_charging"
-   }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 6 10 -t homeassistant/switch/${DEV_ID}/charging/config -l
+   "unique_id": "'${DEVICE_ID}'_charging"
+   }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 6 10 -t homeassistant/switch/${DEVICE_ID}/charging/config -l
+
+  echo '{
+   "command_topic": "'${TOPIC_ROOT}'/climate",
+   "device": {
+    "identifiers": [
+    "'${DEVICE_ID}'"
+    ],
+    "manufacturer": "tesla-local-control",
+    "model": "Tesla_BLE",
+    "name": "'${DEVICE_NAME}'",
+    "sw_version": "'${SW_VERSION}'"
+   },
+   "icon": "mdi:fan",
+   "name": "Climate",
+   "device_class": "switch",
+   "payload_on": "on",
+   "payload_off": "off",
+   "qos": "'${QOS_LEVEL}'",
+   "unique_id": "'${DEVICE_ID}'_climate"
+   }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 6 10 -t homeassistant/switch/${DEVICE_ID}/climate/config -l
+
+  echo '{
+   "command_topic": "'${TOPIC_ROOT}'/sentry-mode",
+   "device": {
+    "identifiers": [
+    "'${DEVICE_ID}'"
+    ],
+    "manufacturer": "tesla-local-control",
+    "model": "Tesla_BLE",
+    "name": "'${DEVICE_NAME}'",
+    "sw_version": "'${SW_VERSION}'"
+   },
+   "icon": "mdi:cctv",
+   "name": "Sentry Mode",
+   "device_class": "switch",
+   "payload_on": "on",
+   "payload_off": "off",
+   "qos": "'${QOS_LEVEL}'",
+   "unique_id": "'${DEVICE_ID}'_sentry-mode"
+   }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 6 10 -t homeassistant/switch/${DEVICE_ID}/sentry-mode/config -l
+
+  echo '{
+   "command_topic": "'${TOPIC_ROOT}'/steering-wheel-heater",
+   "device": {
+    "identifiers": [
+    "'${DEVICE_ID}'"
+    ],
+    "manufacturer": "tesla-local-control",
+    "model": "Tesla_BLE",
+    "name": "'${DEVICE_NAME}'",
+    "sw_version": "'${SW_VERSION}'"
+   },
+   "icon": "mdi:steering",
+   "name": "Steering Wheel Heater",
+   "device_class": "switch",
+   "payload_on": "on",
+   "payload_off": "off",
+   "qos": "'${QOS_LEVEL}'",
+   "unique_id": "'${DEVICE_ID}'_steering-wheel-heater"
+   }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 6 10 -t homeassistant/switch/${DEVICE_ID}/steering-wheel-heater/config -l
+
+  # Covers
 
   echo '{
    "command_topic": "'${TOPIC_ROOT}'/charge-port",
    "device": {
     "identifiers": [
-    "'${DEV_ID}'"
+    "'${DEVICE_ID}'"
     ],
     "manufacturer": "tesla-local-control",
     "model": "Tesla_BLE",
-    "name": "'${DEV_NAME}'",
+    "name": "'${DEVICE_NAME}'",
     "sw_version": "'${SW_VERSION}'"
    },
+   "icon": "mdi:ev-plug-tesla",
    "name": "Charge port",
    "device_class": "door",
    "payload_open": "open",
    "payload_close": "close",
    "payload_stop": null,
    "qos": "'${QOS_LEVEL}'",
-   "unique_id": "'${DEV_ID}'_charge-port"
-   }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 6 10 -t homeassistant/cover/${DEV_ID}/charge-port/config -l
+   "unique_id": "'${DEVICE_ID}'_charge-port"
+   }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 6 10 -t homeassistant/cover/${DEVICE_ID}/charge-port/config -l
+
+  echo '{
+   "command_topic": "'${TOPIC_ROOT}'/trunk",
+   "device": {
+    "identifiers": [
+    "'${DEVICE_ID}'"
+    ],
+    "manufacturer": "tesla-local-control",
+    "model": "Tesla_BLE",
+    "name": "'${DEVICE_NAME}'",
+    "sw_version": "'${SW_VERSION}'"
+   },
+   "icon": "mdi:car-back",
+   "name": "Trunk",
+   "device_class": "door",
+   "payload_open": "open",
+   "payload_close": "close",
+   "payload_stop": null,
+   "qos": "'${QOS_LEVEL}'",
+   "unique_id": "'${DEVICE_ID}'_trunk"
+   }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 6 10 -t homeassistant/cover/${DEVICE_ID}/trunk/config -l
 
   echo '{
    "command_topic": "'${TOPIC_ROOT}'/windows",
    "device": {
     "identifiers": [
-    "'${DEV_ID}'"
+    "'${DEVICE_ID}'"
     ],
     "manufacturer": "tesla-local-control",
     "model": "Tesla_BLE",
-    "name": "'${DEV_NAME}'",
+    "name": "'${DEVICE_NAME}'",
     "sw_version": "'${SW_VERSION}'"
    },
+   "icon": "mdi:car-door",
    "name": "Windows",
    "device_class": "awning",
    "payload_open": "vent",
    "payload_close": "close",
    "payload_stop": null,
    "qos": "'${QOS_LEVEL}'",
-   "unique_id": "'${DEV_ID}'_windows"
-   }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 6 10 -t homeassistant/cover/${DEV_ID}/windows/config -l
+   "unique_id": "'${DEVICE_ID}'_windows"
+   }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 6 10 -t homeassistant/cover/${DEVICE_ID}/windows/config -l
+
+  # Number
 
   echo '{
    "command_topic": "'${TOPIC_ROOT}'/charging-set-amps",
    "device": {
     "identifiers": [
-    "'${DEV_ID}'"
+    "'${DEVICE_ID}'"
     ],
     "manufacturer": "tesla-local-control",
     "model": "Tesla_BLE",
-    "name": "'${DEV_NAME}'",
+    "name": "'${DEVICE_NAME}'",
     "sw_version": "'${SW_VERSION}'"
    },
-   "name": "Charging Current",
-   "unique_id": "'${DEV_ID}'_charging-set-amps",
+   "icon": "mdi:current-ac",
    "min": "0",
    "max": "48",
    "mode": "slider",
-   "unit_of_measurement": "A",
+   "name": "Charging Current",
    "qos": "'${QOS_LEVEL}'",
-   "icon": "mdi:current-ac"
-   }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 6 10 -t homeassistant/number/${DEV_ID}/charging-set-amps/config -l
+   "unique_id": "'${DEVICE_ID}'_charging-set-amps",
+   "unit_of_measurement": "A"
+   }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 6 10 -t homeassistant/number/${DEVICE_ID}/charging-set-amps/config -l
 
   echo '{
    "command_topic": "'${TOPIC_ROOT}'/charging-set-amps-override",
    "device": {
     "identifiers": [
-    "'${DEV_ID}'"
+    "'${DEVICE_ID}'"
     ],
     "manufacturer": "tesla-local-control",
     "model": "Tesla_BLE",
-    "name": "'${DEV_NAME}'",
+    "name": "'${DEVICE_NAME}'",
     "sw_version": "'${SW_VERSION}'"
    },
-   "name": "Charging Current single",
-   "unique_id": "'${DEV_ID}'_charging-set-amps-override",
+   "icon": "mdi:current-ac",
    "min": "0",
    "max": "48",
    "mode": "slider",
-   "unit_of_measurement": "A",
+   "name": "Charging Current single",
    "qos": "'${QOS_LEVEL}'",
-   "icon": "mdi:current-ac",
-   "entity_category": "diagnostic"
-   }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 6 10 -t homeassistant/number/${DEV_ID}/charging-set-amps-override/config -l
+   "unique_id": "'${DEVICE_ID}'_charging-set-amps-override",
+   "entity_category": "diagnostic",
+   "unit_of_measurement": "A"
+   }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 6 10 -t homeassistant/number/${DEVICE_ID}/charging-set-amps-override/config -l
 
   echo '{
    "command_topic": "'${TOPIC_ROOT}'/charging-set-limit",
    "device": {
     "identifiers": [
-    "'${DEV_ID}'"
+    "'${DEVICE_ID}'"
     ],
     "manufacturer": "tesla-local-control",
     "model": "Tesla_BLE",
-    "name": "'${DEV_NAME}'",
+    "name": "'${DEVICE_NAME}'",
     "sw_version": "'${SW_VERSION}'"
    },
+   "icon": "mdi:battery-90",
    "name": "Charging Limit",
-   "unique_id": "'${DEV_ID}'_charging-set-limit",
    "min": "50",
    "max": "100",
    "mode": "slider",
-   "unit_of_measurement": "%",
    "qos": "'${QOS_LEVEL}'",
-   "icon": "mdi:battery-90"
-   }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 6 10 -t homeassistant/number/${DEV_ID}/charging-set-limit/config -l
+   "unique_id": "'${DEVICE_ID}'_charging-set-limit",
+   "unit_of_measurement": "%"
+   }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 6 10 -t homeassistant/number/${DEVICE_ID}/charging-set-limit/config -l
 
   echo '{
    "command_topic": "'${TOPIC_ROOT}'/climate-set-temp",
    "device": {
     "identifiers": [
-    "'${DEV_ID}'"
+    "'${DEVICE_ID}'"
     ],
     "manufacturer": "tesla-local-control",
     "model": "Tesla_BLE",
-    "name": "'${DEV_NAME}'",
+    "name": "'${DEVICE_NAME}'",
     "sw_version": "'${SW_VERSION}'"
    },
+   "icon": "mdi:temperature",
    "name": "Climate Temp",
-   "unique_id": "'${DEV_ID}'_climate-set-temp",
    "min": "5",
    "max": "40",
    "mode": "slider",
-   "unit_of_measurement": "°C",
    "qos": "'${QOS_LEVEL}'",
-   "icon": "mdi:temperature"
-   }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 6 10 -t homeassistant/number/${DEV_ID}/climate-temp/config -l
+   "unique_id": "'${DEVICE_ID}'_climate-set-temp"
+   }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 6 10 -t homeassistant/number/${DEVICE_ID}/climate-temp/config -l
 
-  echo '{
-   "command_topic": "'${TOPIC_ROOT}'/steering-wheel-heater",
-   "device": {
-    "identifiers": [
-    "'${DEV_ID}'"
-    ],
-    "manufacturer": "tesla-local-control",
-    "model": "Tesla_BLE",
-    "name": "'${DEV_NAME}'",
-    "sw_version": "'${SW_VERSION}'"
-   },
-   "name": "Steering Wheel Heater",
-   "device_class": "switch",
-   "payload_on": "on",
-   "payload_off": "off",
-   "qos": "'${QOS_LEVEL}'",
-   "unique_id": "'${DEV_ID}'_steering-wheel-heater"
-   }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 6 10 -t homeassistant/switch/${DEV_ID}/steering-wheel-heater/config -l
-
-  echo '{
-   "command_topic": "'${TOPIC_ROOT}'/sentry-mode",
-   "device": {
-    "identifiers": [
-    "'${DEV_ID}'"
-    ],
-    "manufacturer": "tesla-local-control",
-    "model": "Tesla_BLE",
-    "name": "'${DEV_NAME}'",
-    "sw_version": "'${SW_VERSION}'"
-   },
-   "name": "Sentry Mode",
-   "device_class": "switch",
-   "payload_on": "on",
-   "payload_off": "off",
-   "qos": "'${QOS_LEVEL}'",
-   "unique_id": "'${DEV_ID}'_sentry-mode"
-   }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 6 10 -t homeassistant/switch/${DEV_ID}/sentry-mode/config -l
+  # Select
 
   echo '{
    "command_topic": "'${TOPIC_ROOT}'/heater-seat-front-left",
    "device": {
     "identifiers": [
-    "'${DEV_ID}'"
+    "'${DEVICE_ID}'"
     ],
     "manufacturer": "tesla-local-control",
     "model": "Tesla_BLE",
-    "name": "'${DEV_NAME}'",
+    "name": "'${DEVICE_NAME}'",
     "sw_version": "'${SW_VERSION}'"
    },
+   "icon": "mdi:car-seat-heater",
    "name": "Heated Seat Front Left",
    "options": ["off", "low", "medium", "high"],
    "qos": "'${QOS_LEVEL}'",
-   "icon": "mdi:car-seat-heater",
-   "unique_id": "'${DEV_ID}'_heater-seat-front-left"
-   }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 6 10 -t homeassistant/select/${DEV_ID}/heater-seat-front-left/config -l
+   "unique_id": "'${DEVICE_ID}'_heater-seat-front-left"
+   }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 6 10 -t homeassistant/select/${DEVICE_ID}/heater-seat-front-left/config -l
 
   echo '{
    "command_topic": "'${TOPIC_ROOT}'/heater-seat-front-right",
    "device": {
     "identifiers": [
-    "'${DEV_ID}'"
+    "'${DEVICE_ID}'"
     ],
     "manufacturer": "tesla-local-control",
     "model": "Tesla_BLE",
-    "name": "'${DEV_NAME}'",
+    "name": "'${DEVICE_NAME}'",
     "sw_version": "'${SW_VERSION}'"
    },
+   "icon": "mdi:car-seat-heater",
    "name": "Heated Seat Front Right",
    "options": ["off", "low", "medium", "high"],
    "qos": "'${QOS_LEVEL}'",
-   "icon": "mdi:car-seat-heater",
-   "unique_id": "'${DEV_ID}'_heater-seat-front-right"
-   }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 6 10 -t homeassistant/select/${DEV_ID}/heater-seat-front-right/config -l
+   "unique_id": "'${DEVICE_ID}'_heater-seat-front-right"
+   }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 6 10 -t homeassistant/select/${DEVICE_ID}/heater-seat-front-right/config -l
 
-  log_debug "Leaving setupHADeviceControlsCard() vin:$vin"
+  log_debug "Leaving setupExtendedControls() vin:$vin"
 }
 
 ###
@@ -473,32 +463,32 @@ function setupHADeviceControlsCard() {
 #   Setup Configuration Generate Keys Button
 ##
 ###
-function setupHADeviceGenerateKeysButton() {
+function setupGenerateKeysButton() {
   vin=$1
 
-  log_debug "setupHADeviceGenerateKeysButton() entering vin:$vin"
+  log_debug "setupGenerateKeysButton() entering vin:$vin"
   configHADeviceEnvVars $vin
 
   echo '{
    "command_topic": "'${TOPIC_ROOT}'/config",
    "device": {
     "identifiers": [
-    "'${DEV_ID}'"
+    "'${DEVICE_ID}'"
     ],
     "manufacturer": "tesla-local-control",
     "model": "Tesla_BLE",
-    "name": "'${DEV_NAME}'"
+    "name": "'${DEVICE_NAME}'",
+    "sw_version": "'${SW_VERSION}'"
    },
    "device_class": "update",
+   "entity_category": "config",
    "name": "Generate Keys",
    "payload_press": "generate-keys",
    "qos": "'${QOS_LEVEL}'",
-   "unique_id": "'${DEV_ID}'_generate-keys",
-   "entity_category": "config",
-   "sw_version": "'${SW_VERSION}'"
-  }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 6 10 -t homeassistant/button/${DEV_ID}/generate-keys/config -l
+   "unique_id": "'${DEVICE_ID}'_generate-keys"
+  }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 6 10 -t homeassistant/button/${DEVICE_ID}/generate-keys/config -l
 
-  log_debug "setupHADeviceGenerateKeysButton() leaving vin:$vin"
+  log_debug "setupGenerateKeysButton() leaving vin:$vin"
 
 }
 
@@ -507,34 +497,35 @@ function setupHADeviceGenerateKeysButton() {
 #   Setup Configuration ReGenerate Keys Button
 ##
 ###
-function setupHADeviceReGenerateKeysButton() {
+function setupReGenerateKeysButton() {
   vin=$1
 
-  log_debug "setupHADeviceReGenerateKeysButton() entering vin:$vin"
+  log_debug "setupReGenerateKeysButton() entering vin:$vin"
   configHADeviceEnvVars $vin
 
   echo '{
    "command_topic": "'${TOPIC_ROOT}'/config",
    "device": {
     "identifiers": [
-    "'${DEV_ID}'"
+    "'${DEVICE_ID}'"
     ],
     "manufacturer": "tesla-local-control",
     "model": "Tesla_BLE",
-    "name": "'${DEV_NAME}'"
+    "name": "'${DEVICE_NAME}'"
    },
    "device_class": "update",
    "name": "ReGenerate Keys",
    "payload_press": "generate-keys",
    "qos": "'${QOS_LEVEL}'",
-   "unique_id": "'${DEV_ID}'_regenerate-keys",
+   "unique_id": "'${DEVICE_ID}'_regenerate-keys",
    "entity_category": "config",
    "sw_version": "'${SW_VERSION}'"
-  }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 6 10 -t homeassistant/button/${DEV_ID}/regenerate-keys/config -l
+  }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 6 10 -t homeassistant/button/${DEVICE_ID}/regenerate-keys/config -l
 
+  # Delete Generate Keys
   eval $MOSQUITTO_PUB_BASE -t homeassistant/button/tesla_ble_${vin}/generate-keys/config -n
 
-  log_debug "setupHADeviceReGenerateKeysButton() leaving vin:$vin"
+  log_debug "setupReGenerateKeysButton() leaving vin:$vin"
 
 }
 
@@ -543,30 +534,31 @@ function setupHADeviceReGenerateKeysButton() {
 #   Setup Vehicule's Presence Sensor
 ##
 ###
-function setupHADevicePresenceSensor {
+function setupPresenceSensor {
   vin=$1
 
-  log_debug "setupHADevicePresenceSensor() entering vin:$vin"
+  log_debug "setupPresenceSensor() entering vin:$vin"
   configHADeviceEnvVars $vin
 
   echo '{
    "state_topic": "'${TOPIC_ROOT}'/binary_sensor/presence",
    "device": {
     "identifiers": [
-    "'${DEV_ID}'"
+    "'${DEVICE_ID}'"
     ],
     "manufacturer": "tesla-local-control",
     "model": "Tesla_BLE",
-    "name": "'${DEV_NAME}'",
+    "name": "'${DEVICE_NAME}'",
     "sw_version": "'${SW_VERSION}'"
    },
    "device_class": "presence",
+   "icon": "mdi:car-connected",
    "name": "Presence",
    "qos": "1",
-   "unique_id": "'${DEV_ID}'_presence"
-  }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 36 10 -t homeassistant/binary_sensor/${DEV_ID}/presence/config -l
+   "unique_id": "'${DEVICE_ID}'_presence"
+  }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 36 10 -t homeassistant/binary_sensor/${DEVICE_ID}/presence/config -l
 
-  log_debug "setupHADevicePresenceSensor() leaving vin:$vin"
+  log_debug "setupPresenceSensor() leaving vin:$vin"
 
 }
 
@@ -575,32 +567,32 @@ function setupHADevicePresenceSensor {
 #   Setup Configuration Deploy Key Button
 ##
 ###
-function setupHADeviceDeployKeyButton() {
+function setupDeployKeyButton() {
   vin=$1
 
-  log_debug "setupHADeviceDeployKeyButton() entering vin:$vin"
+  log_debug "setupDeployKeyButton() entering vin:$vin"
   configHADeviceEnvVars $vin
 
   echo '{
    "command_topic": "'${TOPIC_ROOT}'/config",
    "device": {
     "identifiers": [
-    "'${DEV_ID}'"
+    "'${DEVICE_ID}'"
     ],
     "manufacturer": "tesla-local-control",
     "model": "Tesla_BLE",
-    "name": "'${DEV_NAME}'",
+    "name": "'${DEVICE_NAME}'",
     "sw_version": "'${SW_VERSION}'"
    },
    "device_class": "update",
+   "entity_category": "config",
    "name": "Deploy Key",
    "payload_press": "deploy-key",
    "qos": "'${QOS_LEVEL}'",
-   "unique_id": "'${DEV_ID}'_deploy-key",
-   "entity_category": "config"
-  }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 6 10 -t homeassistant/button/${DEV_ID}/deploy-key/config -l
+   "unique_id": "'${DEVICE_ID}'_deploy-key"
+  }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 6 10 -t homeassistant/button/${DEVICE_ID}/deploy-key/config -l
 
-  log_debug "setupHADeviceDeployKeyButton() leaving vin:$vin"
+  log_debug "setupDeployKeyButton() leaving vin:$vin"
 
 }
 
@@ -609,35 +601,70 @@ function setupHADeviceDeployKeyButton() {
 #   Setup Info Bluetooth Adapter
 ##
 ###
-function setupHADeviceInfoBTadapter() {
+function setupDiagnostic() {
   vin=$1
 
-  log_debug "setupHADeviceInfoBTadapter() entering vin:$vin"
+  log_debug "setupDiagnostic() entering vin:$vin"
   configHADeviceEnvVars $vin
 
-  # TODO TEPORARILY - To be removed
-  eval $MOSQUITTO_PUB_BASE -t homeassistant/button/tesla_ble_${vin}/scan-bleln-macaddr/config -n
+  echo '{
+    "command_topic": "'${TOPIC_ROOT}'/config",
+    "device": {
+     "identifiers": [
+       "'${DEVICE_ID}'"
+     ],
+      "manufacturer": "tesla-local-control",
+      "model": "Tesla_BLE",
+      "name": "'${DEVICE_NAME}'",
+      "sw_version": "'${SW_VERSION}'"
+    },
+    "device_class": "update",
+    "entity_category": "diagnostic",
+    "name": "Car state information",
+    "payload_press": "body-controller-state",
+    "qos": "'${QOS_LEVEL}'",
+    "unique_id": "'${DEVICE_ID}'_body-controller-state"
+  }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 6 10 -t homeassistant/button/${DEVICE_ID}/body-controller-state/config -l
 
   echo '{
-   "command_topic": "'${TOPIC_ROOT}'/config",
-   "device": {
-    "identifiers": [
-    "'${DEV_ID}'"
-    ],
-    "manufacturer": "tesla-local-control",
-    "model": "Tesla_BLE",
-    "name": "'${DEV_NAME}'",
-    "sw_version": "'${SW_VERSION}'"
-   },
-   "device_class": "update",
-   "name": "Info Bluetooth Adapter",
-   "payload_press": "info-bt-adapter",
-   "qos": "'${QOS_LEVEL}'",
-   "unique_id": "'${DEV_ID}'_info-bt-adapter",
-   "entity_category": "diagnostic"
-  }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 6 10 -t homeassistant/button/${DEV_ID}/info-bt-adapter/config -l
+    "command_topic": "'${TOPIC_ROOT}'/config",
+    "device": {
+     "identifiers": [
+       "'${DEVICE_ID}'"
+     ],
+      "manufacturer": "tesla-local-control",
+      "model": "Tesla_BLE",
+      "name": "'${DEVICE_NAME}'",
+      "sw_version": "'${SW_VERSION}'"
+    },
+    "device_class": "update",
+    "entity_category": "diagnostic",
+    "name": "Info Bluetooth Adapter",
+    "payload_press": "info-bt-adapter",
+    "qos": "'${QOS_LEVEL}'",
+    "unique_id": "'${DEVICE_ID}'_info-bt-adapter"
+  }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 6 10 -t homeassistant/button/${DEVICE_ID}/info-bt-adapter/config -l
 
-  log_debug "setupHADeviceInfoBTadapter() leaving vin:$vin"
+  echo '{
+   "command_topic": "'${TOPIC_ROOT}'/command",
+   "device": {
+     "identifiers": [
+     "'${DEVICE_ID}'"
+     ],
+     "manufacturer": "tesla-local-control",
+     "model": "Tesla_BLE",
+     "name": "'${DEVICE_NAME}'",
+     "sw_version": "'${SW_VERSION}'"
+   },
+   "icon": "mdi:cloud-key",
+   "name": "List public keys enrolled on car",
+   "entity_category": "diagnostic",
+   "payload_press": "list-keys",
+   "qos": "'${QOS_LEVEL}'",
+   "unique_id": "'${DEVICE_ID}'_list-keys"
+   }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 6 10 -t homeassistant/button/${DEVICE_ID}/list-keys/config -l
+
+  log_debug "setupDiagnostic() leaving vin:$vin"
 
 }
 
@@ -646,27 +673,24 @@ function setupHADeviceInfoBTadapter() {
 #   Setup Device's Panel Cards for all VINS
 ##
 ###
-setupHADeviceAllVINsLoop() {
-
-  discardMessages=$1
+setupHADiscoveryAllVINsMain() {
 
   # Setup or skip HA auto discovery & Discard old MQTT messages
   for vin in $VIN_LIST; do
 
     # IF HA backend is enable, setup HA Auto Discover
     if [ "$ENABLE_HA_FEATURES" == "true" ]; then
-      log_debug "Calling setupHADevicePanelCardsMain() $vin"
-      setupHADevicePanelCardsMain $vin
+      log_debug "setupHADiscoveryAllVINsMain; calling setupPanelMain() $vin"
+      setupPanelMain $vin
     else
-      log_info "HA backend is disable, skipping setup for HA Auto Discovery"
-    fi
-
-    # Discard or not awaiting messages
-    if [ "$discardMessages" = "yes" ]; then
-      log_notice "Discarding any unread MQTT messages for $vin"
-      eval $MOSQUITTO_SUB_BASE -E -i tesla_ble_mqtt -t tesla_ble_mqtt/$vin/+
+      log_info "setupHADiscoveryAllVINsMain; HA backend is disable, skipping setup for HA Auto Discovery"
     fi
   done
+
+  # Discard /config messages
+  topic=tesla_ble/$vin/config
+  log_notice "setupHADiscoveryAllVINsMain; Discarding any unread MQTT messages for topic:$topic"
+  eval $MOSQUITTO_SUB_BASE -E -i tesla_ble_mqtt -t $topic
 }
 
 ###
@@ -678,38 +702,40 @@ setupHADeviceAllVINsLoop() {
 delete_legacies() {
   vin=$1
 
-  log_notice "Deleting Legacy MQTT Topics"
-  eval $MOSQUITTO_PUB_BASE -t homeassistant/switch/tesla_ble/sw-heater/config -n
-  eval $MOSQUITTO_PUB_BASE -t homeassistant/switch/tesla_ble/sentry-mode/config -n
-  eval $MOSQUITTO_PUB_BASE -t homeassistant/select/tesla_ble/heated_seat_left/config -n
-  eval $MOSQUITTO_PUB_BASE -t homeassistant/select/tesla_ble/heated_seat_right/config -n
+  log_notice "delete_legacies; deleting legacy MQTT topics"
   eval $MOSQUITTO_PUB_BASE -t homeassistant/binary_sensor/tesla_ble/presence/config -n
-  eval $MOSQUITTO_PUB_BASE -t homeassistant/number/tesla_ble/charging-set-amps/config -n
-  eval $MOSQUITTO_PUB_BASE -t homeassistant/number/tesla_ble/charging-set-limit/config -n
-  eval $MOSQUITTO_PUB_BASE -t homeassistant/number/tesla_ble/climate-temp/config -n
-  eval $MOSQUITTO_PUB_BASE -t homeassistant/button/tesla_ble/generate_keys/config -n
-  eval $MOSQUITTO_PUB_BASE -t homeassistant/button/tesla_ble/deploy_key/config -n
-  eval $MOSQUITTO_PUB_BASE -t homeassistant/button/tesla_ble/scan_bluetooth/config -n
-  eval $MOSQUITTO_PUB_BASE -t homeassistant/button/tesla_ble/wake/config -n
-  eval $MOSQUITTO_PUB_BASE -t homeassistant/button/tesla_ble/flash-lights/config -n
-  eval $MOSQUITTO_PUB_BASE -t homeassistant/button/tesla_ble/honk/config -n
-  eval $MOSQUITTO_PUB_BASE -t homeassistant/button/tesla_ble/lock/config -n
-  eval $MOSQUITTO_PUB_BASE -t homeassistant/button/tesla_ble/unlock/config -n
   eval $MOSQUITTO_PUB_BASE -t homeassistant/button/tesla_ble/auto-seat-climate/config -n
-  eval $MOSQUITTO_PUB_BASE -t homeassistant/button/tesla_ble/climate-on/config -n
-  eval $MOSQUITTO_PUB_BASE -t homeassistant/button/tesla_ble/climate-off/config -n
-  eval $MOSQUITTO_PUB_BASE -t homeassistant/button/tesla_ble/trunk-open/config -n
-  eval $MOSQUITTO_PUB_BASE -t homeassistant/button/tesla_ble/trunk-close/config -n
-  eval $MOSQUITTO_PUB_BASE -t homeassistant/button/tesla_ble/frunk-open/config -n
+  eval $MOSQUITTO_PUB_BASE -t homeassistant/button/tesla_ble/charge-port-close/config -n
+  eval $MOSQUITTO_PUB_BASE -t homeassistant/button/tesla_ble/charge-port-open/config -n
   eval $MOSQUITTO_PUB_BASE -t homeassistant/button/tesla_ble/charging-start/config -n
   eval $MOSQUITTO_PUB_BASE -t homeassistant/button/tesla_ble/charging-stop/config -n
-  eval $MOSQUITTO_PUB_BASE -t homeassistant/button/tesla_ble/charge-port-open/config -n
-  eval $MOSQUITTO_PUB_BASE -t homeassistant/button/tesla_ble/charge-port-close/config -n
+  eval $MOSQUITTO_PUB_BASE -t homeassistant/number/tesla_ble/charging-set-amps/config -n
+  eval $MOSQUITTO_PUB_BASE -t homeassistant/number/tesla_ble/charging-set-limit/config -n
+  eval $MOSQUITTO_PUB_BASE -t homeassistant/button/tesla_ble/climate-off/config -n
+  eval $MOSQUITTO_PUB_BASE -t homeassistant/button/tesla_ble/climate-on/config -n
+  eval $MOSQUITTO_PUB_BASE -t homeassistant/number/tesla_ble/climate-temp/config -n
+  eval $MOSQUITTO_PUB_BASE -t homeassistant/button/tesla_ble/deploy_key/config -n
+  eval $MOSQUITTO_PUB_BASE -t homeassistant/button/tesla_ble/flash-lights/config -n
+  eval $MOSQUITTO_PUB_BASE -t homeassistant/button/tesla_ble/frunk-open/config -n
+  eval $MOSQUITTO_PUB_BASE -t homeassistant/button/tesla_ble/generate_keys/config -n
+  eval $MOSQUITTO_PUB_BASE -t homeassistant/select/tesla_ble/heated_seat_left/config -n
+  eval $MOSQUITTO_PUB_BASE -t homeassistant/select/tesla_ble/heated_seat_right/config -n
+  eval $MOSQUITTO_PUB_BASE -t homeassistant/button/tesla_ble/honk/config -n
+  eval $MOSQUITTO_PUB_BASE -t homeassistant/button/tesla_ble/lock/config -n
+  eval $MOSQUITTO_PUB_BASE -t homeassistant/button/tesla_ble/trunk-close/config -n
+  eval $MOSQUITTO_PUB_BASE -t homeassistant/button/tesla_ble/trunk-open/config -n
+  eval $MOSQUITTO_PUB_BASE -t homeassistant/button/tesla_ble/unlock/config -n
+  eval $MOSQUITTO_PUB_BASE -t homeassistant/switch/tesla_ble/sentry-mode/config -n
+  eval $MOSQUITTO_PUB_BASE -t homeassistant/button/tesla_ble/scan_bluetooth/config -n
+  eval $MOSQUITTO_PUB_BASE -t homeassistant/button/tesla_ble_${vin}/scan-bleln-macaddr/config -n
+  eval $MOSQUITTO_PUB_BASE -t homeassistant/switch/tesla_ble/sw-heater/config -n
+  eval $MOSQUITTO_PUB_BASE -t homeassistant/button/tesla_ble/wake/config -n
   eval $MOSQUITTO_PUB_BASE -t homeassistant/button/tesla_ble/windows-close/config -n
   eval $MOSQUITTO_PUB_BASE -t homeassistant/button/tesla_ble/windows-vent/config -n
 
+  # TODO TEMPORARILY
   if [ -f $KEYS_DIR/private.pem ]; then
-    log_notice "Renaming legacy keys"
+    log_notice "delete_legacies; renaming legacy keys"
     mv $KEYS_DIR/private.pem $KEYS_DIR/${vin}_private.pem
     mv $KEYS_DIR/public.pem $KEYS_DIR/${vin}_public.pem
   fi
@@ -719,7 +745,7 @@ delete_legacies() {
 delete_legacies_singles() {
   vin=$1
 
-  log_notice "Deleting single MQTT entities topics"
+  log_notice "delete_legacies_singles; deleting legacy single MQTT entities topics"
   eval $MOSQUITTO_PUB_BASE -t homeassistant/button/tesla_ble/climate-on/config -n
   eval $MOSQUITTO_PUB_BASE -t homeassistant/button/tesla_ble/climate-off/config -n
   eval $MOSQUITTO_PUB_BASE -t homeassistant/button/tesla_ble/trunk-open/config -n

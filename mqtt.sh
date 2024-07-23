@@ -38,7 +38,7 @@ retryMQTTpub() {
 
     if [ $exit_code -eq 0 ]; then
       log_debug "mosquitto_pub successfully sent $args"
-      break
+      return $exit_code
     else
       if [ $retryMQTTAttemptCount -eq $cmdCounterLoop ]; then
         log_error "mosquitto_pub could not sent $args, no more retries"
@@ -50,6 +50,6 @@ retryMQTTpub() {
   done
 
   log_debug "retryMQTTpub; leaving..."
-  return $exit_code
+  return 2
 
 }
