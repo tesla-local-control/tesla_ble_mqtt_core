@@ -408,7 +408,7 @@ function setupExtendedControls() {
     "name": "'${DEVICE_NAME}'",
     "sw_version": "'${SW_VERSION}'"
    },
-   "icon": "mdi:temperature",
+   "icon": "mdi:thermometer",
    "name": "Climate Temp",
    "min": "5",
    "max": "40",
@@ -482,6 +482,7 @@ function setupGenerateKeysButton() {
    },
    "device_class": "update",
    "entity_category": "config",
+   "icon": "mdi:key",
    "name": "Generate Keys",
    "payload_press": "generate-keys",
    "qos": "'${QOS_LEVEL}'",
@@ -514,6 +515,7 @@ function setupReGenerateKeysButton() {
     "name": "'${DEVICE_NAME}'"
    },
    "device_class": "update",
+   "icon": "mdi:key-change",
    "name": "ReGenerate Keys",
    "payload_press": "generate-keys",
    "qos": "'${QOS_LEVEL}'",
@@ -585,6 +587,7 @@ function setupDeployKeyButton() {
     "sw_version": "'${SW_VERSION}'"
    },
    "device_class": "update",
+   "icon": "mdi:key-wireless",
    "entity_category": "config",
    "name": "Deploy Key",
    "payload_press": "deploy-key",
@@ -598,7 +601,7 @@ function setupDeployKeyButton() {
 
 ###
 ##
-#   Setup Info Bluetooth Adapter
+#   Setup Diagnostic Card
 ##
 ###
 function setupDiagnostic() {
@@ -620,6 +623,7 @@ function setupDiagnostic() {
     },
     "device_class": "update",
     "entity_category": "diagnostic",
+    "icon": "mdi:car-info",
     "name": "Car state information",
     "payload_press": "body-controller-state",
     "qos": "'${QOS_LEVEL}'",
@@ -639,6 +643,7 @@ function setupDiagnostic() {
     },
     "device_class": "update",
     "entity_category": "diagnostic",
+    "icon": "mdi:bluetooth-settings",
     "name": "Info Bluetooth Adapter",
     "payload_press": "info-bt-adapter",
     "qos": "'${QOS_LEVEL}'",
