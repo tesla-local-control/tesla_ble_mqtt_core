@@ -13,8 +13,11 @@ teslaCtrlSendCommand() {
   command=$2
   commandDescription=$3
 
+  export TESLA_VIN=$vin
+  export TESLA_KEY_FILE=$KEYS_DIR/${vin}_private.pem
+  export TESLA_KEY_NAME=$KEYS_DIR/${vin}_private.pem
   # shellcheck disable=SC2016
-  TESLA_CONTROL_CMD='/usr/bin/tesla-control -ble -vin $vin -key-name $KEYS_DIR/${vin}_private.pem -key-file $KEYS_DIR/${vin}_private.pem $command 2>&1'
+  TESLA_CONTROL_CMD='/usr/bin/tesla-control -ble -command-timeout 20s $command 2>&1'
 
   # Retry loop
   max_retries=5
@@ -58,8 +61,9 @@ teslaCtrlSendCommand() {
 teslaCtrlSendKey() {
   vin=$1
 
+  export TESLA_VIN=$vin
   # shellcheck disable=SC2016
-  TESLA_ADD_KEY_CMD='/usr/bin/tesla-control -vin $vin -ble add-key-request $KEYS_DIR/${vin}_public.pem owner cloud_key 2>&1'
+  TESLA_ADD_KEY_CMD='/usr/bin/tesla-control -ble -command-timeout 20s add-key-request $KEYS_DIR/${vin}_public.pem owner cloud_key 2>&1'
 
   log_info "Trying to deploy the public key to vin:$vin"
 
