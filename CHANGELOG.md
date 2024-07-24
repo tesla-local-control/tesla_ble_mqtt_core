@@ -30,8 +30,9 @@ On/off and Open/Close entities have been grouped under switches and covers.</p>
 - NEW Feature: Added more car specific commands; see below for the list
 - NEW Feature: Migrated buttons to covers and switches
 - NEW: Icons were added in the UI!
-- CHG Removed: Setting ble\_mac\_list; obsoleted by BLE MAC address auto-detection
-- CHG Removed: scan-bleln-macaddr, obsoleted by BLE MAC address auto-detection
+- CHG: Increased tesla-control command-timeout from 5s to 20s
+- CHG: Removed Setting ble\_mac\_list; obsoleted by BLE MAC address auto-detection
+- CHG: Removed scan-bleln-macaddr, obsoleted by BLE MAC address auto-detection
 
 - Added commands
 
