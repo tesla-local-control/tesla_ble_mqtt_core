@@ -100,14 +100,14 @@ function setupPanelMain() {
 teslaControlCommands="\
 1,X,autosecure-modelx,mdi:car-door-lock,Close falcon-wing doors and lock vehicle
 1,*,auto-seat-and-climate,mdi:fan-auto,Set climate mode to auto
-1,*,charging-schedule-cancel,mdi:timer-cancel-outline,Cancel scheduled charge start
+2,*,charging-schedule-cancel,mdi:timer-cancel-outline,Cancel scheduled charge start
 1,*,drive,car-wireless,mdi:car-wireless,Remote start car
 1,*,flash-lights,mdi:car-light-high,Flash lights
 1,*,frunk-open,mdi:car-select,Open car frunk
 1,*,honk,mdi:bugle,Honk horn
 1,*,lock,mdi:car-door-lock,Lock car
-2,*,media-toggle-playback,mdi:motion-play,Toggle between play/pause
-1,*,ping,mdi:check-network,Ping car
+1,*,media-toggle-playback,mdi:motion-play,Toggle between play/pause
+2,*,ping,mdi:check-network,Ping car
 2,*,software-update-cancel,mdi:close-circle,Cancel pending software update
 2,*,software-update-start,mdi:update,Start software update after delay
 1,C,tonneau-close,mdi:shutter,Close Cybertruck tonneau
