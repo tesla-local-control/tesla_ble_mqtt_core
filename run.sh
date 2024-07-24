@@ -1,4 +1,4 @@
-#!/bin/ash
+#!/bin/ash -e
 #
 # shellcheck shell=dash
 #
