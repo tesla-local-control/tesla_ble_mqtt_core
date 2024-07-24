@@ -51,8 +51,8 @@ listen_to_mqtt() {
 
           if [ "$ENABLE_HA_FEATURES" == "true" ]; then
             log_notice "Adding Home Assistant 'Deploy Key' button"
-            setupHADeviceDeployKeyButton $vin
-            setupHADeviceReGenerateKeysButton $vin
+            setupDeployKeyButton $vin
+            setupReGenerateKeysButton $vin
           fi
 
           log_warning "Private and Public keys were generated; Next:
@@ -238,8 +238,8 @@ listenForHAstatus() {
           ;;
         online)
           # Ref: https://github.com/iainbullock/tesla_ble_mqtt_docker/discussions/6
-          log_notice "Home Assistant is now online, calling setupHADeviceAllVINsLoop()"
-          setupHADeviceAllVINsLoop
+          log_notice "Home Assistant is now online, calling setupHADiscoveryAllVINsMain()"
+          setupHADiscoveryAllVINsMain
           ;;
         *)
           log_error "Invalid status; topic:$topic status:$status"

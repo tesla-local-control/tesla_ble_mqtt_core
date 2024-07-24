@@ -48,9 +48,19 @@ for vin in $VIN_LIST; do
   if [ -f $KEYS_DIR/private.pem ] && [ $vin_count -eq 1 ]; then
     log_warning "Keys exist from a previous installation with single VIN which is deprecated"
     log_warning "This module migrates the key files to attribute them to $vin and remove old MQTT entities"
-    log_warning "$KEYS_DIR/private.pem $KEYS_DIR/${vin}_private.pem"
-    log_warning "$KEYS_DIR/public.pem $KEYS_DIR/${vin}_public.pem"
-    delete_legacies $vin
+
+    log_warning "rename $KEYS_DIR/private.pem -> $KEYS_DIR/${vin}_private.pem"
+    mv $KEYS_DIR/private.pem $KEYS_DIR/${vin}_private.pem
+    log_warning "rename $KEYS_DIR/public.pem -> $KEYS_DIR/${vin}_public.pem"
+    mv $KEYS_DIR/public.pem $KEYS_DIR/${vin}_public.pem
+
+    delete_legacies
+    delete_legacies_singles ""
+  else
+    # Remove single entities (brute force command, no easy way to collect declared MQTT topics crossplatform)
+    log_notice "Removing single buttons to be replaced by switches & covers:"
+    log_notice "windows, charger, cherge-port, climate, trunk"
+    delete_legacies_singles $vin
   fi # END TEMPORARY
 
   if [ $PRESENCE_DETECTION_TTL -eq 0 ]; then
@@ -59,10 +69,6 @@ for vin in $VIN_LIST; do
     log_notice "Presence detection disable; Deleting MQTT topic $MQTT_TOPIC"
     eval $MOSQUITTO_PUB_BASE -t $MQTT_TOPIC/config -n
   fi
-  # Remove single entities (brute force command, no easy way to collect declared MQTT topics crossplatform)
-  log_notice "Removing single buttons to be replaced by switches & covers:"
-  log_notice "windows, charger, cherge-port, climate, trunk"
-  delete_legacies_singles $vin
 
 done
 # remove leading white space
@@ -78,7 +84,7 @@ log_debug "BLE_MAC_LIST:$BLE_MAC_LIST"
 log_debug "PRESENCE_EXPIRE_TIME_LIST:$PRESENCE_EXPIRE_TIME_LIST"
 
 # Setup HA auto discovery, or skip if HA backend is disable and discard old /config MQTT messages
-setupHADeviceAllVINsLoop
+setupHADiscoveryAllVINsMain
 
 # IF HA backend is enable, call listenForHAstatus()
 if [ "$ENABLE_HA_FEATURES" == "true" ]; then
@@ -94,18 +100,18 @@ log_info "Entering main loop..."
 while :; do
 
   # Launch listen_to_mqtt_loop in background
-  log_notice "Lauching background listen_to_mqtt_loop..."
+  log_notice "main loop; Lauching background listen_to_mqtt_loop..."
   listen_to_mqtt_loop &
   # Don't run presence detection if TTL is 0
 
   # If PRESENCE_DETECTION_TTL > 0 and BLE_MAC_LIST is not empty
   if [ $PRESENCE_DETECTION_TTL -gt 0 ]; then
-    log_info "Launch BLE scanning for car presence every $PRESENCE_DETECTION_LOOP_DELAY seconds"
+    log_info "main loop; launch BLE scanning for car presence every $PRESENCE_DETECTION_LOOP_DELAY seconds"
     listen_to_ble $vin_count
     # Run listen_to_ble every 3m
     sleep $PRESENCE_DETECTION_LOOP_DELAY
   else
-    log_info "Presence detection is disable"
+    log_info "main loop; presence detection is disable"
     while :; do
       sleep 86400
     done
