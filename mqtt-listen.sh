@@ -39,6 +39,10 @@ listen_to_mqtt() {
       config)
 
         case $msg in
+        body-controller-state)
+          teslaCtrlSendCommand $vin $msg "Fetch limited vehicle state information. Works over BLE when infotainment is asleep"
+          ;;
+
         generate-keys)
           log_notice "Generating the private key..."
           openssl ecparam -genkey -name prime256v1 -noout >$KEYS_DIR/${vin}_private.pem
@@ -82,9 +86,6 @@ listen_to_mqtt() {
         case $msg in
         autosecure-modelx)
           teslaCtrlSendCommand $vin $msg "Close falcon-wing doors and lock vehicle"
-          ;;
-        body-controller-state)
-          teslaCtrlSendCommand $vin $msg "Fetch limited vehicle state information. Works over BLE when infotainment is asleep"
           ;;
         charging-schedule-cancel)
           teslaCtrlSendCommand $vin $msg "Cancel scheduled charge start"
