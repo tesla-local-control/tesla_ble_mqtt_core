@@ -15,23 +15,22 @@ else
 fi
 
 retryMQTTpub() {
+  retryMQTTAttemptCount=$1
+  retryMQTTpubDelay=$2
+  shift
+  shift
   args=$*
-  retryMQTTAttemptCount=6
-  retryMQTTpubDelay=10
 
   log_debug "retryMQTTpub; entering..."
 
   # read topic json fom stdin
   read -r topic_json
 
-  # loop for topic json fom stdin
-  cmdCounterLoop=0
-
   # Retry loop
   cmdCounterLoop=0
-  while [ $((cmdCounterLoop += 1)) -lt $retryMQTTAttemptCount ]; do
+  while [ $((cmdCounterLoop += 1)) -le $retryMQTTAttemptCount ]; do
 
-    log_debug "retryMQTTpub; calling mosquitto_pub $args"
+    log_debug "Attempt $cmdCounterLoop/${retryMQTTAttemptCount} retryMQTTpub; calling mosquitto_pub $args"
     set +e
     echo "$topic_json" | eval $MOSQUITTO_PUB_BASE $args
     exit_code=$?
@@ -39,7 +38,7 @@ retryMQTTpub() {
 
     if [ $exit_code -eq 0 ]; then
       log_debug "mosquitto_pub successfully sent $args"
-      break
+      return $exit_code
     else
       if [ $retryMQTTAttemptCount -eq $cmdCounterLoop ]; then
         log_error "mosquitto_pub could not sent $args, no more retries"
@@ -51,6 +50,6 @@ retryMQTTpub() {
   done
 
   log_debug "retryMQTTpub; leaving..."
-  return $exit_code
+  return 2
 
 }
