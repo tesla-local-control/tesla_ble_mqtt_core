@@ -45,6 +45,7 @@ teslaCtrlSendCommand() {
         # TODO check that this situation appears only once (or few)
         # to avoid getting into a loop if we cannot wake the car
         # if this happen the "else" will never be triggered and the command will never exit
+        # would be possible to parse the return code of teslaCtrlSendCommand to check that wake succeeded
       else
         log_error "tesla-control send command:$command to vin:$vin failed exit status $EXIT_STATUS."
         log_error "teslaCtrlSendCommand; $teslaCtrlOut"
