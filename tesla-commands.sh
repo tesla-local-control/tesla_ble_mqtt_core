@@ -37,6 +37,14 @@ teslaCtrlSendCommand() {
         log_warning "teslaCtrlSendCommand; $teslaCtrlOut"
         log_warning "Skipping command $command to vin:$vin"
         return 10
+      elif [[ "$teslaCtrlOut" == *"context deadline exceeded"* ]]; then
+        log_warning "teslaCtrlSendCommand; $teslaCtrlOut"
+        log_warning "Vehicle might be asleep"
+        log_notice "Trying to wake up car then launch the command again"
+        teslaCtrlSendCommand $vin "-domain vcsec wake" "Wake up vehicule"
+        # TODO check that this situation appears only once (or few)
+        # to avoid getting into a loop if we cannot wake the car
+        # if this happen the "else" will never be triggered and the command will never exit
       else
         log_error "tesla-control send command:$command to vin:$vin failed exit status $EXIT_STATUS."
         log_error "teslaCtrlSendCommand; $teslaCtrlOut"
