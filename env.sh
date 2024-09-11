@@ -2,7 +2,7 @@
 #
 # shellcheck shell=dash
 #
-export SW_VERSION=0.2.0
+export SW_VERSION=0.2.2
 
 ### LOAD LIBRARIES (FUNCTIONS & ENVIRONMENT ) #################################
 echo "[$(date +%H:%M:%S)] loading libproduct.sh"

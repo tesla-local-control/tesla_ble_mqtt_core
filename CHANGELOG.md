@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.2.2
+
+### Changed
+
+- NEW Feature: Try to wake car if command fails with "Error: context deadline exceeded"
+
 ## 0.2.1
 
 ### <p>**WARNING WARNING WARNING**<br>
