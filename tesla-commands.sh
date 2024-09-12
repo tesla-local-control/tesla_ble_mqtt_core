@@ -63,7 +63,8 @@ teslaCtrlSendCommand() {
       elif [[ "$teslaCtrlOut" == *"context deadline exceeded"* ]]; then
         # TODO check that this situation appears only once (or few)
         # to avoid getting into a loop if we cannot wake the car
-        # if this happen the "else" will never be triggered and the command will never exit
+        # if this happens the "else" will never be triggered and the command will never exit
+        # it would be possible to parse the return code of teslaCtrlSendCommand to check that wake succeeded
         log_debug "teslaCtrlSendCommand; txt deadline exc. - IN"
         log_warning "teslaCtrlSendCommand; $teslaCtrlOut"
         log_warning "Vehicle might be asleep"
