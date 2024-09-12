@@ -145,7 +145,7 @@ listen_to_mqtt() {
         if [ $msg -gt 4 ]; then
           teslaCtrlSendCommand $vin "charging-set-amps $msg" "Set charging Amps to $msg"
         else
-          teslaCtrlSendCommand $vin "charging-set-amps $msg" "Set charging Amps to 5A then to $msg"
+          teslaCtrlSendCommand $vin "charging-set-amps $msg" "4A or less requested, calling charging-set-amps $msg twice"
           sleep 1
           teslaCtrlSendCommand $vin "charging-set-amps $msg" "Set charging Amps to $msg"
         fi
