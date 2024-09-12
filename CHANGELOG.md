@@ -7,6 +7,9 @@
 - NEW Feature: Try to wake car if command fails with "Error: context deadline exceeded"
 - NEW Feature: Added maximum allowable setting to limit the current slider in HA entities
 
+#### Contributors - Thank you!
+- @g4rb4g3 Clear logging on charging current setting
+
 ## 0.2.1
 
 ### <p>**WARNING WARNING WARNING**<br>
