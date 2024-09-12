@@ -9,10 +9,23 @@
 ##
 ###
 teslaCtrlSendCommand() {
+  # Process in case of nested call (autowake)
+  if [ $# -eq 4 ]; then
+    log_debug "teslaCtrlSendCommand; Nested call: in. Set callMode and copy internal variables"
+    vin_previous=$vin
+    command_previous=$command
+    commandDescription_previous=$commandDescription
+    callMode="nested"
+  else
+    log_debug "teslaCtrlSendCommand; Standard call: in."
+    callMode="standard"
+  fi
+  # Set internal variables
   vin=$1
   command=$2
   commandDescription=$3
 
+  # Prepare for calling tesla-control
   export TESLA_VIN=$vin
   export TESLA_KEY_FILE=$KEYS_DIR/${vin}_private.pem
   export TESLA_KEY_NAME=$KEYS_DIR/${vin}_private.pem
@@ -31,12 +44,32 @@ teslaCtrlSendCommand() {
     if [ $EXIT_STATUS -eq 0 ]; then
       log_debug "teslaCtrlSendCommand; $teslaCtrlOut"
       log_info "Command $command was successfully delivered to vin:$vin"
+      # Finalize in case of nested call (autowake)
+      if [[ "$callMode" == "nested" ]]; then
+        log_debug "teslaCtrlSendCommand; Nested call: out. Set callMode back to standard and revert internal variables"
+        vin=$vin_previous
+        command=$command_previous
+        commandDescription=$commandDescription_previous
+        callMode="standard"
+      else
+        log_debug "teslaCtrlSendCommand; Standard call: out."
+      fi
       return 0
     else
       if [[ "$teslaCtrlOut" == *"car could not execute command"* ]]; then
         log_warning "teslaCtrlSendCommand; $teslaCtrlOut"
         log_warning "Skipping command $command to vin:$vin"
         return 10
+      elif [[ "$teslaCtrlOut" == *"context deadline exceeded"* ]]; then
+        # TODO check that this situation appears only once (or few)
+        # to avoid getting into a loop if we cannot wake the car
+        # if this happen the "else" will never be triggered and the command will never exit
+        log_debug "teslaCtrlSendCommand; txt deadline exc. - IN"
+        log_warning "teslaCtrlSendCommand; $teslaCtrlOut"
+        log_warning "Vehicle might be asleep"
+        log_notice "Trying to wake up car then launch the command again"
+        teslaCtrlSendCommand $vin "-domain vcsec wake" "Wake up vehicule" "internal"
+        log_debug "teslaCtrlSendCommand; txt deadline exc. - OUT"
       else
         log_error "tesla-control send command:$command to vin:$vin failed exit status $EXIT_STATUS."
         log_error "teslaCtrlSendCommand; $teslaCtrlOut"
