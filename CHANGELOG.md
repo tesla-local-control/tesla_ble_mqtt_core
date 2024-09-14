@@ -1,5 +1,24 @@
 # Changelog
 
+## 0.2.2
+
+### Changed
+
+- NEW Feature: Try to wake car if command fails with "Error: context deadline exceeded"
+- NEW Feature: Added maximum allowable setting to limit the current slider in HA entities
+
+#### Contributors - Thank you!
+- @g4rb4g3 Clear logging on charging current setting
+
+## 0.2.1
+
+### <p>**WARNING WARNING WARNING**<br>
+Upgrading from 0.0.10 or previous? DO NOT UPGRADE PRIOR TO READ THE 0.1.0 UPGRADE INSTRUCTIONS.</p>
+
+### Changed
+
+- NEW Feature: Allow to set temperature unit F|C via bool
+
 ## 0.2.0
 
 ### <p>**WARNING WARNING WARNING**<br>
