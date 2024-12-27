@@ -558,7 +558,7 @@ function setupReGenerateKeysButton() {
 
 ###
 ##
-#   Setup Vehicule's Presence Sensor
+#   Setup Vehicle's Presence Sensor
 ##
 ###
 function setupPresenceSensor {
@@ -693,6 +693,25 @@ function setupDiagnostic() {
    "qos": "'${QOS_LEVEL}'",
    "unique_id": "'${DEVICE_ID}'_list-keys"
    }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 6 10 -t homeassistant/button/${DEVICE_ID}/list-keys/config -l
+
+  echo '{
+   "command_topic": "'${TOPIC_ROOT}'/command",
+   "device": {
+     "identifiers": [
+     "'${DEVICE_ID}'"
+     ],
+     "manufacturer": "tesla-local-control",
+     "model": "Tesla_BLE",
+     "name": "'${DEVICE_NAME}'",
+     "sw_version": "'${SW_VERSION}'"
+   },
+   "icon": "mdi:database-sync",
+   "name": "Force Data Update",
+   "entity_category": "diagnostic",
+   "payload_press": "read-state",
+   "qos": "'${QOS_LEVEL}'",
+   "unique_id": "'${DEVICE_ID}'_read-state"
+   }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 6 10 -t homeassistant/button/${DEVICE_ID}/read-state/config -l
 
   log_debug "setupDiagnostic() leaving vin:$vin"
 

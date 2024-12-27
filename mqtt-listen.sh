@@ -76,6 +76,11 @@ listen_to_mqtt() {
           infoBluetoothAdapter $vin
           ;;
 
+        read-state)
+          log_notice 'read-state; calling readState()"'
+          readState $vin
+          ;;
+
         *)
           log_error "Invalid configuration request:$msg topic:$topic vin:$vin"
           ;;
