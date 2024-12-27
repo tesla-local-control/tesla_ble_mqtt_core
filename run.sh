@@ -100,11 +100,11 @@ log_info "Entering main loop..."
 while :; do
 
   # Launch listen_to_mqtt_loop in background
-  log_notice "main loop; Lauching background listen_to_mqtt_loop..."
+  log_notice "main loop; Launching background listen_to_mqtt_loop..."
   listen_to_mqtt_loop &
 
   # Launch poll_state_loop in background
-  log_notice "main loop; Lauching background poll_state_loop..."
+  log_notice "main loop; Launching background poll_state_loop..."
   poll_state_loop &
 
   # Don't run presence detection if TTL is 0

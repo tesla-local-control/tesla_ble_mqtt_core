@@ -695,7 +695,7 @@ function setupDiagnostic() {
    }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 6 10 -t homeassistant/button/${DEVICE_ID}/list-keys/config -l
 
   echo '{
-   "command_topic": "'${TOPIC_ROOT}'/command",
+   "command_topic": "'${TOPIC_ROOT}'/config",
    "device": {
      "identifiers": [
      "'${DEVICE_ID}'"
