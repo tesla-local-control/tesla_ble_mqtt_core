@@ -137,12 +137,31 @@ function setupChargeStateSensors {
    "platform": "sensor",
    "icon": "mdi:battery-plus-variant",
    "name": "Charge Energy Added"
-   "qos": "'${QOS_LEVEL}'",,
+   "qos": "'${QOS_LEVEL}'",
    "device_class": "energy",
    "unit_of_measurement": "kWh",
    "suggested_display_precision": "1",   
    "unique_id": "'${DEVICE_ID}'_charge_energy_added"
-  }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 36 10 -t homeassistant/sensor/${DEVICE_ID}/charge_energy_added/config -l
+  }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 36 10 -t homeassistant/binary_sensor/${DEVICE_ID}/charge_energy_added/config -l
+
+  echo '{
+   "state_topic": "'${TOPIC_ROOT}'/binary_sensor/battery_heater_on",
+   "device": {
+    "identifiers": [
+    "'${DEVICE_ID}'"
+    ],
+    "manufacturer": "tesla-local-control",
+    "model": "Tesla_BLE",
+    "name": "'${DEVICE_NAME}'",
+    "sw_version": "'${SW_VERSION}'"
+   },
+   "platform": "binary_sensor",
+   "icon": "mdi:heat-wave",
+   "name": "Battery Heater On"
+   "qos": "'${QOS_LEVEL}'",
+   "device_class": "heat", 
+   "unique_id": "'${DEVICE_ID}'_battery_heater_on"
+  }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 36 10 -t homeassistant/binary_sensor/${DEVICE_ID}/battery_heater_on/config -l
 
   log_debug "setupChargeStateSensors() leaving vin:$vin"
 
