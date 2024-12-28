@@ -2,9 +2,21 @@
 
 ## 0.3.0
 
-### Changed
+- MAJOR NEW Feature: Read car state using BLE
 
-- NEW Feature: Read car state using BLE
+### Changes
+
+- NEW Feature: The following states are available, more to follow in future release:
+   - Sensors:
+   - Binary_Sensors:
+   - Switches:
+   - Covers:
+   - Locks:
+   - Buttons: 
+
+## Breaking Changes
+
+- Lock / Unlock Button entities replaced with Lock entity, whose state is read from BLE
 
 ## 0.2.2
 

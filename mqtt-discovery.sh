@@ -344,7 +344,7 @@ function setupExtendedControls() {
    "unique_id": "'${DEVICE_ID}'_windows"
    }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 6 10 -t homeassistant/cover/${DEVICE_ID}/windows/config -l
 
-  # Number
+  # Numbers
 
   echo '{
    "command_topic": "'${TOPIC_ROOT}'/charging-set-amps",
@@ -494,6 +494,31 @@ function setupExtendedControls() {
    "qos": "'${QOS_LEVEL}'",
    "unique_id": "'${DEVICE_ID}'_heater-seat-front-right"
    }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 6 10 -t homeassistant/select/${DEVICE_ID}/heater-seat-front-right/config -l
+
+# Locks
+
+  echo '{
+   "command_topic": "'${TOPIC_ROOT}'/lock",
+   "state_topic": "'${TOPIC_ROOT}'/lock/locked",
+   "device": {
+    "identifiers": [
+    "'${DEVICE_ID}'"
+    ],
+    "manufacturer": "tesla-local-control",
+    "model": "Tesla_BLE",
+    "name": "'${DEVICE_NAME}'",
+    "sw_version": "'${SW_VERSION}'"
+   },
+   "icon": "mdi:car-door-lock",
+   "name": "Door Lock",
+   "device_class": "door",
+   "payload_lock": "lock",
+   "payload_unlock": "unlock",
+   "state_locked": "true",
+   "state_unlocked": "false",
+   "qos": "'${QOS_LEVEL}'",
+   "unique_id": "'${DEVICE_ID}'_lock"
+   }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 6 10 -t homeassistant/lock/${DEVICE_ID}/lock/config -l
 
   log_debug "Leaving setupExtendedControls() vin:$vin"
 }
