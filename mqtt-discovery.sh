@@ -191,6 +191,7 @@ function setupExtendedControls() {
 
   echo '{
    "command_topic": "'${TOPIC_ROOT}'/charging",
+   "state_topic": "'${TOPIC_ROOT}'/switch/charge_enable_request", 
    "device": {
     "identifiers": [
     "'${DEVICE_ID}'"
@@ -211,6 +212,7 @@ function setupExtendedControls() {
 
   echo '{
    "command_topic": "'${TOPIC_ROOT}'/climate",
+   "state_topic": "'${TOPIC_ROOT}'/switch/is_climate_on", 
    "device": {
     "identifiers": [
     "'${DEVICE_ID}'"
@@ -231,6 +233,7 @@ function setupExtendedControls() {
 
   echo '{
    "command_topic": "'${TOPIC_ROOT}'/sentry-mode",
+   "state_topic": "'${TOPIC_ROOT}'/switch/sentry_mode", 
    "device": {
     "identifiers": [
     "'${DEVICE_ID}'"
@@ -251,6 +254,7 @@ function setupExtendedControls() {
 
   echo '{
    "command_topic": "'${TOPIC_ROOT}'/steering-wheel-heater",
+   "state_topic": "'${TOPIC_ROOT}'/switch/steering_wheel_heater",  
    "device": {
     "identifiers": [
     "'${DEVICE_ID}'"
@@ -273,6 +277,7 @@ function setupExtendedControls() {
 
   echo '{
    "command_topic": "'${TOPIC_ROOT}'/charge-port",
+   "state_topic": "'${TOPIC_ROOT}'/cover/charge_port_door_open",
    "device": {
     "identifiers": [
     "'${DEVICE_ID}'"
@@ -288,12 +293,15 @@ function setupExtendedControls() {
    "payload_open": "open",
    "payload_close": "close",
    "payload_stop": null,
+   "state_open": "true",
+   "state_closed": "false",
    "qos": "'${QOS_LEVEL}'",
    "unique_id": "'${DEVICE_ID}'_charge-port"
    }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 6 10 -t homeassistant/cover/${DEVICE_ID}/charge-port/config -l
 
   echo '{
    "command_topic": "'${TOPIC_ROOT}'/trunk",
+   "state_topic": "'${TOPIC_ROOT}'/cover/rt",
    "device": {
     "identifiers": [
     "'${DEVICE_ID}'"
@@ -309,6 +317,8 @@ function setupExtendedControls() {
    "payload_open": "open",
    "payload_close": "close",
    "payload_stop": null,
+   "state_open": "1",
+   "state_closed": "0",
    "qos": "'${QOS_LEVEL}'",
    "unique_id": "'${DEVICE_ID}'_trunk"
    }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 6 10 -t homeassistant/cover/${DEVICE_ID}/trunk/config -l
