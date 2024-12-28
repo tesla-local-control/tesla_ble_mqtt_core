@@ -9,6 +9,7 @@ echo "[$(date +%H:%M:%S)] loading libproduct.sh"
 log_debug "Loading environment & functions..."
 for fSource in mqtt.sh \
   mqtt-discovery.sh \
+  mqtt-discovery-sensors.sh \
   mqtt-listen.sh \
   subroutines.sh \
   tesla-commands.sh \
