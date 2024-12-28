@@ -228,6 +228,93 @@ function setupChargeStateSensors {
    "unique_id": "'${DEVICE_ID}'_tpms_pressure_rr"
   }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 36 10 -t homeassistant/sensor/${DEVICE_ID}/tpms_pressure_rr/config -l
 
+  if [ $TEMPERATURE_UNIT_FAHRENHEIT = "true" ]; then
+    echo '{
+    "state_topic": "'${TOPIC_ROOT}'/sensor/inside_temp",
+    "device": {
+     "identifiers": [
+     "'${DEVICE_ID}'"
+     ],
+     "manufacturer": "tesla-local-control",
+     "model": "Tesla_BLE",
+     "name": "'${DEVICE_NAME}'",
+     "sw_version": "'${SW_VERSION}'"
+    },
+    "platform": "sensor",
+    "icon": "mdi:thermometer",
+    "name": "Inside Temp",
+    "qos": "'${QOS_LEVEL}'",
+    "device_class": "temperature",
+    "unit_of_measurement": "°C",
+    "suggested_display_precision": "1",   
+    "unique_id": "'${DEVICE_ID}'_inside_temp"
+    }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 36 10 -t homeassistant/sensor/${DEVICE_ID}/inside_temp/config -l
+
+    echo '{
+    "state_topic": "'${TOPIC_ROOT}'/sensor/outside_temp",
+    "device": {
+     "identifiers": [
+     "'${DEVICE_ID}'"
+        ],
+     "manufacturer": "tesla-local-control",
+     "model": "Tesla_BLE",
+     "name": "'${DEVICE_NAME}'",
+     "sw_version": "'${SW_VERSION}'"
+    },
+    "platform": "sensor",
+    "icon": "mdi:thermometer-lines",
+    "name": "Outside Temp",
+    "qos": "'${QOS_LEVEL}'",
+    "device_class": "temperature",
+    "unit_of_measurement": "°C",
+    "suggested_display_precision": "1",   
+    "unique_id": "'${DEVICE_ID}'_outside_temp"
+    }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 36 10 -t homeassistant/sensor/${DEVICE_ID}/outside_temp/config -l      
+
+  else
+     echo '{
+    "state_topic": "'${TOPIC_ROOT}'/sensor/inside_temp",
+    "device": {
+     "identifiers": [
+     "'${DEVICE_ID}'"
+     ],
+     "manufacturer": "tesla-local-control",
+     "model": "Tesla_BLE",
+     "name": "'${DEVICE_NAME}'",
+     "sw_version": "'${SW_VERSION}'"
+    },
+    "platform": "sensor",
+    "icon": "mdi:thermometer",
+    "name": "Inside Temp",
+    "qos": "'${QOS_LEVEL}'",
+    "device_class": "temperature",
+    "unit_of_measurement": "°F",
+    "suggested_display_precision": "1",   
+    "unique_id": "'${DEVICE_ID}'_inside_temp"
+    }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 36 10 -t homeassistant/sensor/${DEVICE_ID}/inside_temp/config -l
+
+    echo '{
+    "state_topic": "'${TOPIC_ROOT}'/sensor/outside_temp",
+    "device": {
+     "identifiers": [
+     "'${DEVICE_ID}'"
+        ],
+     "manufacturer": "tesla-local-control",
+     "model": "Tesla_BLE",
+     "name": "'${DEVICE_NAME}'",
+     "sw_version": "'${SW_VERSION}'"
+    },
+    "platform": "sensor",
+    "icon": "mdi:thermometer-lines",
+    "name": "Outside Temp",
+    "qos": "'${QOS_LEVEL}'",
+    "device_class": "temperature",
+    "unit_of_measurement": "°F",
+    "suggested_display_precision": "1",   
+    "unique_id": "'${DEVICE_ID}'_outside_temp"
+    }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 36 10 -t homeassistant/sensor/${DEVICE_ID}/outside_temp/config -l     
+  fi
+
   echo '{
    "state_topic": "'${TOPIC_ROOT}'/binary_sensor/battery_heater_on",
    "device": {
