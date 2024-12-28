@@ -77,6 +77,25 @@ function setupChargeStateSensors {
    "unique_id": "'${DEVICE_ID}'_battery_range"
   }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 36 10 -t homeassistant/sensor/${DEVICE_ID}/battery_range/config -l
 
+  echo '{
+   "state_topic": "'${TOPIC_ROOT}'/sensor/charger_power",
+   "device": {
+    "identifiers": [
+    "'${DEVICE_ID}'"
+    ],
+    "manufacturer": "tesla-local-control",
+    "model": "Tesla_BLE",
+    "name": "'${DEVICE_NAME}'",
+    "sw_version": "'${SW_VERSION}'"
+   },
+   "platform": "sensor",
+   "icon": "mdi:battery-arrow-up,
+   "name": "Charger Power",
+   "qos": "'${QOS_LEVEL}'",
+   "device_class", "power",
+   "unique_id": "'${DEVICE_ID}'_charger_power"
+  }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 36 10 -t homeassistant/sensor/${DEVICE_ID}/charger_power/config -l
+
   log_debug "setupChargeStateSensors() leaving vin:$vin"
 
 }
