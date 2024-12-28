@@ -104,7 +104,7 @@ teslaControlCommands="\
 1,X,autosecure-modelx,mdi:car-door-lock,Close falcon-wing doors and lock vehicle
 1,*,auto-seat-and-climate,mdi:fan-auto,Set climate mode to auto
 2,*,charging-schedule-cancel,mdi:timer-cancel-outline,Cancel scheduled charge start
-1,*,drive,car-wireless,mdi:car-wireless,Remote start car
+1,*,drive,mdi:car-wireless,Remote start car
 1,*,flash-lights,mdi:car-light-high,Flash lights
 1,*,frunk-open,mdi:car-select,Open car frunk
 1,*,honk,mdi:bugle,Honk horn

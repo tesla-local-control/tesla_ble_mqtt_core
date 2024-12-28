@@ -40,7 +40,7 @@ function setupChargeStateSensors {
   configHADeviceEnvVars $vin
 
   echo '{
-   "state_topic": "'${TOPIC_ROOT}'/number/charge_state",
+   "state_topic": "'${TOPIC_ROOT}'/sensor/charge_state",
    "device": {
     "identifiers": [
     "'${DEVICE_ID}'"
@@ -51,12 +51,12 @@ function setupChargeStateSensors {
     "sw_version": "'${SW_VERSION}'"
    },
    "device_class": "battery",
-   "platform": "number",
+   "platform": "sensor",
    "icon": "mdi:battery-80",
    "name": "Battery Level",
    "qos": "'${QOS_LEVEL}'",
    "unique_id": "'${DEVICE_ID}'_charge_state"
-  }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 36 10 -t homeassistant/number/${DEVICE_ID}/charge_state/config -l
+  }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 36 10 -t homeassistant/sensor/${DEVICE_ID}/charge_state/config -l
 
   log_debug "setupChargeStateSensors() leaving vin:$vin"
 
