@@ -338,7 +338,7 @@ function setupExtendedControls() {
 
   echo '{
    "command_topic": "'${TOPIC_ROOT}'/charging-set-amps",
-   "state_topic": "'${TOPIC_ROOT}'/number/charge_amps",
+   "state_topic": "'${TOPIC_ROOT}'/number/charge_current_request",
    "device": {
     "identifiers": [
     "'${DEVICE_ID}'"
@@ -382,6 +382,7 @@ function setupExtendedControls() {
 
   echo '{
    "command_topic": "'${TOPIC_ROOT}'/charging-set-limit",
+   "state_topic": "'${TOPIC_ROOT}'/number/charge_limit_soc",
    "device": {
     "identifiers": [
     "'${DEVICE_ID}'"
