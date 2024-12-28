@@ -156,7 +156,7 @@ function setupChargeStateSensors {
     "sw_version": "'${SW_VERSION}'"
    },
    "platform": "sensor",
-   "icon": "mdi:car-tyre-alert",
+   "icon": "mdi:car-tire-alert",
    "name": "Tyre Pressure Front Left",
    "qos": "'${QOS_LEVEL}'",
    "device_class": "pressure",
@@ -164,6 +164,69 @@ function setupChargeStateSensors {
    "suggested_display_precision": "1",   
    "unique_id": "'${DEVICE_ID}'_tpms_pressure_fl"
   }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 36 10 -t homeassistant/sensor/${DEVICE_ID}/tpms_pressure_fl/config -l
+
+  echo '{
+   "state_topic": "'${TOPIC_ROOT}'/sensor/tpms_pressure_fr",
+   "device": {
+    "identifiers": [
+    "'${DEVICE_ID}'"
+    ],
+    "manufacturer": "tesla-local-control",
+    "model": "Tesla_BLE",
+    "name": "'${DEVICE_NAME}'",
+    "sw_version": "'${SW_VERSION}'"
+   },
+   "platform": "sensor",
+   "icon": "mdi:car-tire-alert",
+   "name": "Tyre Pressure Front Right",
+   "qos": "'${QOS_LEVEL}'",
+   "device_class": "pressure",
+   "unit_of_measurement": "bar",
+   "suggested_display_precision": "1",   
+   "unique_id": "'${DEVICE_ID}'_tpms_pressure_fr"
+  }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 36 10 -t homeassistant/sensor/${DEVICE_ID}/tpms_pressure_fr/config -l
+
+  echo '{
+   "state_topic": "'${TOPIC_ROOT}'/sensor/tpms_pressure_rl",
+   "device": {
+    "identifiers": [
+    "'${DEVICE_ID}'"
+    ],
+    "manufacturer": "tesla-local-control",
+    "model": "Tesla_BLE",
+    "name": "'${DEVICE_NAME}'",
+    "sw_version": "'${SW_VERSION}'"
+   },
+   "platform": "sensor",
+   "icon": "mdi:car-tire-alert",
+   "name": "Tyre Pressure Rear Left",
+   "qos": "'${QOS_LEVEL}'",
+   "device_class": "pressure",
+   "unit_of_measurement": "bar",
+   "suggested_display_precision": "1",   
+   "unique_id": "'${DEVICE_ID}'_tpms_pressure_rl"
+  }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 36 10 -t homeassistant/sensor/${DEVICE_ID}/tpms_pressure_rl/config -l
+
+  echo '{
+   "state_topic": "'${TOPIC_ROOT}'/sensor/tpms_pressure_rr",
+   "device": {
+    "identifiers": [
+    "'${DEVICE_ID}'"
+    ],
+    "manufacturer": "tesla-local-control",
+    "model": "Tesla_BLE",
+    "name": "'${DEVICE_NAME}'",
+    "sw_version": "'${SW_VERSION}'"
+   },
+   "platform": "sensor",
+   "icon": "mdi:car-tire-alert",
+   "name": "Tyre Pressure Rear Right",
+   "qos": "'${QOS_LEVEL}'",
+   "device_class": "pressure",
+   "unit_of_measurement": "bar",
+   "suggested_display_precision": "1",   
+   "unique_id": "'${DEVICE_ID}'_tpms_pressure_rr"
+  }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 36 10 -t homeassistant/sensor/${DEVICE_ID}/tpms_pressure_rr/config -l
 
   echo '{
    "state_topic": "'${TOPIC_ROOT}'/binary_sensor/battery_heater_on",
