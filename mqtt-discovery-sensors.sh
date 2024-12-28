@@ -142,7 +142,7 @@ function setupChargeStateSensors {
    "unit_of_measurement": "kWh",
    "suggested_display_precision": "1",   
    "unique_id": "'${DEVICE_ID}'_charge_energy_added"
-  }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 36 10 -t homeassistant/binary_sensor/${DEVICE_ID}/charge_energy_added/config -l
+  }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 36 10 -t homeassistant/sensor/${DEVICE_ID}/charge_energy_added/config -l
 
   echo '{
    "state_topic": "'${TOPIC_ROOT}'/binary_sensor/battery_heater_on",
