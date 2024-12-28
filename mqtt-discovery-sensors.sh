@@ -51,6 +51,7 @@ function setupChargeStateSensors {
     "sw_version": "'${SW_VERSION}'"
    },
    "device_class": "battery",
+   "platform": "number",
    "icon": "mdi:battery-80",
    "name": "Battery Level",
    "qos": "'${QOS_LEVEL}'",
