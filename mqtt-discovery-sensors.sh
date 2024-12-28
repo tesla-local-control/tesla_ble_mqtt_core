@@ -136,7 +136,7 @@ function setupChargeStateSensors {
    },
    "platform": "sensor",
    "icon": "mdi:battery-plus-variant",
-   "name": "Charge Energy Added"
+   "name": "Charge Energy Added",
    "qos": "'${QOS_LEVEL}'",
    "device_class": "energy",
    "unit_of_measurement": "kWh",
@@ -157,7 +157,7 @@ function setupChargeStateSensors {
    },
    "platform": "binary_sensor",
    "icon": "mdi:heat-wave",
-   "name": "Battery Heater On"
+   "name": "Battery Heater On",
    "qos": "'${QOS_LEVEL}'",
    "device_class": "heat", 
    "unique_id": "'${DEVICE_ID}'_battery_heater_on"
