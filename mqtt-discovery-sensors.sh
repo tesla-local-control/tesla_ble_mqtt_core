@@ -54,6 +54,7 @@ function setupChargeStateSensors {
    "icon": "mdi:battery-80",
    "name": "Battery Level",
    "qos": "'${QOS_LEVEL}'",
+   "unit_of_measurement", "%",
    "suggested_display_precision",0,
    "unique_id": "'${DEVICE_ID}'_charge_state"
   }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 36 10 -t homeassistant/sensor/${DEVICE_ID}/charge_state/config -l
@@ -73,6 +74,7 @@ function setupChargeStateSensors {
    "icon": "mdi:ruler-square-compass",
    "name": "Battery Range",
    "qos": "'${QOS_LEVEL}'",
+   "suggested_display_precision",0,
    "unique_id": "'${DEVICE_ID}'_battery_range"
   }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 36 10 -t homeassistant/sensor/${DEVICE_ID}/battery_range/config -l
 
