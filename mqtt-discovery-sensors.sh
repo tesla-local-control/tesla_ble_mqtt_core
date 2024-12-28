@@ -145,6 +145,27 @@ function setupChargeStateSensors {
   }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 36 10 -t homeassistant/sensor/${DEVICE_ID}/charge_energy_added/config -l
 
   echo '{
+   "state_topic": "'${TOPIC_ROOT}'/sensor/tpms_pressure_fl",
+   "device": {
+    "identifiers": [
+    "'${DEVICE_ID}'"
+    ],
+    "manufacturer": "tesla-local-control",
+    "model": "Tesla_BLE",
+    "name": "'${DEVICE_NAME}'",
+    "sw_version": "'${SW_VERSION}'"
+   },
+   "platform": "sensor",
+   "icon": "mdi:car-tyre-alert",
+   "name": "Tyre Pressure Front Left",
+   "qos": "'${QOS_LEVEL}'",
+   "device_class": "pressure",
+   "unit_of_measurement": "bar",
+   "suggested_display_precision": "1",   
+   "unique_id": "'${DEVICE_ID}'_tpms_pressure_fl"
+  }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 36 10 -t homeassistant/sensor/${DEVICE_ID}/tpms_pressure_fl/config -l
+
+  echo '{
    "state_topic": "'${TOPIC_ROOT}'/binary_sensor/battery_heater_on",
    "device": {
     "identifiers": [
@@ -162,6 +183,25 @@ function setupChargeStateSensors {
    "device_class": "heat", 
    "unique_id": "'${DEVICE_ID}'_battery_heater_on"
   }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 36 10 -t homeassistant/binary_sensor/${DEVICE_ID}/battery_heater_on/config -l
+
+  echo '{
+   "state_topic": "'${TOPIC_ROOT}'/binary_sensor/charge_port_latch",
+   "device": {
+    "identifiers": [
+    "'${DEVICE_ID}'"
+    ],
+    "manufacturer": "tesla-local-control",
+    "model": "Tesla_BLE",
+    "name": "'${DEVICE_NAME}'",
+    "sw_version": "'${SW_VERSION}'"
+   },
+   "platform": "binary_sensor",
+   "icon": "mdi:lock-question",
+   "name": "Charge Port Latch",
+   "qos": "'${QOS_LEVEL}'",
+   "device_class": "lock", 
+   "unique_id": "'${DEVICE_ID}'_charge_port_latch"
+  }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 36 10 -t homeassistant/binary_sensor/${DEVICE_ID}/charge_port_latch/config -l
 
   log_debug "setupChargeStateSensors() leaving vin:$vin"
 
