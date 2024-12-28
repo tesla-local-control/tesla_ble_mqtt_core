@@ -325,6 +325,7 @@ function setupExtendedControls() {
 
   echo '{
    "command_topic": "'${TOPIC_ROOT}'/windows",
+   "state_topic": "'${TOPIC_ROOT}'/cover/windows",
    "device": {
     "identifiers": [
     "'${DEVICE_ID}'"
@@ -416,6 +417,7 @@ function setupExtendedControls() {
 
     echo '{
       "command_topic": "'${TOPIC_ROOT}'/climate-set-temp",
+      "state_topic": "'${TOPIC_ROOT}'/number/driver_temp_setting",
       "device": {
         "identifiers": [
           "'${DEVICE_ID}'"
@@ -438,6 +440,7 @@ function setupExtendedControls() {
 
     echo '{
       "command_topic": "'${TOPIC_ROOT}'/climate-set-temp",
+      "state_topic": "'${TOPIC_ROOT}'/number/driver_temp_setting",
       "device": {
         "identifiers": [
           "'${DEVICE_ID}'"
