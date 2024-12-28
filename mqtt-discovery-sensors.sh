@@ -241,7 +241,7 @@ function setupChargeStateSensors {
      "sw_version": "'${SW_VERSION}'"
     },
     "platform": "sensor",
-    "icon": "mdi:thermometer",
+    "icon": "mdi:thermometer-lines",
     "name": "Inside Temp",
     "qos": "'${QOS_LEVEL}'",
     "device_class": "temperature",
@@ -262,7 +262,7 @@ function setupChargeStateSensors {
      "sw_version": "'${SW_VERSION}'"
     },
     "platform": "sensor",
-    "icon": "mdi:thermometer-lines",
+    "icon": "mdi:thermometer",
     "name": "Outside Temp",
     "qos": "'${QOS_LEVEL}'",
     "device_class": "temperature",
@@ -284,7 +284,7 @@ function setupChargeStateSensors {
      "sw_version": "'${SW_VERSION}'"
     },
     "platform": "sensor",
-    "icon": "mdi:thermometer",
+    "icon": "mdi:thermometer-lines",
     "name": "Inside Temp",
     "qos": "'${QOS_LEVEL}'",
     "device_class": "temperature",
@@ -305,7 +305,7 @@ function setupChargeStateSensors {
      "sw_version": "'${SW_VERSION}'"
     },
     "platform": "sensor",
-    "icon": "mdi:thermometer-lines",
+    "icon": "mdi:thermometer",
     "name": "Outside Temp",
     "qos": "'${QOS_LEVEL}'",
     "device_class": "temperature",
