@@ -14,10 +14,6 @@
    - Locks:
    - Buttons: 
 
-## Breaking Changes
-
-- Lock / Unlock Button entities replaced with Lock entity, whose state is read from BLE
-
 ## 0.2.2
 
 ### Changed

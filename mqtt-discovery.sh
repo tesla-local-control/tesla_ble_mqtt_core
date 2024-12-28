@@ -461,6 +461,7 @@ function setupExtendedControls() {
 
   echo '{
    "command_topic": "'${TOPIC_ROOT}'/heater-seat-front-left",
+   "state_topic": "'${TOPIC_ROOT}'/select/seat_heater_left",
    "device": {
     "identifiers": [
     "'${DEVICE_ID}'"
@@ -479,6 +480,7 @@ function setupExtendedControls() {
 
   echo '{
    "command_topic": "'${TOPIC_ROOT}'/heater-seat-front-right",
+   "state_topic": "'${TOPIC_ROOT}'/select/seat_heater_right",
    "device": {
     "identifiers": [
     "'${DEVICE_ID}'"
@@ -511,7 +513,6 @@ function setupExtendedControls() {
    },
    "icon": "mdi:car-door-lock",
    "name": "Door Lock",
-   "device_class": "door",
    "payload_lock": "lock",
    "payload_unlock": "unlock",
    "state_locked": "true",
