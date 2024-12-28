@@ -416,7 +416,7 @@ function setupExtendedControls() {
       "max": "83",
       "mode": "slider",
       "qos": "'${QOS_LEVEL}'",
-      "unique_id": "'${DEVICE_ID}'_climate-set-temp",
+      "unique_id": "'${DEVICE_ID}'_climate-set-temp"
     }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 6 10 -t homeassistant/number/${DEVICE_ID}/climate-temp/config -l
 
   else
