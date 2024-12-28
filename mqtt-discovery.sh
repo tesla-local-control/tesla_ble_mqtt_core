@@ -589,6 +589,35 @@ function setupPresenceSensor {
 
 }
 
+# Setup State of Charge Sensor
+function setupPresenceSensor {
+  vin=$1
+
+  log_debug "setupSoCSensor() entering vin:$vin"
+  configHADeviceEnvVars $vin
+
+  echo '{
+   "state_topic": "'${TOPIC_ROOT}'/number/soc",
+   "device": {
+    "identifiers": [
+    "'${DEVICE_ID}'"
+    ],
+    "manufacturer": "tesla-local-control",
+    "model": "Tesla_BLE",
+    "name": "'${DEVICE_NAME}'",
+    "sw_version": "'${SW_VERSION}'"
+   },
+   "device_class": "battery",
+   "icon": "mdi:battery-80",
+   "name": "Battery SOC",
+   "qos": "1",
+   "unique_id": "'${DEVICE_ID}'_presence"
+  }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 36 10 -t homeassistant/binary_sensor/${DEVICE_ID}/number/config -l
+
+  log_debug "setupSoCSensor() leaving vin:$vin"
+
+}
+
 ###
 ##
 #   Setup Configuration Deploy Key Button

@@ -77,7 +77,7 @@ listen_to_mqtt() {
           ;;
 
         read-state)
-          log_notice 'read-state; calling readState()"'
+          log_notice "read-state; calling readState()"
           readState $vin
           ;;
 
