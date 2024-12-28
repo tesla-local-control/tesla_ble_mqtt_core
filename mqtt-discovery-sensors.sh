@@ -89,7 +89,7 @@ function setupChargeStateSensors {
     "sw_version": "'${SW_VERSION}'"
    },
    "platform": "sensor",
-   "icon": "mdi:battery-arrow-up,
+   "icon": "mdi:battery-arrow-up",
    "name": "Charger Power",
    "qos": "'${QOS_LEVEL}'",
    "device_class", "power",
