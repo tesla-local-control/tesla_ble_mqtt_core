@@ -338,6 +338,7 @@ function setupExtendedControls() {
 
   echo '{
    "command_topic": "'${TOPIC_ROOT}'/charging-set-amps",
+   "state_topic": "'${TOPIC_ROOT}'/sensor/charge_amps",
    "device": {
     "identifiers": [
     "'${DEVICE_ID}'"
