@@ -163,7 +163,7 @@ listen_to_mqtt() {
 
       climate-set-temp)
         [ ${msg} -le 50 ] && T="${msg}°C" || T="${msg}°F"
-        [ ${msg} -le 50 ] && msg="${msg}F" || msg="${msg}C"
+        [ ${msg} -le 50 ] && msg="${msg}C" || msg="${msg}F"
         teslaCtrlSendCommand $vin "climate-set-temp $msg" "Set climate temperature to ${T}"
         ;;
 
