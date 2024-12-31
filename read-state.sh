@@ -57,10 +57,29 @@ function readState() {
 
 }
 
+function getStateValueAndPublish() {
+  vin=$1
+  jsonParam=$2
+  mqttTopic=$3
+
+  # Get value from JSON, and publish to MQTT
+  rqdValue=`echo $stateJSON | jq -e $jsonParam`
+  EXIT_STATUS=$?
+  if [ $EXIT_STATUS -ne 0 ]; then
+    ret=2
+    log_debug "getStateValueAndPublish; failed to parse $jsonParam for vin:$vin return:$ret"
+  else
+    ret=0
+    log_debug "getStateValueAndPublish; $jsonParam parsed as $rqdValue for vin:$vin return:$ret"
+    # Publish to MQTT state topic
+    stateMQTTpub $vin $rqdValue $mqttTopic
+  fi
+
+  return $ret
+}
+
 function readChargeState() {
   vin=$1
-  jsonParam='.chargeState.batteryLevel'
-  mqttTopic=sensor/charge_state
 
   # Send state command
 
@@ -69,17 +88,19 @@ function readChargeState() {
   # Obtain result
   stateJSON=`cat /share/tesla_ble_mqtt/${vin}_charge`
   
-  # Get value from JSON, and publish to MQTT
-  rqdValue=`echo $stateJSON | jq -e $jsonParam`
+  getStateValueAndPublish $vin '.chargeState.batteryLevel' sensor/charge_state && \ 
+  getStateValueAndPublish $vin '.chargeState.batteryRange' sensor/battery_range && \ 
+  getStateValueAndPublish $vin '.chargeState.chargerPower' sensor/charger_power && \ 
+  getStateValueAndPublish $vin '.chargeState.chargerActualCurrent' sensor/charger_actual_current && \ 
+  getStateValueAndPublish $vin '.chargeState.chargeEnergyAdded' sensor/charge_energy_added 
+
   EXIT_STATUS=$?
   if [ $EXIT_STATUS -ne 0 ]; then
-    ret=2
-    log_debug "readChargeState; failed to parse $jsonParam for vin:$vin return:$ret"
+    ret=3
+    log_error "readChargeState; one of the getStateValueAndPublish calls failed for vin:$vin return:$ret"
   else
     ret=0
-    log_debug "readChargeState; $jsonParam parsed as $rqdValue for vin:$vin return:$ret"
-    # Publish to MQTT state topic
-    stateMQTTpub $vin $rqdValue $mqttTopic
+    log_info "readChargeState; Completed successfully for vin:$vin"
   fi
 
   return $ret
