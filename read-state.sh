@@ -44,13 +44,25 @@ function readState() {
   EXIT_STATUS=$?
   if [ $EXIT_STATUS -ne 0 ]; then
     log_debug "readState; failed to read charge state vin:$vin. Exit status: $EXIT_STATUS"
-    ret=2
+    return 2
   else
-    log_debug "readState; read of charge state succeeded vin:$vin"
+    log_notice "readState; read of charge state succeeded vin:$vin"
     ret=0
   fi
 
   sleep $BLE_CMD_RETRY_DELAY
+
+  # Read and parse climate state
+  readClimateState $vin
+  EXIT_STATUS=$?
+  if [ $EXIT_STATUS -ne 0 ]; then
+    log_debug "readState; failed to read climate state vin:$vin. Exit status: $EXIT_STATUS"
+    return 2
+  else
+    log_notice "readState; read of climate state succeeded vin:$vin"
+    ret=0
+  fi
+
 
   log_debug "readState; leaving vin:$vin return:$ret"
   return $ret
@@ -73,7 +85,7 @@ sendBLECommand() {
   TESLA_CONTROL_CMD='/usr/bin/tesla-control -ble -command-timeout 5s -connect-timeout 10s $command 2>&1'
 
   # Retry loop
-  max_retries=5
+  max_retries=10
   for sendCommandCount in $(seq $max_retries); do
 
     log_notice "sendBLECommand: Attempt $sendCommandCount/${max_retries} sending $commandDescription to vin:$vin command:$command"
@@ -93,7 +105,9 @@ sendBLECommand() {
       elif [[ "$TESLACTRLOUT" == *"context deadline exceeded"* ]]; then
         log_warning "teslaCtrlSendCommand; $TESLACTRLOUT"
         log_warning "Vehicle might be asleep, or not present. Sending wake command"
-        tesla-control -ble -command-timeout 10s -connect-timeout 20s -domain vcsec wake
+        sleep $BLE_CMD_RETRY_DELAY
+        tesla-control -ble -command-timeout 20s -connect-timeout 20s -domain vcsec wake
+        sleep 5
       else
         log_error "tesla-control send command:$command to vin:$vin failed exit status $EXIT_STATUS."
         log_error "sendBLECommand; $TESLACTRLOUT"
@@ -117,7 +131,7 @@ function getStateValueAndPublish() {
   # Get value from JSON, and publish to MQTT
   rqdValue=`echo $stateJSON | jq -e $jsonParam`
   EXIT_STATUS=$?
-  if [ $EXIT_STATUS -ne 0 ]; then
+  if [ $EXIT_STATUS -ne 0 && $rqdValue -ne false ]; then
     ret=2
     log_debug "getStateValueAndPublish; failed to parse $jsonParam for vin:$vin return:$ret"
   else
@@ -134,8 +148,8 @@ function readChargeState() {
   vin=$1
 
   # Send state command
-  export $TESLACTRLOUT=""
-  sendBLECommand $vin state charge "state charge"
+  export TESLACTRLOUT=""
+  sendBLECommand $vin "state charge" "Send state command with category=charge"
   EXIT_STATUS=$?
   if [ $EXIT_STATUS -ne 0 ]; then
     ret=2
@@ -143,20 +157,19 @@ function readChargeState() {
     return $ret
   else
     log_debug "readChargeState; sendBLECommand succeeded for vin:$vin"
-    log_debug "tesla-command returned $TESLACTRLOUT"
   fi
 
   # Get values from the JSON and publish corresponding MQTT state topic
-  getStateValueAndPublish $vin '.chargeState.batteryLevel' sensor/charge_state $TESLACTRLOUT && 
-  getStateValueAndPublish $vin '.chargeState.batteryRange' sensor/battery_range $TESLACTRLOUT &&  
-  getStateValueAndPublish $vin '.chargeState.chargerPower' sensor/charger_power $TESLACTRLOUT &&  
-  getStateValueAndPublish $vin '.chargeState.chargerActualCurrent' sensor/charger_actual_current $TESLACTRLOUT && 
-  getStateValueAndPublish $vin '.chargeState.chargeEnergyAdded' sensor/charge_energy_added $TESLACTRLOUT &&
-  getStateValueAndPublish $vin '.chargeState.chargeEnableRequest' switch/charge_enable_request $TESLACTRLOUT &&
-  getStateValueAndPublish $vin '.chargeState.chargePortDoorOpen' cover/charge_port_door_open $TESLACTRLOUT &&
-  getStateValueAndPublish $vin '.chargeState.chargeCurrentRequest' number/charge_current_request $TESLACTRLOUT &&
-  getStateValueAndPublish $vin '.chargeState.chargeLimitSoc' number/charge_limit_soc $TESLACTRLOUT
-  # Not done: chargePortLatch, battery_heater_on
+  getStateValueAndPublish $vin '.chargeState.batteryLevel' sensor/charge_state "$TESLACTRLOUT" && 
+  getStateValueAndPublish $vin '.chargeState.batteryRange' sensor/battery_range "$TESLACTRLOUT" &&  
+  getStateValueAndPublish $vin '.chargeState.chargerPower' sensor/charger_power "$TESLACTRLOUT" &&  
+  getStateValueAndPublish $vin '.chargeState.chargerActualCurrent' sensor/charger_actual_current "$TESLACTRLOUT" && 
+  getStateValueAndPublish $vin '.chargeState.chargeEnergyAdded' sensor/charge_energy_added "$TESLACTRLOUT" &&
+  getStateValueAndPublish $vin '.chargeState.chargeEnableRequest' switch/charge_enable_request "$TESLACTRLOUT" &&
+  getStateValueAndPublish $vin '.chargeState.chargePortDoorOpen' cover/charge_port_door_open "$TESLACTRLOUT" &&
+  getStateValueAndPublish $vin '.chargeState.chargeCurrentRequest' number/charge_current_request "$TESLACTRLOUT" &&
+  getStateValueAndPublish $vin '.chargeState.chargeLimitSoc' number/charge_limit_soc "$TESLACTRLOUT"
+  # Not done: chargePortLatch
 
   EXIT_STATUS=$?
   if [ $EXIT_STATUS -ne 0 ]; then
@@ -165,6 +178,44 @@ function readChargeState() {
   else
     ret=0
     log_info "readChargeState; Completed successfully for vin:$vin"
+  fi
+
+  return $ret
+}
+
+function readClimateState() {
+  vin=$1
+
+  # Send state command
+  export TESLACTRLOUT=""
+  sendBLECommand $vin "state climate" "Send state command with category=climate"
+  EXIT_STATUS=$?
+  if [ $EXIT_STATUS -ne 0 ]; then
+    ret=2
+    log_debug "readClimateState; sendBLECommand failed for vin:$vin return:$ret"
+    return $ret
+  else
+    log_debug "readClimateState; sendBLECommand succeeded for vin:$vin"
+  fi
+
+  # Get values from the JSON and publish corresponding MQTT state topic
+  getStateValueAndPublish $vin '.climateState.insideTempCelsius' sensor/inside_temp "$TESLACTRLOUT" && 
+  getStateValueAndPublish $vin '.climateState.outsideTempCelsius' sensor/outside_temp "$TESLACTRLOUT" &&  
+  getStateValueAndPublish $vin '.climateState.driverTempSetting' number/driver_temp_setting "$TESLACTRLOUT" &&  
+  getStateValueAndPublish $vin '.climateState.isClimateOn' switch/is_climate_on "$TESLACTRLOUT" &&
+  getStateValueAndPublish $vin '.climateState.steeringWheelHeater' switch/steering_wheel_heater "$TESLACTRLOUT" &&
+  getStateValueAndPublish $vin '.climateState.isPreconditioning' binary_sensor/battery_heater "$TESLACTRLOUT" &&
+  getStateValueAndPublish $vin '.climateState.seatHeaterLeft' select/seat_heater_left "$TESLACTRLOUT" &&
+  getStateValueAndPublish $vin '.climateState.seatHeaterRight' select/seat_heater_right "$TESLACTRLOUT"
+  # Not done: 
+
+  EXIT_STATUS=$?
+  if [ $EXIT_STATUS -ne 0 ]; then
+    ret=3
+    log_error "readClimateState; one of the getStateValueAndPublish calls failed for vin:$vin return:$ret"
+  else
+    ret=0
+    log_info "readClimateState; Completed successfully for vin:$vin"
   fi
 
   return $ret

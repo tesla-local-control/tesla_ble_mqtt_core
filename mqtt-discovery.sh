@@ -206,6 +206,8 @@ function setupExtendedControls() {
    "device_class": "switch",
    "payload_on": "start",
    "payload_off": "stop",
+   "state_on": "true",
+   "state_on": "false",
    "qos": "'${QOS_LEVEL}'",
    "unique_id": "'${DEVICE_ID}'_charging"
    }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 6 10 -t homeassistant/switch/${DEVICE_ID}/charging/config -l
@@ -369,31 +371,31 @@ function setupExtendedControls() {
    "unit_of_measurement": "A"
    }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 6 10 -t homeassistant/number/${DEVICE_ID}/charging-set-amps/config -l
 
-  echo '{
-   "command_topic": "'${TOPIC_ROOT}'/charging-set-amps-override",
-   "device": {
-    "identifiers": [
-    "'${DEVICE_ID}'"
-    ],
-    "manufacturer": "tesla-local-control",
-    "model": "Tesla_BLE",
-    "name": "'${DEVICE_NAME}'",
-    "sw_version": "'${SW_VERSION}'"
-   },
-   "icon": "mdi:current-ac",
-   "min": "0",
-   "max": "'${MAX_CURRENT}'",
-   "mode": "slider",
-   "name": "Charging Current single",
-   "qos": "'${QOS_LEVEL}'",
-   "unique_id": "'${DEVICE_ID}'_charging-set-amps-override",
-   "entity_category": "diagnostic",
-   "unit_of_measurement": "A"
-   }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 6 10 -t homeassistant/number/${DEVICE_ID}/charging-set-amps-override/config -l
+  #echo '{
+  # "command_topic": "'${TOPIC_ROOT}'/charging-set-amps-override",
+  # "device": {
+  #  "identifiers": [
+  #  "'${DEVICE_ID}'"
+  #  ],
+  #  "manufacturer": "tesla-local-control",
+  #  "model": "Tesla_BLE",
+  #  "name": "'${DEVICE_NAME}'",
+  #  "sw_version": "'${SW_VERSION}'"
+  # },
+  # "icon": "mdi:current-ac",
+  # "min": "0",
+  # "max": "'${MAX_CURRENT}'",
+  # "mode": "slider",
+  # "name": "Charging Current single",
+  # "qos": "'${QOS_LEVEL}'",
+  # "unique_id": "'${DEVICE_ID}'_charging-set-amps-override",
+  # "entity_category": "diagnostic",
+  # "unit_of_measurement": "A"
+  # }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 6 10 -t homeassistant/number/${DEVICE_ID}/charging-set-amps-override/config -l
 
   echo '{
    "command_topic": "'${TOPIC_ROOT}'/charging-set-limit",
-   "state_topic": "'${TOPIC_ROOT}'/number/socharge_limit_c",
+   "state_topic": "'${TOPIC_ROOT}'/number/charge_limit_soc",
    "device": {
     "identifiers": [
     "'${DEVICE_ID}'"
