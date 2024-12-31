@@ -26,7 +26,7 @@ function stateMQTTpub() {
   EXIT_STATUS=$?
   set -e
   [ $EXIT_STATUS -ne 0 ] &&
-    log_error "$(MQTT_OUT)" &&
+    log_error "${MQTT_OUT}" &&
     return 1
   log_debug "MQTT topic $MQTT_TOPIC succesfully updated to $state"
 
@@ -57,7 +57,7 @@ function readState() {
 
 function readChargeState() {
   vin=$1
-  jsonParam=.chargeState.batteryLevel
+  jsonParam='.chargeState.batteryLevel'
   mqttTopic=/sensor/charge_state
 
   # Send state command
@@ -68,16 +68,17 @@ function readChargeState() {
   stateJSON=`cat /share/tesla_ble_mqtt/${vin}_charge`
   
   # Get value from JSON, and publish to MQTT
-  rqdValue=`echo $stateJSON | jq -e '${jsonParam}'`
+  rqdValue=`echo $stateJSON | jq -e $jsonParam`
   EXIT_STATUS=$?
   if [ $EXIT_STATUS -ne 0 ]; then
+    ret=2
     log_debug "readChargeState; failed to parse $jsonParam for vin:$vin return:$ret"
-    return 2
   else
+      ret=0
       log_debug "readChargeState; $jsonParam parsed as $rqdValue for vin:$vin return:$ret"
       # Publish to MQTT state topic
-      stateMQTTpub $vin,$rqdValue,$mqttTopic
+      stateMQTTpub $vin,$rqdValue,$mqttTopic)
   fi
 
-  return 0
+  return $ret
 }
