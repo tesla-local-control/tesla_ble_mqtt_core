@@ -57,10 +57,62 @@ function readState() {
 
 }
 
+# Use tesla-control to send (state) command
+# Could use existing teslaCtrlSendCommand(), but that would need modifying to return JSON, and needs generally tidying up, and a fix for the indefinite loop if the car can't be woken 
+# If this function works ok, I suggest teslaCtrlSendCommand() can use this code, this be dleted, and references updated
+# I believe the indefinite loop occurs when user's automation keeps sending commands when the car is away / out of BLE range, which eventually locks up the container, requiring restart
+sendBLECommand() {
+  vin=$1
+  command=$2
+  commandDescription=$3
+  
+  # Prepare for calling tesla-control
+  export TESLA_VIN=$vin
+  export TESLA_KEY_FILE=$KEYS_DIR/${vin}_private.pem
+  export TESLA_KEY_NAME=$KEYS_DIR/${vin}_private.pem
+  TESLA_CONTROL_CMD='/usr/bin/tesla-control -ble -command-timeout 5s -connect-timeout 10s $command 2>&1'
+
+  # Retry loop
+  max_retries=5
+  for sendCommandCount in $(seq $max_retries); do
+
+    log_notice "sendBLECommand: Attempt $sendCommandCount/${max_retries} sending $commandDescription to vin:$vin command:$command"
+    set +e
+    TESLACTRLOUT=$(eval $TESLA_CONTROL_CMD)
+    EXIT_STATUS=$?
+    set -e
+    if [ $EXIT_STATUS -eq 0 ]; then
+      log_debug "sendBLECommand; $TESLACTRLOUT"
+      log_info "Command $command was successfully delivered to vin:$vin"
+      return 0
+    else
+      if [[ "$TESLACTRLOUT" == *"car could not execute command"* ]]; then
+        log_warning "sendBLECommand; $TESLACTRLOUT"
+        log_warning "Skipping command $command to vin:$vin, not retrying"
+        return 10
+      elif [[ "$TESLACTRLOUT" == *"context deadline exceeded"* ]]; then
+        log_warning "teslaCtrlSendCommand; $TESLACTRLOUT"
+        log_warning "Vehicle might be asleep, or not present. Sending wake command"
+        tesla-control -ble -command-timeout 10s -connect-timeout 20s -domain vcsec wake
+      else
+        log_error "tesla-control send command:$command to vin:$vin failed exit status $EXIT_STATUS."
+        log_error "sendBLECommand; $TESLACTRLOUT"
+      fi
+      log_notice "sendBLECommand; Retrying in $BLE_CMD_RETRY_DELAY seconds"
+      sleep $BLE_CMD_RETRY_DELAY
+    fi
+  done
+
+  # Max retries
+  log_warning "sendBLECommand; max retries unsuccessfully trying to send command $command to $vin"
+  return 99
+}
+
 function getStateValueAndPublish() {
   vin=$1
   jsonParam=$2
   mqttTopic=$3
+  stateJSON=$4
 
   # Get value from JSON, and publish to MQTT
   rqdValue=`echo $stateJSON | jq -e $jsonParam`
@@ -82,21 +134,28 @@ function readChargeState() {
   vin=$1
 
   # Send state command
+  export $TESLACTRLOUT=""
+  sendBLECommand $vin state charge "state charge"
+  EXIT_STATUS=$?
+  if [ $EXIT_STATUS -ne 0 ]; then
+    ret=2
+    log_debug "readChargeState; sendBLECommand failed for vin:$vin return:$ret"
+    return $ret
+  else
+    log_debug "readChargeState; sendBLECommand succeeded for vin:$vin"
+    log_debug "tesla-command returned $TESLACTRLOUT"
+  fi
 
-  # Exit if not successful
-
-  # Obtain result
-  stateJSON=`cat /share/tesla_ble_mqtt/${vin}_charge`
-  
-  getStateValueAndPublish $vin '.chargeState.batteryLevel' sensor/charge_state && 
-  getStateValueAndPublish $vin '.chargeState.batteryRange' sensor/battery_range &&  
-  getStateValueAndPublish $vin '.chargeState.chargerPower' sensor/charger_power &&  
-  getStateValueAndPublish $vin '.chargeState.chargerActualCurrent' sensor/charger_actual_current && 
-  getStateValueAndPublish $vin '.chargeState.chargeEnergyAdded' sensor/charge_energy_added &&
-  getStateValueAndPublish $vin '.chargeState.chargeEnableRequest' switch/charge_enable_request &&
-  getStateValueAndPublish $vin '.chargeState.chargePortDoorOpen' cover/charge_port_door_open &&
-  getStateValueAndPublish $vin '.chargeState.chargeCurrentRequest' number/charge_current_request &&
-  getStateValueAndPublish $vin '.chargeState.chargeLimitSoc' number/charge_limit_soc
+  # Get values from the JSON and publish corresponding MQTT state topic
+  getStateValueAndPublish $vin '.chargeState.batteryLevel' sensor/charge_state $TESLACTRLOUT && 
+  getStateValueAndPublish $vin '.chargeState.batteryRange' sensor/battery_range $TESLACTRLOUT &&  
+  getStateValueAndPublish $vin '.chargeState.chargerPower' sensor/charger_power $TESLACTRLOUT &&  
+  getStateValueAndPublish $vin '.chargeState.chargerActualCurrent' sensor/charger_actual_current $TESLACTRLOUT && 
+  getStateValueAndPublish $vin '.chargeState.chargeEnergyAdded' sensor/charge_energy_added $TESLACTRLOUT &&
+  getStateValueAndPublish $vin '.chargeState.chargeEnableRequest' switch/charge_enable_request $TESLACTRLOUT &&
+  getStateValueAndPublish $vin '.chargeState.chargePortDoorOpen' cover/charge_port_door_open $TESLACTRLOUT &&
+  getStateValueAndPublish $vin '.chargeState.chargeCurrentRequest' number/charge_current_request $TESLACTRLOUT &&
+  getStateValueAndPublish $vin '.chargeState.chargeLimitSoc' number/charge_limit_soc $TESLACTRLOUT
   # Not done: chargePortLatch, battery_heater_on
 
   EXIT_STATUS=$?
