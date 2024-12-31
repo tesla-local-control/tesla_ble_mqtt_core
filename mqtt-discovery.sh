@@ -393,7 +393,7 @@ function setupExtendedControls() {
 
   echo '{
    "command_topic": "'${TOPIC_ROOT}'/charging-set-limit",
-   "state_topic": "'${TOPIC_ROOT}'/number/charge_limit_soc",
+   "state_topic": "'${TOPIC_ROOT}'/number/socharge_limit_c",
    "device": {
     "identifiers": [
     "'${DEVICE_ID}'"

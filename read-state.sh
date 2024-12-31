@@ -88,11 +88,16 @@ function readChargeState() {
   # Obtain result
   stateJSON=`cat /share/tesla_ble_mqtt/${vin}_charge`
   
-  getStateValueAndPublish $vin '.chargeState.batteryLevel' sensor/charge_state && \ 
-  getStateValueAndPublish $vin '.chargeState.batteryRange' sensor/battery_range && \ 
-  getStateValueAndPublish $vin '.chargeState.chargerPower' sensor/charger_power && \ 
-  getStateValueAndPublish $vin '.chargeState.chargerActualCurrent' sensor/charger_actual_current && \ 
-  getStateValueAndPublish $vin '.chargeState.chargeEnergyAdded' sensor/charge_energy_added 
+  getStateValueAndPublish $vin '.chargeState.batteryLevel' sensor/charge_state && 
+  getStateValueAndPublish $vin '.chargeState.batteryRange' sensor/battery_range &&  
+  getStateValueAndPublish $vin '.chargeState.chargerPower' sensor/charger_power &&  
+  getStateValueAndPublish $vin '.chargeState.chargerActualCurrent' sensor/charger_actual_current && 
+  getStateValueAndPublish $vin '.chargeState.chargeEnergyAdded' sensor/charge_energy_added &&
+  getStateValueAndPublish $vin '.chargeState.chargeEnableRequest' switch/charge_enable_request &&
+  getStateValueAndPublish $vin '.chargeState.chargePortDoorOpen' cover/charge_port_door_open &&
+  getStateValueAndPublish $vin '.chargeState.chargeCurrentRequest' number/charge_current_request &&
+  getStateValueAndPublish $vin '.chargeState.chargeLimitSoc' number/charge_limit_soc
+  # Not done: chargePortLatch, battery_heater_on
 
   EXIT_STATUS=$?
   if [ $EXIT_STATUS -ne 0 ]; then
