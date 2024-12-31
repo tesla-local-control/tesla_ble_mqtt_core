@@ -228,7 +228,7 @@ function setupChargeStateSensors {
    "unique_id": "'${DEVICE_ID}'_tpms_pressure_rr"
   }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 36 10 -t homeassistant/sensor/${DEVICE_ID}/tpms_pressure_rr/config -l
 
-  if [ $TEMPERATURE_UNIT_FAHRENHEIT = "true" ]; then
+  if [ $TEMPERATURE_UNIT_FAHRENHEIT = "false" ]; then
     echo '{
     "state_topic": "'${TOPIC_ROOT}'/sensor/inside_temp",
     "device": {

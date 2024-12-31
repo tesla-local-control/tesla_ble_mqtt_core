@@ -229,6 +229,8 @@ function setupExtendedControls() {
    "device_class": "switch",
    "payload_on": "on",
    "payload_off": "off",
+   "state_on": "true",
+   "state_off": "false",
    "qos": "'${QOS_LEVEL}'",
    "unique_id": "'${DEVICE_ID}'_climate"
    }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 6 10 -t homeassistant/switch/${DEVICE_ID}/climate/config -l
@@ -250,6 +252,8 @@ function setupExtendedControls() {
    "device_class": "switch",
    "payload_on": "on",
    "payload_off": "off",
+   "state_on": "true",
+   "state_off": "false",
    "qos": "'${QOS_LEVEL}'",
    "unique_id": "'${DEVICE_ID}'_sentry-mode"
    }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 6 10 -t homeassistant/switch/${DEVICE_ID}/sentry-mode/config -l
@@ -271,6 +275,8 @@ function setupExtendedControls() {
    "device_class": "switch",
    "payload_on": "on",
    "payload_off": "off",
+   "state_on": "true",
+   "state_off": "false",
    "qos": "'${QOS_LEVEL}'",
    "unique_id": "'${DEVICE_ID}'_steering-wheel-heater"
    }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 6 10 -t homeassistant/switch/${DEVICE_ID}/steering-wheel-heater/config -l

@@ -71,8 +71,8 @@ function readState() {
 
 # Use tesla-control to send (state) command
 # Could use existing teslaCtrlSendCommand(), but that would need modifying to return JSON, and needs generally tidying up, and a fix for the indefinite loop if the car can't be woken 
-# If this function works ok, I suggest teslaCtrlSendCommand() can use this code, this be dleted, and references updated
-# I believe the indefinite loop occurs when user's automation keeps sending commands when the car is away / out of BLE range, which eventually locks up the container, requiring restart
+# If this function works ok, I suggest teslaCtrlSendCommand() can use this code, this be deleted, and references updated
+# I believe the indefinite loop occurs when user's automation keeps sending commands when the car is away / out of BLE range, which eventually locks up the container, requiring a restart
 sendBLECommand() {
   vin=$1
   command=$2
