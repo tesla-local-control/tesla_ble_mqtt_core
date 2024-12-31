@@ -76,7 +76,7 @@ function readChargeState() {
   else
       log_debug "readChargeState; $jsonParam parsed as $rqdValue for vin:$vin return:$ret"
       # Publish to MQTT state topic
-      stateMQTTpub($vin,$rqdValue,$mqttTopic)
+      stateMQTTpub $vin,$rqdValue,$mqttTopic
   fi
 
   return 0
