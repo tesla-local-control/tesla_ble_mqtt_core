@@ -40,9 +40,11 @@ function readState() {
   log_debug "readState; entering vin:$vin"
 
   # Read and parse charge state
-  if readChargeState $vin; then
-    log_debug "readState; failed to read charge state vin:$vin"
-    return 2
+  readChargeState $vin
+  EXIT_STATUS=$?
+  if [ $EXIT_STATUS -ne 0 ]; then
+    log_debug "readState; failed to read charge state vin:$vin. Exit status: $EXIT_STATUS"
+    ret=2
   else
     log_debug "readState; read of charge state succeeded vin:$vin"
     ret=0
@@ -58,7 +60,7 @@ function readState() {
 function readChargeState() {
   vin=$1
   jsonParam='.chargeState.batteryLevel'
-  mqttTopic=/sensor/charge_state
+  mqttTopic=sensor/charge_state
 
   # Send state command
 
@@ -74,10 +76,10 @@ function readChargeState() {
     ret=2
     log_debug "readChargeState; failed to parse $jsonParam for vin:$vin return:$ret"
   else
-      ret=0
-      log_debug "readChargeState; $jsonParam parsed as $rqdValue for vin:$vin return:$ret"
-      # Publish to MQTT state topic
-      stateMQTTpub $vin,$rqdValue,$mqttTopic)
+    ret=0
+    log_debug "readChargeState; $jsonParam parsed as $rqdValue for vin:$vin return:$ret"
+    # Publish to MQTT state topic
+    stateMQTTpub $vin $rqdValue $mqttTopic
   fi
 
   return $ret
