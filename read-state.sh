@@ -276,7 +276,7 @@ function readTyreState() {
   getStateValueAndPublish $vin '.tirePressureState.tpmsPressureFl' sensor/tpms_pressure_fl "$TESLACTRLOUT" && 
   getStateValueAndPublish $vin '.tirePressureState.tpmsPressureFr' sensor/tpms_pressure_fr "$TESLACTRLOUT" &&  
   getStateValueAndPublish $vin '.tirePressureState.tpmsPressureRl' sensor/tpms_pressure_rl "$TESLACTRLOUT" &&  
-  getStateValueAndPublish $vin '.tirePressureState.tpmsPressureRr' sensor/itpms_pressure_rr "$TESLACTRLOUT" 
+  getStateValueAndPublish $vin '.tirePressureState.tpmsPressureRr' sensor/tpms_pressure_rr "$TESLACTRLOUT" 
 
   EXIT_STATUS=$?
   if [ $EXIT_STATUS -ne 0 ]; then
@@ -289,4 +289,3 @@ function readTyreState() {
 
   return $ret
 }
- 
