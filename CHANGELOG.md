@@ -8,11 +8,10 @@
 
 - NEW Feature: The following new states / entities are available, more to follow in future releases:
    - Sensors: Battery Level (State of Charge); Battery Range; Charge Energy Added; Charger Current; Charger Power; Inside Temp; Outside Temp; Tyre Pressures
-   - Binary_Sensors: Battery Heater On; Frunk Open; Windows Open
+   - Binary_Sensors: Battery Heater On; Frunk Open; Windows Open; Door Lock
    - Switches: Charger; Climate; Sentry Mode
    - Numbers: Charging Current; Charging SOC Limit; Climate Temp
    - Covers: Charge Port; Trunk
-   - Locks: Door Lock; 
    - Selects: Heated Seat Front Left; Heated Seat Front Right
    - Buttons: Force Data Update
 

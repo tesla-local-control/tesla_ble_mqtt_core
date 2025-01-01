@@ -438,7 +438,28 @@ function setupChargeStateSensors {
    "device_class": "window",   
    "qos": "'${QOS_LEVEL}'",
    "unique_id": "'${DEVICE_ID}'_window_open_pr"
+
   }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 36 10 -t homeassistant/binary_sensor/${DEVICE_ID}/window_open_pass_rear/config -l
+  echo '{
+   "state_topic": "'${TOPIC_ROOT}'/binary_sensor/door_lock",
+   "device": {
+    "identifiers": [
+    "'${DEVICE_ID}'"
+    ],
+    "manufacturer": "tesla-local-control",
+    "model": "Tesla_BLE",
+    "name": "'${DEVICE_NAME}'",
+    "sw_version": "'${SW_VERSION}'"
+   },
+   "platform": "binary_sensor",
+   "icon": "mdi:car-door-lock",
+   "name": "Door Lock",
+   "payload_on": "true",
+   "payload_off": "false",
+   "device_class": "lock",   
+   "qos": "'${QOS_LEVEL}'",
+   "unique_id": "'${DEVICE_ID}'_window_open_pr"
+  }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 36 10 -t homeassistant/binary_sensor/${DEVICE_ID}/door_lock/config -l
 
  # echo '{
  #  "state_topic": "'${TOPIC_ROOT}'/binary_sensor/charge_port_latch",

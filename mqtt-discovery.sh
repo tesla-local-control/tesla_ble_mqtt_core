@@ -512,29 +512,29 @@ function setupExtendedControls() {
    "unique_id": "'${DEVICE_ID}'_heater-seat-front-right"
    }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 6 10 -t homeassistant/select/${DEVICE_ID}/heater-seat-front-right/config -l
 
-# Locks
+# Locks (future)
 
-  echo '{
-   "command_topic": "'${TOPIC_ROOT}'/door_lock",
-   "state_topic": "'${TOPIC_ROOT}'/lock/locked",
-   "device": {
-    "identifiers": [
-    "'${DEVICE_ID}'"
-    ],
-    "manufacturer": "tesla-local-control",
-    "model": "Tesla_BLE",
-    "name": "'${DEVICE_NAME}'",
-    "sw_version": "'${SW_VERSION}'"
-   },
-   "icon": "mdi:car-door-lock",
-   "name": "Door Lock",
-   "payload_lock": "lock",
-   "payload_unlock": "unlock",
-   "state_locked": "true",
-   "state_unlocked": "false",
-   "qos": "'${QOS_LEVEL}'",
-   "unique_id": "'${DEVICE_ID}'_lock"
-   }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 6 10 -t homeassistant/lock/${DEVICE_ID}/door_lock/config -l
+  #echo '{
+  # "command_topic": "'${TOPIC_ROOT}'/door_lock",
+  # "state_topic": "'${TOPIC_ROOT}'/lock/locked",
+  # "device": {
+  #  "identifiers": [
+  #  "'${DEVICE_ID}'"
+  #  ],
+  #  "manufacturer": "tesla-local-control",
+  #  "model": "Tesla_BLE",
+  #  "name": "'${DEVICE_NAME}'",
+  #  "sw_version": "'${SW_VERSION}'"
+  # },
+  # "icon": "mdi:car-door-lock",
+  # "name": "Door Lock",
+  # "payload_lock": "lock",
+  # "payload_unlock": "unlock",
+  # "state_locked": "true",
+  # "state_unlocked": "false",
+  # "qos": "'${QOS_LEVEL}'",
+  # "unique_id": "'${DEVICE_ID}'_door_lock"
+  # }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 6 10 -t homeassistant/lock/${DEVICE_ID}/door_lock/config -l
 
   log_debug "Leaving setupExtendedControls() vin:$vin"
 }
