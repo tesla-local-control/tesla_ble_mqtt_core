@@ -183,6 +183,11 @@ function getStateValueAndPublish() {
       esac
     fi     
 
+   # Note if any window is open
+   if [[ $jsonParam == "closuresState.windowOpen"* ]] && [ $rqdVale == "true" ]; then
+     ANYWINDOWOPEN="true"
+   fi
+
     # Publish to MQTT state topic
     stateMQTTpub $vin $rqdValue $mqttTopic
   else
@@ -318,6 +323,9 @@ function closuresState() {
     log_debug "closuresState; sendBLECommand succeeded for vin:$vin"
   fi
 
+  # Windows Cover is for all windows, so report status to be open if any window is open
+  export ANYWINDOWOPEN=0
+
   # Get values from the JSON and publish corresponding MQTT state topic
   #getStateValueAndPublish $vin '.closuresState.sentryModeState' switch/sentry_mode "$TESLACTRLOUT" && 
   getStateValueAndPublish $vin '.closuresState.doorOpenTrunkRear' cover/rear_trunk "$TESLACTRLOUT" &&
@@ -327,7 +335,7 @@ function closuresState() {
   getStateValueAndPublish $vin '.closuresState.windowOpenDriverRear' binary_sensor/window_open_driver_rear "$TESLACTRLOUT" &&
   getStateValueAndPublish $vin '.closuresState.windowOpenPassengerRear' binary_sensor/window_open_pass_rear "$TESLACTRLOUT" &&
   getStateValueAndPublish $vin '.closuresState.locked' lock/locked "$TESLACTRLOUT"
- 
+
   EXIT_STATUS=$?
   if [ $EXIT_STATUS -ne 0 ]; then
     ret=3
@@ -337,5 +345,13 @@ function closuresState() {
     log_info "closuresState; Completed successfully for vin:$vin"
   fi
 
+   # Publish to windows cover state topic
+  if [ $ANYWINDOWOPEN == "true" ]; then
+    # Publish to MQTT state topic
+    stateMQTTpub $vin "true" "cover/windows"
+  else
+    stateMQTTpub $vin "false" "cover/windows"
+  fi
+  
   return $ret
 }
