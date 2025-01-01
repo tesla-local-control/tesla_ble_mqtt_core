@@ -159,9 +159,7 @@ function getStateValueAndPublish() {
   rqdValue=`echo $stateJSON | jq -e $jsonParam`
   EXIT_STATUS=$?
   if [ $EXIT_STATUS -eq 0 ] || ([ $EXIT_STATUS -eq 1 ] && [ $rqdValue == "false" ]); then
-    ret=0
-    log_debug "getStateValueAndPublish; $jsonParam parsed as $rqdValue for vin:$vin return:$ret"
-    
+   
     # Modify values in specific cases
     if [[ $jsonParam == ".climateState.seatHeater"* ]]; then
       case $rqdValue in
@@ -184,8 +182,8 @@ function getStateValueAndPublish() {
     fi
 
     # Modify values in specific cases
-    if [[ $jsonParam == ".closuresState.sentryModeState" ]]; then
-      rqdValue = `echo $rqdValue | jq '.Off'`
+    if [ $jsonParam == ".closuresState.sentryModeState" ]; then
+      rqdValue=`echo $rqdValue | jq '.Off'`
       if [ $rqdValue == "{}" ]; then
         rqdValue="false"
       else
@@ -194,13 +192,16 @@ function getStateValueAndPublish() {
     fi
 
     # Note if any window is open
-    if [[ $jsonParam == "closuresState.windowOpen"* ]] && [ $rqdVale == "true" ]; then
+    if [[ $jsonParam == "closuresState.windowOpen"* ]] && [ $rqdValue == "true" ]; then
       ANYWINDOWOPEN="true"
     fi
 
+    ret=0
+    log_debug "getStateValueAndPublish; $jsonParam parsed as $rqdValue for vin:$vin return:$ret"
+    
     # Publish to MQTT state topic
     stateMQTTpub $vin $rqdValue $mqttTopic
-    
+
   else
     ret=2
     log_debug "getStateValueAndPublish; failed to parse $jsonParam for vin:$vin return:$ret"
