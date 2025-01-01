@@ -348,9 +348,10 @@ function setupChargeStateSensors {
    },
    "platform": "binary_sensor",
    "icon": "mdi:car-select",
-   "name": "Front trunk open",
+   "name": "Front Trunk",
    "payload_on": "true",
    "payload_off": "false",
+   "device_class": "door",
    "qos": "'${QOS_LEVEL}'",
    "unique_id": "'${DEVICE_ID}'_frunck_open"
   }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 36 10 -t homeassistant/binary_sensor/${DEVICE_ID}/frunk_open/config -l
@@ -368,9 +369,10 @@ function setupChargeStateSensors {
    },
    "platform": "binary_sensor",
    "icon": "mdi:car-door",
-   "name": "Driver Front window open",
+   "name": "Window Driver Front",
    "payload_on": "true",
    "payload_off": "false",
+   "device_class": "window",
    "qos": "'${QOS_LEVEL}'",
    "unique_id": "'${DEVICE_ID}'_window_open_df"
   }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 36 10 -t homeassistant/binary_sensor/${DEVICE_ID}/window_open_driver_front/config -l
@@ -388,9 +390,10 @@ function setupChargeStateSensors {
    },
    "platform": "binary_sensor",
    "icon": "mdi:car-door",
-   "name": "Passenger Front window open",
+   "name": "Window Passenger Front",
    "payload_on": "true",
    "payload_off": "false",
+   "device_class": "window",   
    "qos": "'${QOS_LEVEL}'",
    "unique_id": "'${DEVICE_ID}'_window_open_pf"
   }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 36 10 -t homeassistant/binary_sensor/${DEVICE_ID}/window_open_pass_front/config -l
@@ -408,9 +411,10 @@ function setupChargeStateSensors {
    },
    "platform": "binary_sensor",
    "icon": "mdi:car-door",
-   "name": "Driver Rear window open",
+   "name": "Window Driver Rear",
    "payload_on": "true",
    "payload_off": "false",
+   "device_class": "window",   
    "qos": "'${QOS_LEVEL}'",
    "unique_id": "'${DEVICE_ID}'_window_open_dr"
   }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 36 10 -t homeassistant/binary_sensor/${DEVICE_ID}/window_open_driver_rear/config -l
@@ -428,9 +432,10 @@ function setupChargeStateSensors {
    },
    "platform": "binary_sensor",
    "icon": "mdi:car-door",
-   "name": "Passenger Rear window open",
+   "name": "Window Passenger Rear",
    "payload_on": "true",
    "payload_off": "false",
+   "device_class": "window",   
    "qos": "'${QOS_LEVEL}'",
    "unique_id": "'${DEVICE_ID}'_window_open_pr"
   }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 36 10 -t homeassistant/binary_sensor/${DEVICE_ID}/window_open_pass_rear/config -l
