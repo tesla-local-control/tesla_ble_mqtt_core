@@ -134,6 +134,28 @@ function getStateValueAndPublish() {
   if [ $EXIT_STATUS -eq 0 ] || ([ $EXIT_STATUS -eq 1 ] && [ $rqdValue == "false" ]); then
     ret=0
     log_debug "getStateValueAndPublish; $jsonParam parsed as $rqdValue for vin:$vin return:$ret"
+    
+    # Modify values in specific cases
+    if [[ $jsonParam == ".climateState.seatHeater"* ]]; then
+      case $rqdValue in
+        0)
+          rqdValue="off"
+        ;;
+        1)
+          rqdValue="low"
+        ;;
+        2)
+          rqdValue="med"
+        ;;
+        3)
+          rqdValue="high"
+        ;;      
+        *)
+          rqdValue=" "
+        ;;           
+      esac
+    fi     
+
     # Publish to MQTT state topic
     stateMQTTpub $vin $rqdValue $mqttTopic
   else
