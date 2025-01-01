@@ -63,6 +63,20 @@ function readState() {
     ret=0
   fi
 
+  sleep $BLE_CMD_RETRY_DELAY
+
+  # Read and parse tire-pressure state
+  readTyreState $vin
+  EXIT_STATUS=$?
+  if [ $EXIT_STATUS -ne 0 ]; then
+    log_debug "readState; failed to read tire-pressure state vin:$vin. Exit status: $EXIT_STATUS"
+    return 2
+  else
+    log_notice "readState; read of tire-pressure state succeeded vin:$vin"
+    ret=0
+  fi
+
+  sleep $BLE_CMD_RETRY_DELAY
 
   log_debug "readState; leaving vin:$vin return:$ret"
   return $ret
@@ -226,10 +240,10 @@ function readClimateState() {
   getStateValueAndPublish $vin '.climateState.driverTempSetting' number/driver_temp_setting "$TESLACTRLOUT" &&  
   getStateValueAndPublish $vin '.climateState.isClimateOn' switch/is_climate_on "$TESLACTRLOUT" &&
   getStateValueAndPublish $vin '.climateState.steeringWheelHeater' switch/steering_wheel_heater "$TESLACTRLOUT" &&
-  getStateValueAndPublish $vin '.climateState.isPreconditioning' binary_sensor/battery_heater_on "$TESLACTRLOUT" &&
+  getStateValueAndPublish $vin '.climateState.batteryHeater' binary_sensor/battery_heater_on "$TESLACTRLOUT" &&
   getStateValueAndPublish $vin '.climateState.seatHeaterLeft' select/seat_heater_left "$TESLACTRLOUT" &&
   getStateValueAndPublish $vin '.climateState.seatHeaterRight' select/seat_heater_right "$TESLACTRLOUT"
-  # Not done: Heater selects
+  # Not done: 
 
   EXIT_STATUS=$?
   if [ $EXIT_STATUS -ne 0 ]; then
@@ -242,3 +256,35 @@ function readClimateState() {
 
   return $ret
 }
+
+function readTyreState() {
+  vin=$1
+
+  # Send state command
+  export TESLACTRLOUT=""
+  sendBLECommand $vin "state tire-pressure" "Send state command with category=tire-pressure"
+  EXIT_STATUS=$?
+  if [ $EXIT_STATUS -ne 0 ]; then
+    ret=2
+    log_debug "readTyreState; sendBLECommand failed for vin:$vin return:$ret"
+    return $ret
+  else
+    log_debug "readTyreState; sendBLECommand succeeded for vin:$vin"
+  fi
+
+  # Get values from the JSON and publish corresponding MQTT state topic
+  getStateValueAndPublish $vin '.tirePressureState.tpmsPressureFl' sensor/tpms_pressure_fl "$TESLACTRLOUT" && 
+  getStateValueAndPublish $vin '.tirePressureState.tpmsPressureFr' sensor/tpms_pressure_fr "$TESLACTRLOUT" &&  
+  getStateValueAndPublish $vin '.tirePressureState.tpmsPressureRl' sensor/tpms_pressure_rl "$TESLACTRLOUT" &&  
+  getStateValueAndPublish $vin '.tirePressureState.tpmsPressureRr' sensor/itpms_pressure_rr "$TESLACTRLOUT" 
+
+  EXIT_STATUS=$?
+  if [ $EXIT_STATUS -ne 0 ]; then
+    ret=3
+    log_error "readTyreState; one of the getStateValueAndPublish calls failed for vin:$vin return:$ret"
+  else
+    ret=0
+    log_info "readTyreState; Completed successfully for vin:$vin"
+  fi
+
+  return $ret
