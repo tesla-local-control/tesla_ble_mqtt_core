@@ -321,6 +321,11 @@ function closuresState() {
   # Get values from the JSON and publish corresponding MQTT state topic
   #getStateValueAndPublish $vin '.closuresState.sentryModeState' switch/sentry_mode "$TESLACTRLOUT" && 
   getStateValueAndPublish $vin '.closuresState.doorOpenTrunkRear' cover/rear_trunk "$TESLACTRLOUT" &&
+  getStateValueAndPublish $vin '.closuresState.doorOpenTrunkFront' binary_sensor/frunck_open "$TESLACTRLOUT" &&
+  getStateValueAndPublish $vin '.closuresState.windowOpenDriverFront' binary_sensor/window_open_driver_front "$TESLACTRLOUT" &&
+  getStateValueAndPublish $vin '.closuresState.windowOpenPassengerFront' binary_sensor/window_open_pass_front "$TESLACTRLOUT" &&
+  getStateValueAndPublish $vin '.closuresState.windowOpenDriverRear' binary_sensor/window_open_driver_rear "$TESLACTRLOUT" &&
+  getStateValueAndPublish $vin '.closuresState.windowOpenPassengerRear' binary_sensor/window_open_pass_rear "$TESLACTRLOUT" &&
   getStateValueAndPublish $vin '.closuresState.locked' lock/locked "$TESLACTRLOUT"
  
   EXIT_STATUS=$?
