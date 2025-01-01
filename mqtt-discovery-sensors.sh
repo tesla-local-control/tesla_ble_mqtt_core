@@ -315,6 +315,24 @@ function setupChargeStateSensors {
     }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 36 10 -t homeassistant/sensor/${DEVICE_ID}/outside_temp/config -l     
   fi
 
+    echo '{
+    "state_topic": "'${TOPIC_ROOT}'/sensor/charge_cable",
+    "device": {
+     "identifiers": [
+     "'${DEVICE_ID}'"
+        ],
+     "manufacturer": "tesla-local-control",
+     "model": "Tesla_BLE",
+     "name": "'${DEVICE_NAME}'",
+     "sw_version": "'${SW_VERSION}'"
+    },
+    "platform": "sensor",
+    "icon": "mdi:cable-data",
+    "name": "Charge Cable",
+    "qos": "'${QOS_LEVEL}'",
+    "unique_id": "'${DEVICE_ID}'_charge_cable"
+    }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 36 10 -t homeassistant/sensor/${DEVICE_ID}/charge_cable/config -l   
+
   echo '{
    "state_topic": "'${TOPIC_ROOT}'/binary_sensor/battery_heater_on",
    "device": {
@@ -461,6 +479,7 @@ function setupChargeStateSensors {
    "unique_id": "'${DEVICE_ID}'_window_open_pr"
   }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 36 10 -t homeassistant/binary_sensor/${DEVICE_ID}/door_lock/config -l
 
+ # Status is only Disengaged for short time, it gets reengaged soon after even with no charger plugged in. Not useful
  # echo '{
  #  "state_topic": "'${TOPIC_ROOT}'/binary_sensor/charge_port_latch",
  #  "device": {

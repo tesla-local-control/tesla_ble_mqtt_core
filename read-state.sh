@@ -158,7 +158,7 @@ function getStateValueAndPublish() {
   # Get value from JSON, and publish to MQTT
   rqdValue=`echo $stateJSON | jq -e $jsonParam`
   EXIT_STATUS=$?
-  if [ $EXIT_STATUS -eq 0 ] || ([ $EXIT_STATUS -eq 1 ] && [ $rqdValue == "false" ]); then
+  if [ $EXIT_STATUS -eq 0 ] || ([ $EXIT_STATUS -eq 1 ] && [ $rqdValue == "false" ]) || ([ $EXIT_STATUS -eq 1 ] && [ $jsonParam == ".chargeState.connChargeCable" ]]); then
    
     # Modify values in specific cases
     if [[ $jsonParam == ".climateState.seatHeater"* ]]; then
@@ -188,6 +188,14 @@ function getStateValueAndPublish() {
         rqdValue="false"
       else
         rqdValue="true"
+      fi
+    fi
+
+    # Modify values in specific cases
+    if [ $jsonParam == ".chargeState.connChargeCable" ]; then
+      rqdValue=`echo $rqdValue | jq -c '.chargeState.connChargeCable' | awk -F '{print $2}'`
+      if [ $rqdValue == "" ]; then
+        rqdValue="None"
       fi
     fi
 
@@ -231,6 +239,7 @@ function readChargeState() {
   getStateValueAndPublish $vin '.chargeState.chargerPower' sensor/charger_power "$TESLACTRLOUT" &&  
   getStateValueAndPublish $vin '.chargeState.chargerActualCurrent' sensor/charger_actual_current "$TESLACTRLOUT" && 
   getStateValueAndPublish $vin '.chargeState.chargeEnergyAdded' sensor/charge_energy_added "$TESLACTRLOUT" &&
+  getStateValueAndPublish $vin '.chargeState.connChargeCable' sensor/charge_cable "$TESLACTRLOUT" &&
   getStateValueAndPublish $vin '.chargeState.chargeEnableRequest' switch/charge_enable_request "$TESLACTRLOUT" &&
   getStateValueAndPublish $vin '.chargeState.chargePortDoorOpen' cover/charge_port_door_open "$TESLACTRLOUT" &&
   getStateValueAndPublish $vin '.chargeState.chargeCurrentRequest' number/charge_current_request "$TESLACTRLOUT" &&
