@@ -192,7 +192,7 @@ function getStateValueAndPublish() {
     fi
 
     # Note if any window is open
-    if [[ $jsonParam == "closuresState.windowOpen"* ]] && [ $rqdValue == "true" ]; then
+    if [[ $jsonParam == ".closuresState.windowOpen"* ]] && [ $rqdValue == "true" ]; then
       ANYWINDOWOPEN="true"
     fi
 
