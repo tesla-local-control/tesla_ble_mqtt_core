@@ -207,7 +207,7 @@ function setupExtendedControls() {
    "payload_on": "start",
    "payload_off": "stop",
    "state_on": "true",
-   "state_on": "false",
+   "state_off": "false",
    "qos": "'${QOS_LEVEL}'",
    "unique_id": "'${DEVICE_ID}'_charging"
    }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 6 10 -t homeassistant/switch/${DEVICE_ID}/charging/config -l

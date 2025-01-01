@@ -169,7 +169,7 @@ function readChargeState() {
   getStateValueAndPublish $vin '.chargeState.chargePortDoorOpen' cover/charge_port_door_open "$TESLACTRLOUT" &&
   getStateValueAndPublish $vin '.chargeState.chargeCurrentRequest' number/charge_current_request "$TESLACTRLOUT" &&
   getStateValueAndPublish $vin '.chargeState.chargeLimitSoc' number/charge_limit_soc "$TESLACTRLOUT"
-  # Not done: chargePortLatch
+  # Not done: 
 
   EXIT_STATUS=$?
   if [ $EXIT_STATUS -ne 0 ]; then
@@ -204,7 +204,7 @@ function readClimateState() {
   getStateValueAndPublish $vin '.climateState.driverTempSetting' number/driver_temp_setting "$TESLACTRLOUT" &&  
   getStateValueAndPublish $vin '.climateState.isClimateOn' switch/is_climate_on "$TESLACTRLOUT" &&
   getStateValueAndPublish $vin '.climateState.steeringWheelHeater' switch/steering_wheel_heater "$TESLACTRLOUT" &&
-  getStateValueAndPublish $vin '.climateState.isPreconditioning' binary_sensor/battery_heater "$TESLACTRLOUT" &&
+  getStateValueAndPublish $vin '.climateState.isPreconditioning' binary_sensor/battery_heater_on "$TESLACTRLOUT" &&
   getStateValueAndPublish $vin '.climateState.seatHeaterLeft' select/seat_heater_left "$TESLACTRLOUT" &&
   getStateValueAndPublish $vin '.climateState.seatHeaterRight' select/seat_heater_right "$TESLACTRLOUT"
   # Not done: Heater selects
