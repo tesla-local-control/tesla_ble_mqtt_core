@@ -78,6 +78,19 @@ function readState() {
 
   sleep $BLE_CMD_RETRY_DELAY
 
+    # Read and parse closures state
+  closuresState $vin
+  EXIT_STATUS=$?
+  if [ $EXIT_STATUS -ne 0 ]; then
+    log_debug "readState; failed to read closures state vin:$vin. Exit status: $EXIT_STATUS"
+    return 2
+  else
+    log_notice "readState; read of closures state succeeded vin:$vin"
+    ret=0
+  fi
+
+  sleep $BLE_CMD_RETRY_DELAY
+
   log_debug "readState; leaving vin:$vin return:$ret"
   return $ret
 
@@ -285,6 +298,38 @@ function readTyreState() {
   else
     ret=0
     log_info "readTyreState; Completed successfully for vin:$vin"
+  fi
+
+  return $ret
+}
+
+function closuresState() {
+  vin=$1
+
+  # Send state command
+  export TESLACTRLOUT=""
+  sendBLECommand $vin "state closures" "Send state command with category=closures"
+  EXIT_STATUS=$?
+  if [ $EXIT_STATUS -ne 0 ]; then
+    ret=2
+    log_debug "closuresState; sendBLECommand failed for vin:$vin return:$ret"
+    return $ret
+  else
+    log_debug "closuresState; sendBLECommand succeeded for vin:$vin"
+  fi
+
+  # Get values from the JSON and publish corresponding MQTT state topic
+  #getStateValueAndPublish $vin '.closuresState.sentryModeState' switch/sentry_mode "$TESLACTRLOUT" && 
+  getStateValueAndPublish $vin '.closuresState.doorOpenTrunkRear' cover/rear_trunk "$TESLACTRLOUT" &&
+  getStateValueAndPublish $vin '.closuresState.locked' lock/locked "$TESLACTRLOUT"
+ 
+  EXIT_STATUS=$?
+  if [ $EXIT_STATUS -ne 0 ]; then
+    ret=3
+    log_error "closuresState; one of the getStateValueAndPublish calls failed for vin:$vin return:$ret"
+  else
+    ret=0
+    log_info "closuresState; Completed successfully for vin:$vin"
   fi
 
   return $ret

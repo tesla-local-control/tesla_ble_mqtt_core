@@ -309,7 +309,7 @@ function setupExtendedControls() {
 
   echo '{
    "command_topic": "'${TOPIC_ROOT}'/trunk",
-   "state_topic": "'${TOPIC_ROOT}'/cover/rt",
+   "state_topic": "'${TOPIC_ROOT}'/cover/rear_trunk",
    "device": {
     "identifiers": [
     "'${DEVICE_ID}'"
@@ -325,8 +325,8 @@ function setupExtendedControls() {
    "payload_open": "open",
    "payload_close": "close",
    "payload_stop": null,
-   "state_open": "1",
-   "state_closed": "0",
+   "state_open": "true",
+   "state_closed": "false",
    "qos": "'${QOS_LEVEL}'",
    "unique_id": "'${DEVICE_ID}'_trunk"
    }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 6 10 -t homeassistant/cover/${DEVICE_ID}/trunk/config -l
