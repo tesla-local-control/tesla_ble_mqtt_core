@@ -181,15 +181,26 @@ function getStateValueAndPublish() {
           rqdValue=" "
         ;;           
       esac
-    fi     
+    fi
 
-   # Note if any window is open
-   if [[ $jsonParam == "closuresState.windowOpen"* ]] && [ $rqdVale == "true" ]; then
-     ANYWINDOWOPEN="true"
-   fi
+    # Modify values in specific cases
+    if [[ $jsonParam == ".closuresState.sentryModeState" ]]; then
+      rqdValue = `echo $rqdValue | jq '.Off'`
+      if [ $rqdValue == "{}" ]; then
+        rqdValue="false"
+      else
+        rqdValue="true"
+      fi
+    fi
+
+    # Note if any window is open
+    if [[ $jsonParam == "closuresState.windowOpen"* ]] && [ $rqdVale == "true" ]; then
+      ANYWINDOWOPEN="true"
+    fi
 
     # Publish to MQTT state topic
     stateMQTTpub $vin $rqdValue $mqttTopic
+    
   else
     ret=2
     log_debug "getStateValueAndPublish; failed to parse $jsonParam for vin:$vin return:$ret"
@@ -327,7 +338,7 @@ function closuresState() {
   export ANYWINDOWOPEN=0
 
   # Get values from the JSON and publish corresponding MQTT state topic
-  #getStateValueAndPublish $vin '.closuresState.sentryModeState' switch/sentry_mode "$TESLACTRLOUT" && 
+  getStateValueAndPublish $vin '.closuresState.sentryModeState' switch/sentry_mode "$TESLACTRLOUT" && 
   getStateValueAndPublish $vin '.closuresState.doorOpenTrunkRear' cover/rear_trunk "$TESLACTRLOUT" &&
   getStateValueAndPublish $vin '.closuresState.doorOpenTrunkFront' binary_sensor/frunck_open "$TESLACTRLOUT" &&
   getStateValueAndPublish $vin '.closuresState.windowOpenDriverFront' binary_sensor/window_open_driver_front "$TESLACTRLOUT" &&

@@ -349,6 +349,8 @@ function setupExtendedControls() {
    "payload_open": "vent",
    "payload_close": "close",
    "payload_stop": null,
+   "state_open": "true",
+   "state_closed": "false",
    "qos": "'${QOS_LEVEL}'",
    "unique_id": "'${DEVICE_ID}'_windows"
    }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 6 10 -t homeassistant/cover/${DEVICE_ID}/windows/config -l
