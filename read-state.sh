@@ -131,7 +131,7 @@ function getStateValueAndPublish() {
   # Get value from JSON, and publish to MQTT
   rqdValue=`echo $stateJSON | jq -e $jsonParam`
   EXIT_STATUS=$?
-  if [ $EXIT_STATUS -eq 0 ] || ([ $EXIT_STATUS -eq 1 ] && [ $rqdValue -eq 'false' ]); then
+  if [ $EXIT_STATUS -eq 0 ] || ([ $EXIT_STATUS -eq 1 ] && [ $rqdValue == "false" ]); then
     ret=0
     log_debug "getStateValueAndPublish; $jsonParam parsed as $rqdValue for vin:$vin return:$ret"
     # Publish to MQTT state topic
