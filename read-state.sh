@@ -131,14 +131,14 @@ function getStateValueAndPublish() {
   # Get value from JSON, and publish to MQTT
   rqdValue=`echo $stateJSON | jq -e $jsonParam`
   EXIT_STATUS=$?
-  if [ $EXIT_STATUS -ne 0 && $rqdValue -ne false ]; then
-    ret=2
-    log_debug "getStateValueAndPublish; failed to parse $jsonParam for vin:$vin return:$ret"
-  else
+  if [ $EXIT_STATUS -eq 0 ] || ([ $EXIT_STATUS -eq 1 ] && [ $rqdValue -eq 'false' ]); then
     ret=0
     log_debug "getStateValueAndPublish; $jsonParam parsed as $rqdValue for vin:$vin return:$ret"
     # Publish to MQTT state topic
     stateMQTTpub $vin $rqdValue $mqttTopic
+  else
+    ret=2
+    log_debug "getStateValueAndPublish; failed to parse $jsonParam for vin:$vin return:$ret"
   fi
 
   return $ret
@@ -207,7 +207,7 @@ function readClimateState() {
   getStateValueAndPublish $vin '.climateState.isPreconditioning' binary_sensor/battery_heater "$TESLACTRLOUT" &&
   getStateValueAndPublish $vin '.climateState.seatHeaterLeft' select/seat_heater_left "$TESLACTRLOUT" &&
   getStateValueAndPublish $vin '.climateState.seatHeaterRight' select/seat_heater_right "$TESLACTRLOUT"
-  # Not done: 
+  # Not done: Heater selects
 
   EXIT_STATUS=$?
   if [ $EXIT_STATUS -ne 0 ]; then
