@@ -328,7 +328,7 @@ function setupChargeStateSensors {
    },
    "platform": "binary_sensor",
    "icon": "mdi:heat-wave",
-   "name": "Battery Heater On",
+   "name": "Battery Heater",
    "payload_on": "true",
    "payload_off": "false",
    "qos": "'${QOS_LEVEL}'",
@@ -336,7 +336,7 @@ function setupChargeStateSensors {
   }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 36 10 -t homeassistant/binary_sensor/${DEVICE_ID}/battery_heater_on/config -l
 
   echo '{
-   "state_topic": "'${TOPIC_ROOT}'/binary_sensor/frunck_open",
+   "state_topic": "'${TOPIC_ROOT}'/binary_sensor/frunk_open",
    "device": {
     "identifiers": [
     "'${DEVICE_ID}'"
@@ -353,7 +353,7 @@ function setupChargeStateSensors {
    "payload_off": "false",
    "device_class": "door",
    "qos": "'${QOS_LEVEL}'",
-   "unique_id": "'${DEVICE_ID}'_frunck_open"
+   "unique_id": "'${DEVICE_ID}'_frunk_open"
   }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 36 10 -t homeassistant/binary_sensor/${DEVICE_ID}/frunk_open/config -l
 
   echo '{

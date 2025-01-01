@@ -515,7 +515,7 @@ function setupExtendedControls() {
 # Locks
 
   echo '{
-   "command_topic": "'${TOPIC_ROOT}'/lock",
+   "command_topic": "'${TOPIC_ROOT}'/door_lock",
    "state_topic": "'${TOPIC_ROOT}'/lock/locked",
    "device": {
     "identifiers": [
@@ -534,7 +534,7 @@ function setupExtendedControls() {
    "state_unlocked": "false",
    "qos": "'${QOS_LEVEL}'",
    "unique_id": "'${DEVICE_ID}'_lock"
-   }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 6 10 -t homeassistant/lock/${DEVICE_ID}/lock/config -l
+   }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 6 10 -t homeassistant/lock/${DEVICE_ID}/door_lock/config -l
 
   log_debug "Leaving setupExtendedControls() vin:$vin"
 }

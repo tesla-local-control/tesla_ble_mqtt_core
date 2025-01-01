@@ -6,13 +6,24 @@
 
 ### Changes
 
-- NEW Feature: The following states are available, more to follow in future release:
-   - Sensors:
-   - Binary_Sensors:
-   - Switches:
-   - Covers:
-   - Locks:
-   - Buttons: 
+- NEW Feature: The following new states / entities are available, more to follow in future releases:
+   - Sensors: Battery Level (State of Charge); Battery Range; Charge Energy Added; Charger Current; Charger Power; Inside Temp; Outside Temp; Tyre Pressures
+   - Binary_Sensors: Battery Heater On; Frunk Open; Windows Open
+   - Switches: Charger; Climate; Sentry Mode
+   - Numbers: Charging Current; Charging SOC Limit; Climate Temp
+   - Covers: Charge Port; Trunk
+   - Locks: Door Lock; 
+   - Selects: Heated Seat Front Left; Heated Seat Front Right
+   - Buttons: Force Data Update
+
+- Fixes:
+   - Error for setting climate temp #61 (_docker)
+   - Error 'Icons should be specified in the form "prefix:name" for dictionary value @ data['icon']' when processing MQTT discovery message topic #124 (_core)
+   - Getting more information over BLE is now possible. #66 (_docker)
+   - Fetch limited vehicle info over BLE #25 (_core)
+   - Any potential to "read state" via bluetooth? #115 (_core)
+   - read SoC possible? #124 (-addon)
+   - Not yet: Read state of charge cable connected? #117 (-addon)
 
 ## 0.2.2
 
