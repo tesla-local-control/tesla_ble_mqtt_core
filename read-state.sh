@@ -4,11 +4,11 @@
 #
 # read-state.sh
 
-## function poll_state_loop
+## function poll_state_loop. For future implementation
 function poll_state_loop() {
-    log_notice "Entering poll_state_loop..."
+  log_notice "Entering poll_state_loop..."
 
-    sleep 30
+  sleep 30
 }
 
 function stateMQTTpub() {
@@ -78,7 +78,7 @@ function readState() {
 
   sleep $BLE_CMD_RETRY_DELAY
 
-    # Read and parse closures state
+  # Read and parse closures state
   closuresState $vin
   EXIT_STATUS=$?
   if [ $EXIT_STATUS -ne 0 ]; then
@@ -97,7 +97,7 @@ function readState() {
 }
 
 # Use tesla-control to send (state) command
-# Could use existing teslaCtrlSendCommand(), but that would need modifying to return JSON, and needs generally tidying up, and a fix for the indefinite loop if the car can't be woken 
+# Could use existing teslaCtrlSendCommand(), but that would need modifying to return JSON, and needs generally tidying up, and a fix for the indefinite loop if the car can't be woken
 # If this function works ok, I suggest teslaCtrlSendCommand() can use this code, this be deleted, and references updated
 # I believe the indefinite loop occurs when user's automation keeps sending commands when the car is away / out of BLE range, which eventually locks up the container, requiring a restart
 sendBLECommand() {
@@ -156,34 +156,34 @@ function getStateValueAndPublish() {
   stateJSON=$4
 
   # Get value from JSON, and publish to MQTT
-  rqdValue=`echo $stateJSON | jq -e $jsonParam`
+  rqdValue=$(echo $stateJSON | jq -e $jsonParam)
   EXIT_STATUS=$?
   if [ $EXIT_STATUS -eq 0 ] || ([ $EXIT_STATUS -eq 1 ] && [ $rqdValue == "false" ]) || ([ $EXIT_STATUS -eq 1 ] && [ $jsonParam == ".chargeState.connChargeCable" ]); then
-   
+
     # Modify values in specific cases
     if [[ $jsonParam == ".climateState.seatHeater"* ]]; then
       case $rqdValue in
-        0)
-          rqdValue="off"
+      0)
+        rqdValue="off"
         ;;
-        1)
-          rqdValue="low"
+      1)
+        rqdValue="low"
         ;;
-        2)
-          rqdValue="med"
+      2)
+        rqdValue="med"
         ;;
-        3)
-          rqdValue="high"
+      3)
+        rqdValue="high"
         ;;      
-        *)
-          rqdValue=" "
+      *)
+        rqdValue=" "
         ;;           
       esac
     fi
 
     # Modify values in specific cases
     if [ $jsonParam == ".closuresState.sentryModeState" ]; then
-      rqdValue=`echo $rqdValue | jq '.Off'`
+      rqdValue=$(echo $rqdValue | jq '.Off')
       if [ $rqdValue == "{}" ]; then
         rqdValue="false"
       else
@@ -193,7 +193,7 @@ function getStateValueAndPublish() {
 
     # Modify values in specific cases
     if [ $jsonParam == ".chargeState.connChargeCable" ]; then
-      rqdValue=`echo $rqdValue | awk -F "\"" '{print $2}'`
+      rqdValue=$(echo $rqdValue | awk -F "\"" '{print $2}')
       if [ -z "$rqdValue" ]; then
         rqdValue="No"
       fi
@@ -206,7 +206,7 @@ function getStateValueAndPublish() {
 
     ret=0
     log_debug "getStateValueAndPublish; $jsonParam parsed as $rqdValue for vin:$vin return:$ret"
-    
+
     # Publish to MQTT state topic
     stateMQTTpub $vin $rqdValue $mqttTopic
 
@@ -234,7 +234,7 @@ function readChargeState() {
   fi
 
   # Get values from the JSON and publish corresponding MQTT state topic
-  getStateValueAndPublish $vin '.chargeState.batteryLevel' sensor/charge_state "$TESLACTRLOUT" && 
+  getStateValueAndPublish $vin '.chargeState.batteryLevel' sensor/charge_state "$TESLACTRLOUT" &&
   getStateValueAndPublish $vin '.chargeState.batteryRange' sensor/battery_range "$TESLACTRLOUT" &&  
   getStateValueAndPublish $vin '.chargeState.chargerPower' sensor/charger_power "$TESLACTRLOUT" &&  
   getStateValueAndPublish $vin '.chargeState.chargerActualCurrent' sensor/charger_actual_current "$TESLACTRLOUT" && 
@@ -274,7 +274,7 @@ function readClimateState() {
   fi
 
   # Get values from the JSON and publish corresponding MQTT state topic
-  getStateValueAndPublish $vin '.climateState.insideTempCelsius' sensor/inside_temp "$TESLACTRLOUT" && 
+  getStateValueAndPublish $vin '.climateState.insideTempCelsius' sensor/inside_temp "$TESLACTRLOUT" &&
   getStateValueAndPublish $vin '.climateState.outsideTempCelsius' sensor/outside_temp "$TESLACTRLOUT" &&  
   getStateValueAndPublish $vin '.climateState.driverTempSetting' number/driver_temp_setting "$TESLACTRLOUT" &&  
   getStateValueAndPublish $vin '.climateState.isClimateOn' switch/is_climate_on "$TESLACTRLOUT" &&
@@ -312,7 +312,7 @@ function readTyreState() {
   fi
 
   # Get values from the JSON and publish corresponding MQTT state topic
-  getStateValueAndPublish $vin '.tirePressureState.tpmsPressureFl' sensor/tpms_pressure_fl "$TESLACTRLOUT" && 
+  getStateValueAndPublish $vin '.tirePressureState.tpmsPressureFl' sensor/tpms_pressure_fl "$TESLACTRLOUT" &&
   getStateValueAndPublish $vin '.tirePressureState.tpmsPressureFr' sensor/tpms_pressure_fr "$TESLACTRLOUT" &&  
   getStateValueAndPublish $vin '.tirePressureState.tpmsPressureRl' sensor/tpms_pressure_rl "$TESLACTRLOUT" &&  
   getStateValueAndPublish $vin '.tirePressureState.tpmsPressureRr' sensor/tpms_pressure_rr "$TESLACTRLOUT" 
@@ -348,7 +348,7 @@ function closuresState() {
   export ANYWINDOWOPEN=0
 
   # Get values from the JSON and publish corresponding MQTT state topic
-  getStateValueAndPublish $vin '.closuresState.sentryModeState' switch/sentry_mode "$TESLACTRLOUT" && 
+  getStateValueAndPublish $vin '.closuresState.sentryModeState' switch/sentry_mode "$TESLACTRLOUT" &&
   getStateValueAndPublish $vin '.closuresState.doorOpenTrunkRear' cover/rear_trunk "$TESLACTRLOUT" &&
   getStateValueAndPublish $vin '.closuresState.doorOpenTrunkFront' binary_sensor/frunk_open "$TESLACTRLOUT" &&
   getStateValueAndPublish $vin '.closuresState.windowOpenDriverFront' binary_sensor/window_open_driver_front "$TESLACTRLOUT" &&
@@ -366,13 +366,13 @@ function closuresState() {
     log_info "closuresState; Completed successfully for vin:$vin"
   fi
 
-   # Publish to windows cover state topic
+  # Publish to windows cover state topic
   if [ $ANYWINDOWOPEN == "true" ]; then
     # Publish to MQTT state topic
     stateMQTTpub $vin "true" "cover/windows"
   else
     stateMQTTpub $vin "false" "cover/windows"
   fi
-  
+
   return $ret
 }
