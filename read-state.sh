@@ -109,7 +109,7 @@ sendBLECommand() {
   export TESLA_VIN=$vin
   export TESLA_KEY_FILE=$KEYS_DIR/${vin}_private.pem
   export TESLA_KEY_NAME=$KEYS_DIR/${vin}_private.pem
-  TESLA_CONTROL_CMD='/usr/bin/tesla-control -ble -command-timeout 5s -connect-timeout 10s $command 2>&1'
+  TESLA_CONTROL_CMD="/usr/bin/tesla-control -ble -command-timeout 5s -connect-timeout 10s $command 2>&1"
 
   # Retry loop
   max_retries=10
@@ -158,7 +158,7 @@ function getStateValueAndPublish() {
   # Get value from JSON, and publish to MQTT
   rqdValue=$(echo $stateJSON | jq -e $jsonParam)
   EXIT_STATUS=$?
-  if [ $EXIT_STATUS -eq 0 ] || ([ $EXIT_STATUS -eq 1 ] && [ $rqdValue == "false" ]) || ([ $EXIT_STATUS -eq 1 ] && [ $jsonParam == ".chargeState.connChargeCable" ]); then
+  if [ $EXIT_STATUS -eq 0 ] || { [ $EXIT_STATUS -eq 1 ] && [ $rqdValue == "false" ]; } || ([ $EXIT_STATUS -eq 1 ] && [ $jsonParam == ".chargeState.connChargeCable" ]); then
 
     # Modify values in specific cases
     if [[ $jsonParam == ".climateState.seatHeater"* ]]; then
