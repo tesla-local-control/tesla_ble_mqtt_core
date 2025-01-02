@@ -382,6 +382,7 @@ function setupExtendedControls() {
 
   echo '{
    "command_topic": "'${TOPIC_ROOT}'/charging-set-amps-override",
+   "state_topic": "'${TOPIC_ROOT}'/number/charge_current_request",
    "device": {
     "identifiers": [
     "'${DEVICE_ID}'"
