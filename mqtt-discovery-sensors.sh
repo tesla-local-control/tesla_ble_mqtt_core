@@ -272,7 +272,7 @@ function setupChargeStateSensors {
     }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 36 10 -t homeassistant/sensor/${DEVICE_ID}/outside_temp/config -l
 
   else
-     echo '{
+    echo '{
     "state_topic": "'${TOPIC_ROOT}'/sensor/inside_temp",
     "device": {
      "identifiers": [
@@ -495,7 +495,7 @@ function setupChargeStateSensors {
   #  "icon": "mdi:lock-question",
   #  "name": "Charge Port Latch",
   #  "qos": "'${QOS_LEVEL}'",
-  #  "device_class": "lock", 
+  #  "device_class": "lock",
   #  "unique_id": "'${DEVICE_ID}'_charge_port_latch"
   # }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 36 10 -t homeassistant/binary_sensor/${DEVICE_ID}/charge_port_latch/config -l
 

@@ -379,7 +379,6 @@ function setupExtendedControls() {
    "unit_of_measurement": "A"
    }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 6 10 -t homeassistant/number/${DEVICE_ID}/charging-set-amps/config -l
 
-
   echo '{
    "command_topic": "'${TOPIC_ROOT}'/charging-set-amps-override",
    "state_topic": "'${TOPIC_ROOT}'/number/charge_current_request",
@@ -513,7 +512,7 @@ function setupExtendedControls() {
    "unique_id": "'${DEVICE_ID}'_heater-seat-front-right"
    }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 6 10 -t homeassistant/select/${DEVICE_ID}/heater-seat-front-right/config -l
 
-# Locks (future)
+  # Locks (future)
 
   #echo '{
   # "command_topic": "'${TOPIC_ROOT}'/door_lock",
