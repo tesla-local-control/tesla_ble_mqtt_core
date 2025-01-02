@@ -315,7 +315,7 @@ function setupChargeStateSensors {
     }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 36 10 -t homeassistant/sensor/${DEVICE_ID}/outside_temp/config -l     
   fi
 
-    echo '{
+  echo '{
     "state_topic": "'${TOPIC_ROOT}'/sensor/charge_cable",
     "device": {
      "identifiers": [

@@ -15,6 +15,8 @@
    - Selects: Heated Seat Front Left; Heated Seat Front Right
    - Buttons: Force Data Update
 
+- NEW Feature: Status / type of charge cable is reported as a sensor
+
 - Fixes:
    - Error for setting climate temp #61 (_docker)
    - Error 'Icons should be specified in the form "prefix:name" for dictionary value @ data['icon']' when processing MQTT discovery message topic #124 (_core)
@@ -22,7 +24,7 @@
    - Fetch limited vehicle info over BLE #25 (_core)
    - Any potential to "read state" via bluetooth? #115 (_core)
    - read SoC possible? #124 (-addon)
-   - Not yet: Read state of charge cable connected? #117 (-addon)
+   - Read state of charge cable connected? #117 (-addon)
 
 ## 0.2.2
 

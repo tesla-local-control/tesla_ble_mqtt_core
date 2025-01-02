@@ -158,7 +158,7 @@ function getStateValueAndPublish() {
   # Get value from JSON, and publish to MQTT
   rqdValue=`echo $stateJSON | jq -e $jsonParam`
   EXIT_STATUS=$?
-  if [ $EXIT_STATUS -eq 0 ] || ([ $EXIT_STATUS -eq 1 ] && [ $rqdValue == "false" ]) || ([ $EXIT_STATUS -eq 1 ] && [ $jsonParam == ".chargeState.connChargeCable" ]]); then
+  if [ $EXIT_STATUS -eq 0 ] || ([ $EXIT_STATUS -eq 1 ] && [ $rqdValue == "false" ]) || ([ $EXIT_STATUS -eq 1 ] && [ $jsonParam == ".chargeState.connChargeCable" ]); then
    
     # Modify values in specific cases
     if [[ $jsonParam == ".climateState.seatHeater"* ]]; then
@@ -193,9 +193,9 @@ function getStateValueAndPublish() {
 
     # Modify values in specific cases
     if [ $jsonParam == ".chargeState.connChargeCable" ]; then
-      rqdValue=`echo $rqdValue | jq -c '.chargeState.connChargeCable' | awk -F '{print $2}'`
-      if [ $rqdValue == "" ]; then
-        rqdValue="None"
+      rqdValue=`echo $rqdValue | awk -F "\"" '{print $2}'`
+      if [ -z "$rqdValue" ]; then
+        rqdValue="No"
       fi
     fi
 

@@ -396,7 +396,7 @@ function setupExtendedControls() {
    "max": "'${MAX_CURRENT}'",
    "mode": "slider",
    "name": "Charging Current single",
-   "enabled_by_default":, "false",
+   "enabled_by_default": "false",
    "qos": "'${QOS_LEVEL}'",
    "unique_id": "'${DEVICE_ID}'_charging-set-amps-override",
    "entity_category": "diagnostic",
