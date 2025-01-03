@@ -112,7 +112,7 @@ sendBLECommand() {
   TESLA_CONTROL_CMD="/usr/bin/tesla-control -ble -command-timeout 5s -connect-timeout 10s $command 2>&1"
 
   # Retry loop
-  max_retries=10
+  max_retries=5
   for sendCommandCount in $(seq $max_retries); do
 
     log_notice "sendBLECommand: Attempt $sendCommandCount/${max_retries} sending $commandDescription to vin:$vin command:$command"
