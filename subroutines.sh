@@ -48,7 +48,7 @@ presenceMQTTpub() {
   EXIT_STATUS=$?
   set -e
   [ $EXIT_STATUS -ne 0 ] &&
-    log_error "$(MQTT_OUT)" &&
+    log_error "${MQTT_OUT}" &&
     return 1
   log_debug "mqtt topic $MQTT_TOPIC succesfully updated to $presenceState"
 
