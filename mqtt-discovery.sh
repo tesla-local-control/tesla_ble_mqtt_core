@@ -426,7 +426,6 @@ function setupExtendedControls() {
    }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 6 10 -t homeassistant/number/${DEVICE_ID}/charging-set-limit/config -l
 
   if [ $TEMPERATURE_UNIT_FAHRENHEIT = "true" ]; then
-
     echo '{
       "command_topic": "'${TOPIC_ROOT}'/climate-set-temp",
       "state_topic": "'${TOPIC_ROOT}'/number/driver_temp_setting",
