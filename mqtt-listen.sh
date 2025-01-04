@@ -76,6 +76,11 @@ listen_to_mqtt() {
           infoBluetoothAdapter $vin
           ;;
 
+        read-state)
+          log_notice "read-state; calling readState()"
+          readState $vin
+          ;;
+
         *)
           log_error "Invalid configuration request:$msg topic:$topic vin:$vin"
           ;;
@@ -162,8 +167,8 @@ listen_to_mqtt() {
         ;;
 
       climate-set-temp)
-        [ ${msg} -le 50 ] && T="${msg}ºC" || T="${msg}ºF"
-        teslaCtrlSendCommand $vin "climate-set-temp $msg" "Set climate temperature to ${T}"
+        [ ${msg} -le 50 ] && T="${msg}C" || T="${msg}F"
+        teslaCtrlSendCommand $vin "climate-set-temp ${T}" "Set climate temperature to ${T}"
         ;;
 
       heater-seat-front-left)

@@ -58,6 +58,9 @@ function setupPanelMain() {
 
   fi
 
+  # Setup Charge State Sensors
+  setupChargeStateSensors $vin
+
   # Newly added car?
   if [ -f $KEYS_DIR/${vin}_pubkey_accepted ]; then
     log_debug "setupPanelMain() found vehicle with pubkey deployed vin:$vin"
@@ -101,7 +104,7 @@ teslaControlCommands="\
 1,X,autosecure-modelx,mdi:car-door-lock,Close falcon-wing doors and lock vehicle
 1,*,auto-seat-and-climate,mdi:fan-auto,Set climate mode to auto
 2,*,charging-schedule-cancel,mdi:timer-cancel-outline,Cancel scheduled charge start
-1,*,drive,car-wireless,mdi:car-wireless,Remote start car
+1,*,drive,mdi:car-wireless,Remote start car
 1,*,flash-lights,mdi:car-light-high,Flash lights
 1,*,frunk-open,mdi:car-select,Open car frunk
 1,*,honk,mdi:bugle,Honk horn
@@ -188,6 +191,7 @@ function setupExtendedControls() {
 
   echo '{
    "command_topic": "'${TOPIC_ROOT}'/charging",
+   "state_topic": "'${TOPIC_ROOT}'/switch/charge_enable_request", 
    "device": {
     "identifiers": [
     "'${DEVICE_ID}'"
@@ -202,12 +206,15 @@ function setupExtendedControls() {
    "device_class": "switch",
    "payload_on": "start",
    "payload_off": "stop",
+   "state_on": "true",
+   "state_off": "false",
    "qos": "'${QOS_LEVEL}'",
    "unique_id": "'${DEVICE_ID}'_charging"
    }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 6 10 -t homeassistant/switch/${DEVICE_ID}/charging/config -l
 
   echo '{
    "command_topic": "'${TOPIC_ROOT}'/climate",
+   "state_topic": "'${TOPIC_ROOT}'/switch/is_climate_on", 
    "device": {
     "identifiers": [
     "'${DEVICE_ID}'"
@@ -222,12 +229,15 @@ function setupExtendedControls() {
    "device_class": "switch",
    "payload_on": "on",
    "payload_off": "off",
+   "state_on": "true",
+   "state_off": "false",
    "qos": "'${QOS_LEVEL}'",
    "unique_id": "'${DEVICE_ID}'_climate"
    }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 6 10 -t homeassistant/switch/${DEVICE_ID}/climate/config -l
 
   echo '{
    "command_topic": "'${TOPIC_ROOT}'/sentry-mode",
+   "state_topic": "'${TOPIC_ROOT}'/switch/sentry_mode", 
    "device": {
     "identifiers": [
     "'${DEVICE_ID}'"
@@ -242,12 +252,15 @@ function setupExtendedControls() {
    "device_class": "switch",
    "payload_on": "on",
    "payload_off": "off",
+   "state_on": "true",
+   "state_off": "false",
    "qos": "'${QOS_LEVEL}'",
    "unique_id": "'${DEVICE_ID}'_sentry-mode"
    }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 6 10 -t homeassistant/switch/${DEVICE_ID}/sentry-mode/config -l
 
   echo '{
    "command_topic": "'${TOPIC_ROOT}'/steering-wheel-heater",
+   "state_topic": "'${TOPIC_ROOT}'/switch/steering_wheel_heater",  
    "device": {
     "identifiers": [
     "'${DEVICE_ID}'"
@@ -262,6 +275,8 @@ function setupExtendedControls() {
    "device_class": "switch",
    "payload_on": "on",
    "payload_off": "off",
+   "state_on": "true",
+   "state_off": "false",
    "qos": "'${QOS_LEVEL}'",
    "unique_id": "'${DEVICE_ID}'_steering-wheel-heater"
    }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 6 10 -t homeassistant/switch/${DEVICE_ID}/steering-wheel-heater/config -l
@@ -270,6 +285,7 @@ function setupExtendedControls() {
 
   echo '{
    "command_topic": "'${TOPIC_ROOT}'/charge-port",
+   "state_topic": "'${TOPIC_ROOT}'/cover/charge_port_door_open",
    "device": {
     "identifiers": [
     "'${DEVICE_ID}'"
@@ -285,12 +301,15 @@ function setupExtendedControls() {
    "payload_open": "open",
    "payload_close": "close",
    "payload_stop": null,
+   "state_open": "true",
+   "state_closed": "false",
    "qos": "'${QOS_LEVEL}'",
    "unique_id": "'${DEVICE_ID}'_charge-port"
    }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 6 10 -t homeassistant/cover/${DEVICE_ID}/charge-port/config -l
 
   echo '{
    "command_topic": "'${TOPIC_ROOT}'/trunk",
+   "state_topic": "'${TOPIC_ROOT}'/cover/rear_trunk",
    "device": {
     "identifiers": [
     "'${DEVICE_ID}'"
@@ -306,12 +325,15 @@ function setupExtendedControls() {
    "payload_open": "open",
    "payload_close": "close",
    "payload_stop": null,
+   "state_open": "true",
+   "state_closed": "false",
    "qos": "'${QOS_LEVEL}'",
    "unique_id": "'${DEVICE_ID}'_trunk"
    }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 6 10 -t homeassistant/cover/${DEVICE_ID}/trunk/config -l
 
   echo '{
    "command_topic": "'${TOPIC_ROOT}'/windows",
+   "state_topic": "'${TOPIC_ROOT}'/cover/windows",
    "device": {
     "identifiers": [
     "'${DEVICE_ID}'"
@@ -327,14 +349,17 @@ function setupExtendedControls() {
    "payload_open": "vent",
    "payload_close": "close",
    "payload_stop": null,
+   "state_open": "true",
+   "state_closed": "false",
    "qos": "'${QOS_LEVEL}'",
    "unique_id": "'${DEVICE_ID}'_windows"
    }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 6 10 -t homeassistant/cover/${DEVICE_ID}/windows/config -l
 
-  # Number
+  # Numbers
 
   echo '{
    "command_topic": "'${TOPIC_ROOT}'/charging-set-amps",
+   "state_topic": "'${TOPIC_ROOT}'/number/charge_current_request",
    "device": {
     "identifiers": [
     "'${DEVICE_ID}'"
@@ -356,6 +381,7 @@ function setupExtendedControls() {
 
   echo '{
    "command_topic": "'${TOPIC_ROOT}'/charging-set-amps-override",
+   "state_topic": "'${TOPIC_ROOT}'/number/charge_current_request",
    "device": {
     "identifiers": [
     "'${DEVICE_ID}'"
@@ -370,6 +396,7 @@ function setupExtendedControls() {
    "max": "'${MAX_CURRENT}'",
    "mode": "slider",
    "name": "Charging Current single",
+   "enabled_by_default": "false",
    "qos": "'${QOS_LEVEL}'",
    "unique_id": "'${DEVICE_ID}'_charging-set-amps-override",
    "entity_category": "diagnostic",
@@ -378,6 +405,7 @@ function setupExtendedControls() {
 
   echo '{
    "command_topic": "'${TOPIC_ROOT}'/charging-set-limit",
+   "state_topic": "'${TOPIC_ROOT}'/number/charge_limit_soc",
    "device": {
     "identifiers": [
     "'${DEVICE_ID}'"
@@ -398,9 +426,9 @@ function setupExtendedControls() {
    }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 6 10 -t homeassistant/number/${DEVICE_ID}/charging-set-limit/config -l
 
   if [ $TEMPERATURE_UNIT_FAHRENHEIT = "true" ]; then
-
     echo '{
       "command_topic": "'${TOPIC_ROOT}'/climate-set-temp",
+      "state_topic": "'${TOPIC_ROOT}'/number/driver_temp_setting",
       "device": {
         "identifiers": [
           "'${DEVICE_ID}'"
@@ -416,13 +444,14 @@ function setupExtendedControls() {
       "max": "83",
       "mode": "slider",
       "qos": "'${QOS_LEVEL}'",
-      "unique_id": "'${DEVICE_ID}'_climate-set-temp",
+      "unique_id": "'${DEVICE_ID}'_climate-set-temp"
     }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 6 10 -t homeassistant/number/${DEVICE_ID}/climate-temp/config -l
 
   else
 
     echo '{
       "command_topic": "'${TOPIC_ROOT}'/climate-set-temp",
+      "state_topic": "'${TOPIC_ROOT}'/number/driver_temp_setting",
       "device": {
         "identifiers": [
           "'${DEVICE_ID}'"
@@ -442,10 +471,11 @@ function setupExtendedControls() {
     }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 6 10 -t homeassistant/number/${DEVICE_ID}/climate-temp/config -l
   fi
 
-  # Select
+  # Selects
 
   echo '{
    "command_topic": "'${TOPIC_ROOT}'/heater-seat-front-left",
+   "state_topic": "'${TOPIC_ROOT}'/select/seat_heater_left",
    "device": {
     "identifiers": [
     "'${DEVICE_ID}'"
@@ -464,6 +494,7 @@ function setupExtendedControls() {
 
   echo '{
    "command_topic": "'${TOPIC_ROOT}'/heater-seat-front-right",
+   "state_topic": "'${TOPIC_ROOT}'/select/seat_heater_right",
    "device": {
     "identifiers": [
     "'${DEVICE_ID}'"
@@ -479,6 +510,30 @@ function setupExtendedControls() {
    "qos": "'${QOS_LEVEL}'",
    "unique_id": "'${DEVICE_ID}'_heater-seat-front-right"
    }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 6 10 -t homeassistant/select/${DEVICE_ID}/heater-seat-front-right/config -l
+
+  # Locks (future)
+
+  #echo '{
+  # "command_topic": "'${TOPIC_ROOT}'/door_lock",
+  # "state_topic": "'${TOPIC_ROOT}'/lock/locked",
+  # "device": {
+  #  "identifiers": [
+  #  "'${DEVICE_ID}'"
+  #  ],
+  #  "manufacturer": "tesla-local-control",
+  #  "model": "Tesla_BLE",
+  #  "name": "'${DEVICE_NAME}'",
+  #  "sw_version": "'${SW_VERSION}'"
+  # },
+  # "icon": "mdi:car-door-lock",
+  # "name": "Door Lock",
+  # "payload_lock": "lock",
+  # "payload_unlock": "unlock",
+  # "state_locked": "true",
+  # "state_unlocked": "false",
+  # "qos": "'${QOS_LEVEL}'",
+  # "unique_id": "'${DEVICE_ID}'_door_lock"
+  # }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 6 10 -t homeassistant/lock/${DEVICE_ID}/door_lock/config -l
 
   log_debug "Leaving setupExtendedControls() vin:$vin"
 }
@@ -553,39 +608,6 @@ function setupReGenerateKeysButton() {
   eval $MOSQUITTO_PUB_BASE -t homeassistant/button/tesla_ble_${vin}/generate-keys/config -n
 
   log_debug "setupReGenerateKeysButton() leaving vin:$vin"
-
-}
-
-###
-##
-#   Setup Vehicule's Presence Sensor
-##
-###
-function setupPresenceSensor {
-  vin=$1
-
-  log_debug "setupPresenceSensor() entering vin:$vin"
-  configHADeviceEnvVars $vin
-
-  echo '{
-   "state_topic": "'${TOPIC_ROOT}'/binary_sensor/presence",
-   "device": {
-    "identifiers": [
-    "'${DEVICE_ID}'"
-    ],
-    "manufacturer": "tesla-local-control",
-    "model": "Tesla_BLE",
-    "name": "'${DEVICE_NAME}'",
-    "sw_version": "'${SW_VERSION}'"
-   },
-   "device_class": "presence",
-   "icon": "mdi:car-connected",
-   "name": "Presence",
-   "qos": "1",
-   "unique_id": "'${DEVICE_ID}'_presence"
-  }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 36 10 -t homeassistant/binary_sensor/${DEVICE_ID}/presence/config -l
-
-  log_debug "setupPresenceSensor() leaving vin:$vin"
 
 }
 
@@ -693,6 +715,25 @@ function setupDiagnostic() {
    "qos": "'${QOS_LEVEL}'",
    "unique_id": "'${DEVICE_ID}'_list-keys"
    }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 6 10 -t homeassistant/button/${DEVICE_ID}/list-keys/config -l
+
+  echo '{
+   "command_topic": "'${TOPIC_ROOT}'/config",
+   "device": {
+     "identifiers": [
+     "'${DEVICE_ID}'"
+     ],
+     "manufacturer": "tesla-local-control",
+     "model": "Tesla_BLE",
+     "name": "'${DEVICE_NAME}'",
+     "sw_version": "'${SW_VERSION}'"
+   },
+   "icon": "mdi:database-sync",
+   "name": "Force Data Update",
+   "entity_category": "diagnostic",
+   "payload_press": "read-state",
+   "qos": "'${QOS_LEVEL}'",
+   "unique_id": "'${DEVICE_ID}'_read-state"
+   }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 6 10 -t homeassistant/button/${DEVICE_ID}/read-state/config -l
 
   log_debug "setupDiagnostic() leaving vin:$vin"
 

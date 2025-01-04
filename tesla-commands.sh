@@ -135,11 +135,11 @@ pingVehicle() {
 
   log_debug "pingVehicle; entering vin:$vin"
 
-  if teslaCtrlSendCommand $vin ping "Ping vehicule"; then
-    log_debug "pingVehicle; ping vehicule succeeded vin:$vin"
+  if teslaCtrlSendCommand $vin ping "Ping vehicle"; then
+    log_debug "pingVehicle; ping vehicle succeeded vin:$vin"
     ret=0
   else
-    log_debug "pingVehicle; Failed to ping vehicule vin:$vin"
+    log_debug "pingVehicle; Failed to ping vehicle vin:$vin"
     ret=2
   fi
 
