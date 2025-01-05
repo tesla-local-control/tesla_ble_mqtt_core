@@ -102,7 +102,7 @@ function readState() {
     ret=0
   fi
 
-  sleep $BLE_CMD_RETRY_DELAY  
+  sleep $BLE_CMD_RETRY_DELAY
 
   log_debug "readState; leaving vin:$vin return:$ret"
   return $ret
@@ -384,7 +384,7 @@ function closuresState() {
     getStateValueAndPublish $vin '.closuresState.doorOpenDriverFront' binary_sensor/door_open_driver_front "$TESLACTRLOUT" &&
     getStateValueAndPublish $vin '.closuresState.doorOpenPassengerFront' binary_sensor/door_open_pass_front "$TESLACTRLOUT" &&
     getStateValueAndPublish $vin '.closuresState.doorOpenDriverRear' binary_sensor/door_open_driver_rear "$TESLACTRLOUT" &&
-    getStateValueAndPublish $vin '.closuresState.doorOpenPassengerRear' binary_sensor/door_open_pass_rear "$TESLACTRLOUT" &&    
+    getStateValueAndPublish $vin '.closuresState.doorOpenPassengerRear' binary_sensor/door_open_pass_rear "$TESLACTRLOUT" &&
     getStateValueAndPublish $vin '.closuresState.locked' lock/locked "$TESLACTRLOUT"
 
   EXIT_STATUS=$?
@@ -423,7 +423,7 @@ function driveState() {
   fi
 
   # Get values from the JSON and publish corresponding MQTT state topic
-  getStateValueAndPublish $vin '.driveState.odometerInHundredthsOfAMile' sensor/odometer "$TESLACTRLOUT" 
+  getStateValueAndPublish $vin '.driveState.odometerInHundredthsOfAMile' sensor/odometer "$TESLACTRLOUT"
 
   EXIT_STATUS=$?
   if [ $EXIT_STATUS -ne 0 ]; then

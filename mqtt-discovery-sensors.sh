@@ -333,7 +333,7 @@ function setupChargeStateSensors {
     "unit_of_measurement": "°C",
     "suggested_display_precision": "1",   
     "unique_id": "'${DEVICE_ID}'_outside_temp"
-  }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 36 10 -t homeassistant/sensor/${DEVICE_ID}/outside_temp/config -l 
+  }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 36 10 -t homeassistant/sensor/${DEVICE_ID}/outside_temp/config -l
 
   echo '{
     "state_topic": "'${TOPIC_ROOT}'/sensor/passenger_temp",
@@ -355,7 +355,7 @@ function setupChargeStateSensors {
     "suggested_display_precision": "1",   
     "unique_id": "'${DEVICE_ID}'_passenger_temp",
     "enabled_by_default": "false"
-  }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 36 10 -t homeassistant/sensor/${DEVICE_ID}/passenger_temp/config -l 
+  }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 36 10 -t homeassistant/sensor/${DEVICE_ID}/passenger_temp/config -l
 
   echo '{
     "state_topic": "'${TOPIC_ROOT}'/sensor/charge_cable",
