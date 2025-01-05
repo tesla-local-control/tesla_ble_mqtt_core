@@ -124,6 +124,27 @@ function setupChargeStateSensors {
   }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 36 10 -t homeassistant/sensor/${DEVICE_ID}/charger_actual_current/config -l
 
   echo '{
+   "state_topic": "'${TOPIC_ROOT}'/sensor/charger_voltage",
+   "device": {
+    "identifiers": [
+    "'${DEVICE_ID}'"
+    ],
+    "manufacturer": "tesla-local-control",
+    "model": "Tesla_BLE",
+    "name": "'${DEVICE_NAME}'",
+    "sw_version": "'${SW_VERSION}'"
+   },
+   "platform": "sensor",
+   "icon": "mdi:sine-wave",
+   "name": "Charger Voltage",
+   "qos": "'${QOS_LEVEL}'",
+   "device_class": "voltage",
+   "unit_of_measurement": "V",
+   "suggested_display_precision": "0",   
+   "unique_id": "'${DEVICE_ID}'_charger_voltage"
+  }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 36 10 -t homeassistant/sensor/${DEVICE_ID}/charger_voltage/config -l
+
+  echo '{
    "state_topic": "'${TOPIC_ROOT}'/sensor/charge_energy_added",
    "device": {
     "identifiers": [
@@ -143,6 +164,48 @@ function setupChargeStateSensors {
    "suggested_display_precision": "1",   
    "unique_id": "'${DEVICE_ID}'_charge_energy_added"
   }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 36 10 -t homeassistant/sensor/${DEVICE_ID}/charge_energy_added/config -l
+
+  echo '{
+   "state_topic": "'${TOPIC_ROOT}'/sensor/charge_range_added",
+   "device": {
+    "identifiers": [
+    "'${DEVICE_ID}'"
+    ],
+    "manufacturer": "tesla-local-control",
+    "model": "Tesla_BLE",
+    "name": "'${DEVICE_NAME}'",
+    "sw_version": "'${SW_VERSION}'"
+   },
+   "platform": "sensor",
+   "icon": "mdi:map-marker-distance",
+   "name": "Charge Range Added",
+   "qos": "'${QOS_LEVEL}'",
+   "device_class": "distance",
+   "unit_of_measurement": "mi",
+   "suggested_display_precision": "0",   
+   "unique_id": "'${DEVICE_ID}'_charge_range_added"
+  }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 36 10 -t homeassistant/sensor/${DEVICE_ID}/charge_range_added/config -l
+
+  echo '{
+   "state_topic": "'${TOPIC_ROOT}'/sensor/charge_speed",
+   "device": {
+    "identifiers": [
+    "'${DEVICE_ID}'"
+    ],
+    "manufacturer": "tesla-local-control",
+    "model": "Tesla_BLE",
+    "name": "'${DEVICE_NAME}'",
+    "sw_version": "'${SW_VERSION}'"
+   },
+   "platform": "sensor",
+   "icon": "mdi:speedometer",
+   "name": "Charge Speed",
+   "qos": "'${QOS_LEVEL}'",
+   "device_class": "speed",
+   "unit_of_measurement": "mph",
+   "suggested_display_precision": "0",   
+   "unique_id": "'${DEVICE_ID}'_charge_speed"
+  }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 36 10 -t homeassistant/sensor/${DEVICE_ID}/charge_speed/config -l
 
   echo '{
    "state_topic": "'${TOPIC_ROOT}'/sensor/tpms_pressure_fl",
