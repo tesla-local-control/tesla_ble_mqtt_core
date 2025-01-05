@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.3.1
+
+- NEW Feature: The following new states / entities are added:
+   - Sensors: Charger Voltage; Charger Range Added; Charge Speed mph; Passenger Temp Setting, Odometer
+   - Binary_Sensors: Front Defroster; Rear Defroster; Wiper Heater; Side Mirror Heater; Doors Open
+   - Selects: Heated Seat Rear Left; Heated Seat Rear Right
+
+- Fixes:
+   - Temp units incorrect for new Inside Temp and Outside Temp #135 (_core)
+
 ## 0.3.0
 
 - MAJOR NEW Feature: Read car state using BLE

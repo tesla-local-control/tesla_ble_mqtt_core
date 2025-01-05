@@ -91,6 +91,19 @@ function readState() {
 
   sleep $BLE_CMD_RETRY_DELAY
 
+  # Read and parse drive state
+  driveState $vin
+  EXIT_STATUS=$?
+  if [ $EXIT_STATUS -ne 0 ]; then
+    log_debug "readState; failed to read drive state vin:$vin. Exit status: $EXIT_STATUS"
+    return 2
+  else
+    log_notice "readState; read of drive state succeeded vin:$vin"
+    ret=0
+  fi
+
+  sleep $BLE_CMD_RETRY_DELAY
+
   log_debug "readState; leaving vin:$vin return:$ret"
   return $ret
 
@@ -199,6 +212,11 @@ function getStateValueAndPublish() {
       fi
     fi
 
+    # Modify values in specific cases
+    if [ $jsonParam == ".driveState.odometerInHundredthsOfAMile" ]; then
+      rqdValue=$((rqdValue / 100))
+    fi
+
     # Note if any window is open
     if [[ $jsonParam == ".closuresState.windowOpen"* ]] && [ $rqdValue == "true" ]; then
       ANYWINDOWOPEN="true"
@@ -238,7 +256,10 @@ function readChargeState() {
     getStateValueAndPublish $vin '.chargeState.batteryRange' sensor/battery_range "$TESLACTRLOUT" &&
     getStateValueAndPublish $vin '.chargeState.chargerPower' sensor/charger_power "$TESLACTRLOUT" &&
     getStateValueAndPublish $vin '.chargeState.chargerActualCurrent' sensor/charger_actual_current "$TESLACTRLOUT" &&
+    getStateValueAndPublish $vin '.chargeState.chargerVoltage' sensor/charger_voltage "$TESLACTRLOUT" &&
     getStateValueAndPublish $vin '.chargeState.chargeEnergyAdded' sensor/charge_energy_added "$TESLACTRLOUT" &&
+    getStateValueAndPublish $vin '.chargeState.chargeMilesAddedRated' sensor/charge_range_added "$TESLACTRLOUT" &&
+    getStateValueAndPublish $vin '.chargeState.chargeRateMph' sensor/charge_speed "$TESLACTRLOUT" &&
     getStateValueAndPublish $vin '.chargeState.connChargeCable' sensor/charge_cable "$TESLACTRLOUT" &&
     getStateValueAndPublish $vin '.chargeState.chargeEnableRequest' switch/charge_enable_request "$TESLACTRLOUT" &&
     getStateValueAndPublish $vin '.chargeState.chargePortDoorOpen' cover/charge_port_door_open "$TESLACTRLOUT" &&
@@ -275,12 +296,19 @@ function readClimateState() {
   # Get values from the JSON and publish corresponding MQTT state topic
   getStateValueAndPublish $vin '.climateState.insideTempCelsius' sensor/inside_temp "$TESLACTRLOUT" &&
     getStateValueAndPublish $vin '.climateState.outsideTempCelsius' sensor/outside_temp "$TESLACTRLOUT" &&
+    getStateValueAndPublish $vin '.climateState.passengerTempSetting' sensor/passenger_temp "$TESLACTRLOUT" &&
     getStateValueAndPublish $vin '.climateState.driverTempSetting' number/driver_temp_setting "$TESLACTRLOUT" &&
     getStateValueAndPublish $vin '.climateState.isClimateOn' switch/is_climate_on "$TESLACTRLOUT" &&
     getStateValueAndPublish $vin '.climateState.steeringWheelHeater' switch/steering_wheel_heater "$TESLACTRLOUT" &&
     getStateValueAndPublish $vin '.climateState.batteryHeater' binary_sensor/battery_heater_on "$TESLACTRLOUT" &&
+    getStateValueAndPublish $vin '.climateState.isFrontDefrosterOn' binary_sensor/front_defrost "$TESLACTRLOUT" &&
+    getStateValueAndPublish $vin '.climateState.isRearDefrosterOn' binary_sensor/rear_defrost "$TESLACTRLOUT" &&
+    getStateValueAndPublish $vin '.climateState.wiperBladeHeater' binary_sensor/wiper_heater "$TESLACTRLOUT" &&
+    getStateValueAndPublish $vin '.climateState.sideMirrorHeaters' binary_sensor/mirror_heater "$TESLACTRLOUT" &&
     getStateValueAndPublish $vin '.climateState.seatHeaterLeft' select/seat_heater_left "$TESLACTRLOUT" &&
-    getStateValueAndPublish $vin '.climateState.seatHeaterRight' select/seat_heater_right "$TESLACTRLOUT"
+    getStateValueAndPublish $vin '.climateState.seatHeaterRight' select/seat_heater_right "$TESLACTRLOUT" &&
+    getStateValueAndPublish $vin '.climateState.seatHeaterRearLeft' select/seat_heater_rear_left "$TESLACTRLOUT" &&
+    getStateValueAndPublish $vin '.climateState.seatHeaterRearRight' select/seat_heater_rear_right "$TESLACTRLOUT"
 
   EXIT_STATUS=$?
   if [ $EXIT_STATUS -ne 0 ]; then
@@ -353,6 +381,10 @@ function closuresState() {
     getStateValueAndPublish $vin '.closuresState.windowOpenPassengerFront' binary_sensor/window_open_pass_front "$TESLACTRLOUT" &&
     getStateValueAndPublish $vin '.closuresState.windowOpenDriverRear' binary_sensor/window_open_driver_rear "$TESLACTRLOUT" &&
     getStateValueAndPublish $vin '.closuresState.windowOpenPassengerRear' binary_sensor/window_open_pass_rear "$TESLACTRLOUT" &&
+    getStateValueAndPublish $vin '.closuresState.doorOpenDriverFront' binary_sensor/door_open_driver_front "$TESLACTRLOUT" &&
+    getStateValueAndPublish $vin '.closuresState.doorOpenPassengerFront' binary_sensor/door_open_pass_front "$TESLACTRLOUT" &&
+    getStateValueAndPublish $vin '.closuresState.doorOpenDriverRear' binary_sensor/door_open_driver_rear "$TESLACTRLOUT" &&
+    getStateValueAndPublish $vin '.closuresState.doorOpenPassengerRear' binary_sensor/door_open_pass_rear "$TESLACTRLOUT" &&
     getStateValueAndPublish $vin '.closuresState.locked' lock/locked "$TESLACTRLOUT"
 
   EXIT_STATUS=$?
@@ -370,6 +402,36 @@ function closuresState() {
     stateMQTTpub $vin "true" "cover/windows"
   else
     stateMQTTpub $vin "false" "cover/windows"
+  fi
+
+  return $ret
+}
+
+function driveState() {
+  vin=$1
+
+  # Send state command
+  export TESLACTRLOUT=""
+  sendBLECommand $vin "state drive" "Send state command with category=drive"
+  EXIT_STATUS=$?
+  if [ $EXIT_STATUS -ne 0 ]; then
+    ret=2
+    log_debug "driveState; sendBLECommand failed for vin:$vin return:$ret"
+    return $ret
+  else
+    log_debug "driveState; sendBLECommand succeeded for vin:$vin"
+  fi
+
+  # Get values from the JSON and publish corresponding MQTT state topic
+  getStateValueAndPublish $vin '.driveState.odometerInHundredthsOfAMile' sensor/odometer "$TESLACTRLOUT"
+
+  EXIT_STATUS=$?
+  if [ $EXIT_STATUS -ne 0 ]; then
+    ret=3
+    log_error "driveState; one of the getStateValueAndPublish calls failed for vin:$vin return:$ret"
+  else
+    ret=0
+    log_info "driveState; Completed successfully for vin:$vin"
   fi
 
   return $ret

@@ -511,6 +511,44 @@ function setupExtendedControls() {
    "unique_id": "'${DEVICE_ID}'_heater-seat-front-right"
    }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 6 10 -t homeassistant/select/${DEVICE_ID}/heater-seat-front-right/config -l
 
+  echo '{
+   "command_topic": "'${TOPIC_ROOT}'/heater-seat-rear-left",
+   "state_topic": "'${TOPIC_ROOT}'/select/seat_heater_rear_left",
+   "device": {
+    "identifiers": [
+    "'${DEVICE_ID}'"
+    ],
+    "manufacturer": "tesla-local-control",
+    "model": "Tesla_BLE",
+    "name": "'${DEVICE_NAME}'",
+    "sw_version": "'${SW_VERSION}'"
+   },
+   "icon": "mdi:car-seat-heater",
+   "name": "Heated Seat Rear Left",
+   "options": ["off", "low", "medium", "high"],
+   "qos": "'${QOS_LEVEL}'",
+   "unique_id": "'${DEVICE_ID}'_heater-seat-rear-left"
+   }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 6 10 -t homeassistant/select/${DEVICE_ID}/heater-seat-rear-left/config -l
+
+  echo '{
+   "command_topic": "'${TOPIC_ROOT}'/heater-seat-rear-right",
+   "state_topic": "'${TOPIC_ROOT}'/select/seat_heater_rear_right",
+   "device": {
+    "identifiers": [
+    "'${DEVICE_ID}'"
+    ],
+    "manufacturer": "tesla-local-control",
+    "model": "Tesla_BLE",
+    "name": "'${DEVICE_NAME}'",
+    "sw_version": "'${SW_VERSION}'"
+   },
+   "icon": "mdi:car-seat-heater",
+   "name": "Heated Seat Rear Right",
+   "options": ["off", "low", "medium", "high"],
+   "qos": "'${QOS_LEVEL}'",
+   "unique_id": "'${DEVICE_ID}'_heater-seat-rear-right"
+   }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 6 10 -t homeassistant/select/${DEVICE_ID}/heater-seat-rear-right/config -l
+
   # Locks (future)
 
   #echo '{
