@@ -281,6 +281,28 @@ function setupExtendedControls() {
    "unique_id": "'${DEVICE_ID}'_steering-wheel-heater"
    }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 6 10 -t homeassistant/switch/${DEVICE_ID}/steering-wheel-heater/config -l
 
+  echo '{
+   "command_topic": "'${TOPIC_ROOT}'/polling",
+   "device": {
+    "identifiers": [
+    "'${DEVICE_ID}'"
+    ],
+    "manufacturer": "tesla-local-control",
+    "model": "Tesla_BLE",
+    "name": "'${DEVICE_NAME}'",
+    "sw_version": "'${SW_VERSION}'"
+   },
+   "icon": "mdi:car-connected",
+   "name": "State Polling",
+   "device_class": "switch",
+   "payload_on": "on",
+   "payload_off": "off",
+   "retain": "true",
+   "qos": "'${QOS_LEVEL}'",
+   "unique_id": "'${DEVICE_ID}'_polling",
+   "entity_category": "diagnostic",
+   }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 6 10 -t homeassistant/switch/${DEVICE_ID}/polling/config -l
+
   # Covers
 
   echo '{
@@ -470,6 +492,30 @@ function setupExtendedControls() {
       "unique_id": "'${DEVICE_ID}'_climate-set-temp"
     }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 6 10 -t homeassistant/number/${DEVICE_ID}/climate-temp/config -l
   fi
+
+  echo '{
+   "command_topic": "'${TOPIC_ROOT}'/polling_interval",
+   "device": {
+    "identifiers": [
+    "'${DEVICE_ID}'"
+    ],
+    "manufacturer": "tesla-local-control",
+    "model": "Tesla_BLE",
+    "name": "'${DEVICE_NAME}'",
+    "sw_version": "'${SW_VERSION}'"
+   },
+   "icon": "mdi:timer-sync",
+   "min": "1",
+   "max": "60",
+   "step": "1",
+   "mode": "slider",
+   "name": "Polling Interval",
+   "qos": "'${QOS_LEVEL}'",
+   "retain": "true",
+   "unique_id": "'${DEVICE_ID}'_polling_interval",
+   "entity_category": "diagnostic",
+   "unit_of_measurement": "mins"
+   }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 6 10 -t homeassistant/number/${DEVICE_ID}/polling_interval/config -l
 
   # Selects
 
