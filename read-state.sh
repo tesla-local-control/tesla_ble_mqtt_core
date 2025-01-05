@@ -14,8 +14,8 @@ function poll_state_loop() {
   # Loop through each VIN to initialise safe defaults
   # These will get updated with actual values when MQTT reads the relevent retained messages
   for vin in $VIN_LIST; do
-    export $vin_POLLING=false
-    export $vin_POLLING_INTERVAL=11
+    export ${vin}_polling=false
+    export ${vin}_polling_interval=11
   done
 
   sleep 60
