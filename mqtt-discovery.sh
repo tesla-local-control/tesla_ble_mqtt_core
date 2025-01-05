@@ -298,9 +298,8 @@ function setupExtendedControls() {
    "payload_on": "on",
    "payload_off": "off",
    "retain": "true",
-   "qos": "'${QOS_LEVEL}'",
    "unique_id": "'${DEVICE_ID}'_polling",
-   "entity_category": "diagnostic",
+   "entity_category": "diagnostic"
    }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 6 10 -t homeassistant/switch/${DEVICE_ID}/polling/config -l
 
   # Covers
@@ -510,7 +509,6 @@ function setupExtendedControls() {
    "step": "1",
    "mode": "slider",
    "name": "Polling Interval",
-   "qos": "'${QOS_LEVEL}'",
    "retain": "true",
    "unique_id": "'${DEVICE_ID}'_polling_interval",
    "entity_category": "diagnostic",
