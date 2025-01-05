@@ -214,7 +214,7 @@ function getStateValueAndPublish() {
 
     # Modify values in specific cases
     if [ $jsonParam == ".driveState.odometerInHundredthsOfAMile" ]; then
-      rqdValue=$(($rqdValue / 100))
+      rqdValue=$((rqdValue / 100))
     fi
 
     # Note if any window is open
