@@ -8,6 +8,7 @@
 function poll_state_loop() {
   log_notice "Entering poll_state_loop..."
 
+
   sleep 30
 }
 

@@ -492,29 +492,6 @@ function setupExtendedControls() {
     }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 6 10 -t homeassistant/number/${DEVICE_ID}/climate-temp/config -l
   fi
 
-  echo '{
-   "command_topic": "'${TOPIC_ROOT}'/polling_interval",
-   "device": {
-    "identifiers": [
-    "'${DEVICE_ID}'"
-    ],
-    "manufacturer": "tesla-local-control",
-    "model": "Tesla_BLE",
-    "name": "'${DEVICE_NAME}'",
-    "sw_version": "'${SW_VERSION}'"
-   },
-   "icon": "mdi:timer-sync",
-   "min": "1",
-   "max": "60",
-   "step": "1",
-   "mode": "slider",
-   "name": "Polling Interval",
-   "retain": "true",
-   "unique_id": "'${DEVICE_ID}'_polling_interval",
-   "entity_category": "diagnostic",
-   "unit_of_measurement": "mins"
-   }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 6 10 -t homeassistant/number/${DEVICE_ID}/polling_interval/config -l
-
   # Selects
 
   echo '{
