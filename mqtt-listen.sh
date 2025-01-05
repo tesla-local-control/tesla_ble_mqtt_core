@@ -217,13 +217,13 @@ listen_to_mqtt() {
         ;;
 
       polling)
-        log_notice "Updating variable $cmd=$msg for $vin"
-        export $vin_$cmd=$msg
+        log_notice "Updating variable ${vin}_${cmd}=$msg"
+        export ${vin}_${cmd}=$msg
         ;;
 
       polling_interval)
-        log_notice "Updating variable $cmd=$msg for $vin"
-        export $vin_$cmd=$msg
+        log_notice "Updating variable ${vin}_${cmd}=$msg"
+        export ${vin}_${cmd}=$msg
         ;;
 
       *)
