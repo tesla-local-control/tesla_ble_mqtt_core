@@ -160,7 +160,6 @@ function setupChargeStateSensors {
    "name": "Tyre Pressure Front Left",
    "qos": "'${QOS_LEVEL}'",
    "device_class": "pressure",
-   "unit_of_measurement": "bar",
    "suggested_display_precision": "1",   
    "unique_id": "'${DEVICE_ID}'_tpms_pressure_fl"
   }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 36 10 -t homeassistant/sensor/${DEVICE_ID}/tpms_pressure_fl/config -l
@@ -181,7 +180,6 @@ function setupChargeStateSensors {
    "name": "Tyre Pressure Front Right",
    "qos": "'${QOS_LEVEL}'",
    "device_class": "pressure",
-   "unit_of_measurement": "bar",
    "suggested_display_precision": "1",   
    "unique_id": "'${DEVICE_ID}'_tpms_pressure_fr"
   }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 36 10 -t homeassistant/sensor/${DEVICE_ID}/tpms_pressure_fr/config -l
@@ -202,7 +200,6 @@ function setupChargeStateSensors {
    "name": "Tyre Pressure Rear Left",
    "qos": "'${QOS_LEVEL}'",
    "device_class": "pressure",
-   "unit_of_measurement": "bar",
    "suggested_display_precision": "1",   
    "unique_id": "'${DEVICE_ID}'_tpms_pressure_rl"
   }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 36 10 -t homeassistant/sensor/${DEVICE_ID}/tpms_pressure_rl/config -l
@@ -223,34 +220,31 @@ function setupChargeStateSensors {
    "name": "Tyre Pressure Rear Right",
    "qos": "'${QOS_LEVEL}'",
    "device_class": "pressure",
-   "unit_of_measurement": "bar",
    "suggested_display_precision": "1",   
    "unique_id": "'${DEVICE_ID}'_tpms_pressure_rr"
   }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 36 10 -t homeassistant/sensor/${DEVICE_ID}/tpms_pressure_rr/config -l
 
-  if [ $TEMPERATURE_UNIT_FAHRENHEIT = "false" ]; then
-    echo '{
-    "state_topic": "'${TOPIC_ROOT}'/sensor/inside_temp",
-    "device": {
-     "identifiers": [
-     "'${DEVICE_ID}'"
-     ],
-     "manufacturer": "tesla-local-control",
-     "model": "Tesla_BLE",
-     "name": "'${DEVICE_NAME}'",
-     "sw_version": "'${SW_VERSION}'"
-    },
-    "platform": "sensor",
-    "icon": "mdi:thermometer-lines",
-    "name": "Inside Temp",
-    "qos": "'${QOS_LEVEL}'",
-    "device_class": "temperature",
-    "unit_of_measurement": "°C",
-    "suggested_display_precision": "1",   
-    "unique_id": "'${DEVICE_ID}'_inside_temp"
-    }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 36 10 -t homeassistant/sensor/${DEVICE_ID}/inside_temp/config -l
+  echo '{
+  "state_topic": "'${TOPIC_ROOT}'/sensor/inside_temp",
+  "device": {
+   "identifiers": [
+   "'${DEVICE_ID}'"
+   ],
+   "manufacturer": "tesla-local-control",
+   "model": "Tesla_BLE",
+   "name": "'${DEVICE_NAME}'",
+   "sw_version": "'${SW_VERSION}'"
+  },
+  "platform": "sensor",
+  "icon": "mdi:thermometer-lines",
+  "name": "Inside Temp",
+  "qos": "'${QOS_LEVEL}'",
+  "device_class": "temperature",
+  "suggested_display_precision": "1",   
+  "unique_id": "'${DEVICE_ID}'_inside_temp"
+  }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 36 10 -t homeassistant/sensor/${DEVICE_ID}/inside_temp/config -l
 
-    echo '{
+  echo '{
     "state_topic": "'${TOPIC_ROOT}'/sensor/outside_temp",
     "device": {
      "identifiers": [
@@ -266,54 +260,9 @@ function setupChargeStateSensors {
     "name": "Outside Temp",
     "qos": "'${QOS_LEVEL}'",
     "device_class": "temperature",
-    "unit_of_measurement": "°C",
     "suggested_display_precision": "1",   
     "unique_id": "'${DEVICE_ID}'_outside_temp"
-    }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 36 10 -t homeassistant/sensor/${DEVICE_ID}/outside_temp/config -l
-
-  else
-    echo '{
-    "state_topic": "'${TOPIC_ROOT}'/sensor/inside_temp",
-    "device": {
-     "identifiers": [
-     "'${DEVICE_ID}'"
-     ],
-     "manufacturer": "tesla-local-control",
-     "model": "Tesla_BLE",
-     "name": "'${DEVICE_NAME}'",
-     "sw_version": "'${SW_VERSION}'"
-    },
-    "platform": "sensor",
-    "icon": "mdi:thermometer-lines",
-    "name": "Inside Temp",
-    "qos": "'${QOS_LEVEL}'",
-    "device_class": "temperature",
-    "unit_of_measurement": "°F",
-    "suggested_display_precision": "1",   
-    "unique_id": "'${DEVICE_ID}'_inside_temp"
-    }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 36 10 -t homeassistant/sensor/${DEVICE_ID}/inside_temp/config -l
-
-    echo '{
-    "state_topic": "'${TOPIC_ROOT}'/sensor/outside_temp",
-    "device": {
-     "identifiers": [
-     "'${DEVICE_ID}'"
-        ],
-     "manufacturer": "tesla-local-control",
-     "model": "Tesla_BLE",
-     "name": "'${DEVICE_NAME}'",
-     "sw_version": "'${SW_VERSION}'"
-    },
-    "platform": "sensor",
-    "icon": "mdi:thermometer",
-    "name": "Outside Temp",
-    "qos": "'${QOS_LEVEL}'",
-    "device_class": "temperature",
-    "unit_of_measurement": "°F",
-    "suggested_display_precision": "1",   
-    "unique_id": "'${DEVICE_ID}'_outside_temp"
-    }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 36 10 -t homeassistant/sensor/${DEVICE_ID}/outside_temp/config -l
-  fi
+  }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 36 10 -t homeassistant/sensor/${DEVICE_ID}/outside_temp/config -l 
 
   echo '{
     "state_topic": "'${TOPIC_ROOT}'/sensor/charge_cable",
@@ -331,7 +280,7 @@ function setupChargeStateSensors {
     "name": "Charge Cable",
     "qos": "'${QOS_LEVEL}'",
     "unique_id": "'${DEVICE_ID}'_charge_cable"
-    }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 36 10 -t homeassistant/sensor/${DEVICE_ID}/charge_cable/config -l
+  }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 36 10 -t homeassistant/sensor/${DEVICE_ID}/charge_cable/config -l
 
   echo '{
    "state_topic": "'${TOPIC_ROOT}'/binary_sensor/battery_heater_on",
