@@ -142,7 +142,7 @@ function setupChargeStateSensors {
    "unit_of_measurement": "V",
    "suggested_display_precision": "0",
    "unique_id": "'${DEVICE_ID}'_charger_voltage"
-   "enabled_by_default":, "false",
+   "enabled_by_default": "false",
   }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 36 10 -t homeassistant/sensor/${DEVICE_ID}/charger_voltage/config -l
 
   echo '{
@@ -205,7 +205,7 @@ function setupChargeStateSensors {
    "device_class": "speed",
    "unit_of_measurement": "mph",
    "suggested_display_precision": "0",
-   "enabled_by_default":, "false",
+   "enabled_by_default": "false",
    "unique_id": "'${DEVICE_ID}'_charge_speed"
   }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 36 10 -t homeassistant/sensor/${DEVICE_ID}/charge_speed/config -l
 
@@ -225,7 +225,7 @@ function setupChargeStateSensors {
    "name": "Tyre Pressure Front Left",
    "qos": "'${QOS_LEVEL}'",
    "device_class": "pressure",
-   "unit_of_measurement": "psi",
+   "unit_of_measurement": "bar",
    "suggested_display_precision": "1",   
    "unique_id": "'${DEVICE_ID}'_tpms_pressure_fl"
   }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 36 10 -t homeassistant/sensor/${DEVICE_ID}/tpms_pressure_fl/config -l
@@ -246,7 +246,7 @@ function setupChargeStateSensors {
    "name": "Tyre Pressure Front Right",
    "qos": "'${QOS_LEVEL}'",
    "device_class": "pressure",
-   "unit_of_measurement": "psi",
+   "unit_of_measurement": "bar",
    "suggested_display_precision": "1",   
    "unique_id": "'${DEVICE_ID}'_tpms_pressure_fr"
   }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 36 10 -t homeassistant/sensor/${DEVICE_ID}/tpms_pressure_fr/config -l
@@ -267,7 +267,7 @@ function setupChargeStateSensors {
    "name": "Tyre Pressure Rear Left",
    "qos": "'${QOS_LEVEL}'",
    "device_class": "pressure",
-   "unit_of_measurement": "psi",
+   "unit_of_measurement": "bar",
    "suggested_display_precision": "1",   
    "unique_id": "'${DEVICE_ID}'_tpms_pressure_rl"
   }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 36 10 -t homeassistant/sensor/${DEVICE_ID}/tpms_pressure_rl/config -l
@@ -288,7 +288,7 @@ function setupChargeStateSensors {
    "name": "Tyre Pressure Rear Right",
    "qos": "'${QOS_LEVEL}'",
    "device_class": "pressure",
-   "unit_of_measurement": "psi",
+   "unit_of_measurement": "bar",
    "suggested_display_precision": "1",   
    "unique_id": "'${DEVICE_ID}'_tpms_pressure_rr"
   }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 36 10 -t homeassistant/sensor/${DEVICE_ID}/tpms_pressure_rr/config -l
@@ -354,7 +354,7 @@ function setupChargeStateSensors {
     "unit_of_measurement": "°C",
     "suggested_display_precision": "1",   
     "unique_id": "'${DEVICE_ID}'_passenger_temp"
-    "enabled_by_default":, "false",
+    "enabled_by_default": "false",
   }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 36 10 -t homeassistant/sensor/${DEVICE_ID}/passenger_temp/config -l 
 
   echo '{
@@ -539,7 +539,7 @@ function setupChargeStateSensors {
    "payload_on": "true",
    "payload_off": "false",
    "qos": "'${QOS_LEVEL}'",
-   "enabled_by_default":, "false",
+   "enabled_by_default": "false",
    "unique_id": "'${DEVICE_ID}'_front_defrost"
   }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 36 10 -t homeassistant/binary_sensor/${DEVICE_ID}/front_defrost/config -l
 
@@ -560,7 +560,7 @@ function setupChargeStateSensors {
    "payload_on": "true",
    "payload_off": "false",
    "qos": "'${QOS_LEVEL}'",
-   "enabled_by_default":, "false",
+   "enabled_by_default": "false",
    "unique_id": "'${DEVICE_ID}'_rear_defrost"
   }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 36 10 -t homeassistant/binary_sensor/${DEVICE_ID}/rear_defrost/config -l
 
@@ -581,7 +581,7 @@ function setupChargeStateSensors {
    "payload_on": "true",
    "payload_off": "false",
    "qos": "'${QOS_LEVEL}'",
-   "enabled_by_default":, "false",
+   "enabled_by_default": "false",
    "unique_id": "'${DEVICE_ID}'_wiper_heater"
   }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 36 10 -t homeassistant/binary_sensor/${DEVICE_ID}/wiper_heater/config -l
 
@@ -602,7 +602,7 @@ function setupChargeStateSensors {
    "payload_on": "true",
    "payload_off": "false",
    "qos": "'${QOS_LEVEL}'",
-   "enabled_by_default":, "false",
+   "enabled_by_default": "false",
    "unique_id": "'${DEVICE_ID}'_mirror_heater"
   }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 36 10 -t homeassistant/binary_sensor/${DEVICE_ID}/mirror_heater/config -l
 
