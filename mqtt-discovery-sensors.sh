@@ -223,6 +223,7 @@ function setupChargeStateSensors {
    "name": "Tyre Pressure Front Left",
    "qos": "'${QOS_LEVEL}'",
    "device_class": "pressure",
+   "unit_of_measurement": "psi",
    "suggested_display_precision": "1",   
    "unique_id": "'${DEVICE_ID}'_tpms_pressure_fl"
   }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 36 10 -t homeassistant/sensor/${DEVICE_ID}/tpms_pressure_fl/config -l
@@ -243,6 +244,7 @@ function setupChargeStateSensors {
    "name": "Tyre Pressure Front Right",
    "qos": "'${QOS_LEVEL}'",
    "device_class": "pressure",
+   "unit_of_measurement": "psi",
    "suggested_display_precision": "1",   
    "unique_id": "'${DEVICE_ID}'_tpms_pressure_fr"
   }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 36 10 -t homeassistant/sensor/${DEVICE_ID}/tpms_pressure_fr/config -l
@@ -263,6 +265,7 @@ function setupChargeStateSensors {
    "name": "Tyre Pressure Rear Left",
    "qos": "'${QOS_LEVEL}'",
    "device_class": "pressure",
+   "unit_of_measurement": "psi",
    "suggested_display_precision": "1",   
    "unique_id": "'${DEVICE_ID}'_tpms_pressure_rl"
   }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 36 10 -t homeassistant/sensor/${DEVICE_ID}/tpms_pressure_rl/config -l
@@ -283,6 +286,7 @@ function setupChargeStateSensors {
    "name": "Tyre Pressure Rear Right",
    "qos": "'${QOS_LEVEL}'",
    "device_class": "pressure",
+   "unit_of_measurement": "psi",
    "suggested_display_precision": "1",   
    "unique_id": "'${DEVICE_ID}'_tpms_pressure_rr"
   }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 36 10 -t homeassistant/sensor/${DEVICE_ID}/tpms_pressure_rr/config -l
@@ -303,6 +307,7 @@ function setupChargeStateSensors {
   "name": "Inside Temp",
   "qos": "'${QOS_LEVEL}'",
   "device_class": "temperature",
+  "unit_of_measurement": "°C",
   "suggested_display_precision": "1",   
   "unique_id": "'${DEVICE_ID}'_inside_temp"
   }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 36 10 -t homeassistant/sensor/${DEVICE_ID}/inside_temp/config -l
@@ -323,6 +328,7 @@ function setupChargeStateSensors {
     "name": "Outside Temp",
     "qos": "'${QOS_LEVEL}'",
     "device_class": "temperature",
+    "unit_of_measurement": "°C",
     "suggested_display_precision": "1",   
     "unique_id": "'${DEVICE_ID}'_outside_temp"
   }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 36 10 -t homeassistant/sensor/${DEVICE_ID}/outside_temp/config -l 
