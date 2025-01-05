@@ -216,6 +216,16 @@ listen_to_mqtt() {
         teslaCtrlSendCommand $vin "$cmd-$msg" "Set $cmd mode to $msg"
         ;;
 
+      polling)
+        log_notice "Updating variable $cmd=$msg for $vin"
+        export $vin_$cmd=$msg
+        ;;
+
+      polling_interval)
+        log_notice "Updating variable $cmd=$msg for $vin"
+        export $vin_$cmd=$msg
+        ;;
+
       *)
         log_error "Invalid request; topic:$topic vin:$vin msg:$msg"
         ;;

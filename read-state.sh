@@ -11,9 +11,11 @@ function poll_state_loop() {
   # Replace | with ' ' white space
   VIN_LIST=$(echo $VIN_LIST | sed -e 's/[|,;]/ /g')
 
-  # Loop through each VIN
+  # Loop through each VIN to initialise safe defaults
+  # These will get updated with actual values when MQTT reads the relevent retained messages
   for vin in $VIN_LIST; do
-    echo VIN: $vin
+    export $vin_POLLING=false
+    export $vin_POLLING_INTERVAL=11
   done
 
   sleep 60
