@@ -3,7 +3,8 @@
 ## 0.3.1
 
 - NEW Feature: The following new states / entities are added:
-   - Sensors: Charger Voltage; Charger Range Added; Charge Speed mph
+   - Sensors: Charger Voltage; Charger Range Added; Charge Speed mph; Passenger Temp Setting
+   - Binary_Sensors: Front Defroster; Rear Defroster; Wiper Heater; Side Mirror Heater
 
 - Fixes:
    - Temp units incorrect for new Inside Temp and Outside Temp #135 (_core)

@@ -98,7 +98,7 @@ function setupChargeStateSensors {
    "qos": "'${QOS_LEVEL}'",
    "device_class": "power",
    "unit_of_measurement": "kW",
-   "suggested_display_precision": "1",   
+   "suggested_display_precision": "1",
    "unique_id": "'${DEVICE_ID}'_charger_power"
   }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 36 10 -t homeassistant/sensor/${DEVICE_ID}/charger_power/config -l
 
@@ -119,7 +119,7 @@ function setupChargeStateSensors {
    "qos": "'${QOS_LEVEL}'",
    "device_class": "current",
    "unit_of_measurement": "A",
-   "suggested_display_precision": "0",   
+   "suggested_display_precision": "0",
    "unique_id": "'${DEVICE_ID}'_charger_actual_current"
   }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 36 10 -t homeassistant/sensor/${DEVICE_ID}/charger_actual_current/config -l
 
@@ -140,8 +140,9 @@ function setupChargeStateSensors {
    "qos": "'${QOS_LEVEL}'",
    "device_class": "voltage",
    "unit_of_measurement": "V",
-   "suggested_display_precision": "0",   
+   "suggested_display_precision": "0",
    "unique_id": "'${DEVICE_ID}'_charger_voltage"
+   "enabled_by_default":, "false",
   }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 36 10 -t homeassistant/sensor/${DEVICE_ID}/charger_voltage/config -l
 
   echo '{
@@ -161,7 +162,7 @@ function setupChargeStateSensors {
    "qos": "'${QOS_LEVEL}'",
    "device_class": "energy",
    "unit_of_measurement": "kWh",
-   "suggested_display_precision": "1",   
+   "suggested_display_precision": "1",
    "unique_id": "'${DEVICE_ID}'_charge_energy_added"
   }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 36 10 -t homeassistant/sensor/${DEVICE_ID}/charge_energy_added/config -l
 
@@ -182,7 +183,7 @@ function setupChargeStateSensors {
    "qos": "'${QOS_LEVEL}'",
    "device_class": "distance",
    "unit_of_measurement": "mi",
-   "suggested_display_precision": "0",   
+   "suggested_display_precision": "0",
    "unique_id": "'${DEVICE_ID}'_charge_range_added"
   }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 36 10 -t homeassistant/sensor/${DEVICE_ID}/charge_range_added/config -l
 
@@ -203,7 +204,8 @@ function setupChargeStateSensors {
    "qos": "'${QOS_LEVEL}'",
    "device_class": "speed",
    "unit_of_measurement": "mph",
-   "suggested_display_precision": "0",   
+   "suggested_display_precision": "0",
+   "enabled_by_default":, "false",
    "unique_id": "'${DEVICE_ID}'_charge_speed"
   }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 36 10 -t homeassistant/sensor/${DEVICE_ID}/charge_speed/config -l
 
@@ -332,6 +334,28 @@ function setupChargeStateSensors {
     "suggested_display_precision": "1",   
     "unique_id": "'${DEVICE_ID}'_outside_temp"
   }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 36 10 -t homeassistant/sensor/${DEVICE_ID}/outside_temp/config -l 
+
+  echo '{
+    "state_topic": "'${TOPIC_ROOT}'/sensor/passenger_temp",
+    "device": {
+     "identifiers": [
+     "'${DEVICE_ID}'"
+        ],
+     "manufacturer": "tesla-local-control",
+     "model": "Tesla_BLE",
+     "name": "'${DEVICE_NAME}'",
+     "sw_version": "'${SW_VERSION}'"
+    },
+    "platform": "sensor",
+    "icon": "mdi:thermometer",
+    "name": "Passenger Temp Setting",
+    "qos": "'${QOS_LEVEL}'",
+    "device_class": "temperature",
+    "unit_of_measurement": "°C",
+    "suggested_display_precision": "1",   
+    "unique_id": "'${DEVICE_ID}'_passenger_temp"
+    "enabled_by_default":, "false",
+  }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 36 10 -t homeassistant/sensor/${DEVICE_ID}/passenger_temp/config -l 
 
   echo '{
     "state_topic": "'${TOPIC_ROOT}'/sensor/charge_cable",
@@ -476,6 +500,7 @@ function setupChargeStateSensors {
    "unique_id": "'${DEVICE_ID}'_window_open_pr"
 
   }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 36 10 -t homeassistant/binary_sensor/${DEVICE_ID}/window_open_pass_rear/config -l
+
   echo '{
    "state_topic": "'${TOPIC_ROOT}'/binary_sensor/door_lock",
    "device": {
@@ -496,6 +521,90 @@ function setupChargeStateSensors {
    "qos": "'${QOS_LEVEL}'",
    "unique_id": "'${DEVICE_ID}'_window_open_pr"
   }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 36 10 -t homeassistant/binary_sensor/${DEVICE_ID}/door_lock/config -l
+
+  echo '{
+   "state_topic": "'${TOPIC_ROOT}'/binary_sensor/front_defrost",
+   "device": {
+    "identifiers": [
+    "'${DEVICE_ID}'"
+    ],
+    "manufacturer": "tesla-local-control",
+    "model": "Tesla_BLE",
+    "name": "'${DEVICE_NAME}'",
+    "sw_version": "'${SW_VERSION}'"
+   },
+   "platform": "binary_sensor",
+   "icon": "mdi:car-defrost-front",
+   "name": "Front Defroster",
+   "payload_on": "true",
+   "payload_off": "false",
+   "qos": "'${QOS_LEVEL}'",
+   "enabled_by_default":, "false",
+   "unique_id": "'${DEVICE_ID}'_front_defrost"
+  }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 36 10 -t homeassistant/binary_sensor/${DEVICE_ID}/front_defrost/config -l
+
+  echo '{
+   "state_topic": "'${TOPIC_ROOT}'/binary_sensor/rear_defrost",
+   "device": {
+    "identifiers": [
+    "'${DEVICE_ID}'"
+    ],
+    "manufacturer": "tesla-local-control",
+    "model": "Tesla_BLE",
+    "name": "'${DEVICE_NAME}'",
+    "sw_version": "'${SW_VERSION}'"
+   },
+   "platform": "binary_sensor",
+   "icon": "mdi:car-defrost-rear",
+   "name": "Rear Defroster",
+   "payload_on": "true",
+   "payload_off": "false",
+   "qos": "'${QOS_LEVEL}'",
+   "enabled_by_default":, "false",
+   "unique_id": "'${DEVICE_ID}'_rear_defrost"
+  }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 36 10 -t homeassistant/binary_sensor/${DEVICE_ID}/rear_defrost/config -l
+
+  echo '{
+   "state_topic": "'${TOPIC_ROOT}'/binary_sensor/wiper_heater",
+   "device": {
+    "identifiers": [
+    "'${DEVICE_ID}'"
+    ],
+    "manufacturer": "tesla-local-control",
+    "model": "Tesla_BLE",
+    "name": "'${DEVICE_NAME}'",
+    "sw_version": "'${SW_VERSION}'"
+   },
+   "platform": "binary_sensor",
+   "icon": "mdi:car-windscreen-outline",
+   "name": "Wiper Heater",
+   "payload_on": "true",
+   "payload_off": "false",
+   "qos": "'${QOS_LEVEL}'",
+   "enabled_by_default":, "false",
+   "unique_id": "'${DEVICE_ID}'_wiper_heater"
+  }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 36 10 -t homeassistant/binary_sensor/${DEVICE_ID}/wiper_heater/config -l
+
+  echo '{
+   "state_topic": "'${TOPIC_ROOT}'/binary_sensor/mirror_heater",
+   "device": {
+    "identifiers": [
+    "'${DEVICE_ID}'"
+    ],
+    "manufacturer": "tesla-local-control",
+    "model": "Tesla_BLE",
+    "name": "'${DEVICE_NAME}'",
+    "sw_version": "'${SW_VERSION}'"
+   },
+   "platform": "binary_sensor",
+   "icon": "mdi:car-door",
+   "name": "Mirror Heater",
+   "payload_on": "true",
+   "payload_off": "false",
+   "qos": "'${QOS_LEVEL}'",
+   "enabled_by_default":, "false",
+   "unique_id": "'${DEVICE_ID}'_mirror_heater"
+  }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 36 10 -t homeassistant/binary_sensor/${DEVICE_ID}/mirror_heater/config -l
 
   # Status is only Disengaged for short time, it gets reengaged soon after even with no charger plugged in. Not useful
   # echo '{
