@@ -199,6 +199,11 @@ function getStateValueAndPublish() {
       fi
     fi
 
+    # Modify values in specific cases
+    if [ $jsonParam == ".driveState.odometerInHundredthsOfAMile" ]; then
+      rqdValue=$(($rqdValue / 100))
+    fi
+
     # Note if any window is open
     if [[ $jsonParam == ".closuresState.windowOpen"* ]] && [ $rqdValue == "true" ]; then
       ANYWINDOWOPEN="true"
@@ -384,6 +389,36 @@ function closuresState() {
     stateMQTTpub $vin "true" "cover/windows"
   else
     stateMQTTpub $vin "false" "cover/windows"
+  fi
+
+  return $ret
+}
+
+function readDriveState() {
+  vin=$1
+
+  # Send state command
+  export TESLACTRLOUT=""
+  sendBLECommand $vin "state drive" "Send state command with category=drive"
+  EXIT_STATUS=$?
+  if [ $EXIT_STATUS -ne 0 ]; then
+    ret=2
+    log_debug "readDriveState; sendBLECommand failed for vin:$vin return:$ret"
+    return $ret
+  else
+    log_debug "readDriveState; sendBLECommand succeeded for vin:$vin"
+  fi
+
+  # Get values from the JSON and publish corresponding MQTT state topic
+  getStateValueAndPublish $vin '.driveState."odometerInHundredthsOfAMile' sensor/odometer "$TESLACTRLOUT" 
+
+  EXIT_STATUS=$?
+  if [ $EXIT_STATUS -ne 0 ]; then
+    ret=3
+    log_error "readDriveState; one of the getStateValueAndPublish calls failed for vin:$vin return:$ret"
+  else
+    ret=0
+    log_info "readDriveState; Completed successfully for vin:$vin"
   fi
 
   return $ret
