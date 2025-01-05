@@ -423,7 +423,7 @@ function driveState() {
   fi
 
   # Get values from the JSON and publish corresponding MQTT state topic
-  getStateValueAndPublish $vin '.driveState."odometerInHundredthsOfAMile' sensor/odometer "$TESLACTRLOUT" 
+  getStateValueAndPublish $vin '.driveState.odometerInHundredthsOfAMile' sensor/odometer "$TESLACTRLOUT" 
 
   EXIT_STATUS=$?
   if [ $EXIT_STATUS -ne 0 ]; then
