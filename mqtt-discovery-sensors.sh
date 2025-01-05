@@ -498,8 +498,95 @@ function setupChargeStateSensors {
    "device_class": "window",   
    "qos": "'${QOS_LEVEL}'",
    "unique_id": "'${DEVICE_ID}'_window_open_pr"
-
   }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 36 10 -t homeassistant/binary_sensor/${DEVICE_ID}/window_open_pass_rear/config -l
+
+  echo '{
+   "state_topic": "'${TOPIC_ROOT}'/binary_sensor/door_open_driver_front",
+   "device": {
+    "identifiers": [
+    "'${DEVICE_ID}'"
+    ],
+    "manufacturer": "tesla-local-control",
+    "model": "Tesla_BLE",
+    "name": "'${DEVICE_NAME}'",
+    "sw_version": "'${SW_VERSION}'"
+   },
+   "platform": "binary_sensor",
+   "icon": "mdi:car-door",
+   "name": "Door Driver Front",
+   "payload_on": "true",
+   "payload_off": "false",
+   "device_class": "door",
+   "qos": "'${QOS_LEVEL}'",
+   "enabled_by_default": "false",   
+   "unique_id": "'${DEVICE_ID}'_door_open_df"
+  }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 36 10 -t homeassistant/binary_sensor/${DEVICE_ID}/door_open_driver_front/config -l
+
+  echo '{
+   "state_topic": "'${TOPIC_ROOT}'/binary_sensor/door_open_pass_front",
+   "device": {
+    "identifiers": [
+    "'${DEVICE_ID}'"
+    ],
+    "manufacturer": "tesla-local-control",
+    "model": "Tesla_BLE",
+    "name": "'${DEVICE_NAME}'",
+    "sw_version": "'${SW_VERSION}'"
+   },
+   "platform": "binary_sensor",
+   "icon": "mdi:car-door",
+   "name": "Door Passenger Front",
+   "payload_on": "true",
+   "payload_off": "false",
+   "device_class": "door",   
+   "qos": "'${QOS_LEVEL}'",
+   "enabled_by_default": "false",   
+   "unique_id": "'${DEVICE_ID}'_door_open_pf"
+  }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 36 10 -t homeassistant/binary_sensor/${DEVICE_ID}/door_open_pass_front/config -l
+
+  echo '{
+   "state_topic": "'${TOPIC_ROOT}'/binary_sensor/door_open_driver_rear",
+   "device": {
+    "identifiers": [
+    "'${DEVICE_ID}'"
+    ],
+    "manufacturer": "tesla-local-control",
+    "model": "Tesla_BLE",
+    "name": "'${DEVICE_NAME}'",
+    "sw_version": "'${SW_VERSION}'"
+   },
+   "platform": "binary_sensor",
+   "icon": "mdi:car-door",
+   "name": "Door Driver Rear",
+   "payload_on": "true",
+   "payload_off": "false",
+   "device_class": "door",   
+   "qos": "'${QOS_LEVEL}'",
+   "enabled_by_default": "false",   
+   "unique_id": "'${DEVICE_ID}'_door_open_dr"
+  }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 36 10 -t homeassistant/binary_sensor/${DEVICE_ID}/door_open_driver_rear/config -l
+
+  echo '{
+   "state_topic": "'${TOPIC_ROOT}'/binary_sensor/door_open_pass_rear",
+   "device": {
+    "identifiers": [
+    "'${DEVICE_ID}'"
+    ],
+    "manufacturer": "tesla-local-control",
+    "model": "Tesla_BLE",
+    "name": "'${DEVICE_NAME}'",
+    "sw_version": "'${SW_VERSION}'"
+   },
+   "platform": "binary_sensor",
+   "icon": "mdi:car-door",
+   "name": "Door Passenger Rear",
+   "payload_on": "true",
+   "payload_off": "false",
+   "device_class": "door",   
+   "qos": "'${QOS_LEVEL}'",
+   "enabled_by_default": "false",   
+   "unique_id": "'${DEVICE_ID}'_door_open_pr"
+  }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 36 10 -t homeassistant/binary_sensor/${DEVICE_ID}/door_open_pass_rear/config -l
 
   echo '{
    "state_topic": "'${TOPIC_ROOT}'/binary_sensor/door_lock",
