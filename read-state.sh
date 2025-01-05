@@ -407,7 +407,7 @@ function closuresState() {
   return $ret
 }
 
-function readDriveState() {
+function driveState() {
   vin=$1
 
   # Send state command
@@ -416,10 +416,10 @@ function readDriveState() {
   EXIT_STATUS=$?
   if [ $EXIT_STATUS -ne 0 ]; then
     ret=2
-    log_debug "readDriveState; sendBLECommand failed for vin:$vin return:$ret"
+    log_debug "driveState; sendBLECommand failed for vin:$vin return:$ret"
     return $ret
   else
-    log_debug "readDriveState; sendBLECommand succeeded for vin:$vin"
+    log_debug "driveState; sendBLECommand succeeded for vin:$vin"
   fi
 
   # Get values from the JSON and publish corresponding MQTT state topic
@@ -428,10 +428,10 @@ function readDriveState() {
   EXIT_STATUS=$?
   if [ $EXIT_STATUS -ne 0 ]; then
     ret=3
-    log_error "readDriveState; one of the getStateValueAndPublish calls failed for vin:$vin return:$ret"
+    log_error "driveState; one of the getStateValueAndPublish calls failed for vin:$vin return:$ret"
   else
     ret=0
-    log_info "readDriveState; Completed successfully for vin:$vin"
+    log_info "driveState; Completed successfully for vin:$vin"
   fi
 
   return $ret
