@@ -91,6 +91,19 @@ function readState() {
 
   sleep $BLE_CMD_RETRY_DELAY
 
+  # Read and parse drive state
+  driveState $vin
+  EXIT_STATUS=$?
+  if [ $EXIT_STATUS -ne 0 ]; then
+    log_debug "readState; failed to read drive state vin:$vin. Exit status: $EXIT_STATUS"
+    return 2
+  else
+    log_notice "readState; read of drive state succeeded vin:$vin"
+    ret=0
+  fi
+
+  sleep $BLE_CMD_RETRY_DELAY  
+
   log_debug "readState; leaving vin:$vin return:$ret"
   return $ret
 
