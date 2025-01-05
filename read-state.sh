@@ -7,9 +7,16 @@
 ## function poll_state_loop. For future implementation
 function poll_state_loop() {
   log_notice "Entering poll_state_loop..."
+  
+  # Replace | with ' ' white space
+  VIN_LIST=$(echo $VIN_LIST | sed -e 's/[|,;]/ /g')
 
+  # Loop through each VIN
+  for vin in $VIN_LIST; do
+    echo VIN: $vin
+  done
 
-  sleep 30
+  sleep 60
 }
 
 function stateMQTTpub() {

@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.4.0
+
+- RELEASE NEW Feature: Automatic Polling is now possible for state
+
+- NEW Feature: The following new states / entities are added:
+   - Switches: State Polling 
+   - Numbers:  Polling Interval
+
+- Fixes:
+
 ## 0.3.1
 
 - NEW Feature: The following new states / entities are added:
