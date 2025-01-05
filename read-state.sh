@@ -18,7 +18,11 @@ function poll_state_loop() {
     export ${vin}_polling_interval=11
   done
 
-  sleep 60
+  while :; do
+    sleep 60
+    echo Polling ${vin}_polling
+    echo Intevnal ${vin}_polling_interval
+  done
 }
 
 function stateMQTTpub() {
