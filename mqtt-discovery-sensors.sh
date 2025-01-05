@@ -576,7 +576,7 @@ function setupChargeStateSensors {
     "sw_version": "'${SW_VERSION}'"
    },
    "platform": "binary_sensor",
-   "icon": "mdi:car-windscreen-outline",
+   "icon": "mdi:car-windshield-outline",
    "name": "Wiper Heater",
    "payload_on": "true",
    "payload_off": "false",
