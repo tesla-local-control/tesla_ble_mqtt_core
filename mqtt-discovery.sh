@@ -283,6 +283,7 @@ function setupExtendedControls() {
 
   echo '{
    "command_topic": "'${TOPIC_ROOT}'/polling",
+   "state_topic": "'${TOPIC_ROOT}'/polling",  
    "device": {
     "identifiers": [
     "'${DEVICE_ID}'"
@@ -297,6 +298,8 @@ function setupExtendedControls() {
    "device_class": "switch",
    "payload_on": "on",
    "payload_off": "off",
+   "state_on": "on",
+   "state_off": "off",
    "retain": "true",
    "unique_id": "'${DEVICE_ID}'_polling",
    "entity_category": "diagnostic"
