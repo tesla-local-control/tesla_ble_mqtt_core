@@ -10,8 +10,10 @@ log_debug "Loading environment & functions..."
 for fSource in mqtt.sh \
   mqtt-discovery.sh \
   mqtt-discovery-sensors.sh \
+  mqtt-listen.sh \
   subroutines.sh \
   tesla-commands.sh \
+  read-state.sh \
   version.sh; do
 
   if [ -f /app/$fSource ]; then

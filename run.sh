@@ -88,9 +88,6 @@ log_debug "BLE_LN_LIST:$BLE_LN_LIST"
 log_debug "BLE_MAC_LIST:$BLE_MAC_LIST"
 log_debug "PRESENCE_EXPIRE_TIME_LIST:$PRESENCE_EXPIRE_TIME_LIST"
 
-. /app/mqtt-listen.sh
-. /app/read-state.sh
-
 # Setup HA auto discovery, or skip if HA backend is disable and discard old /config MQTT messages
 setupHADiscoveryAllVINsMain
 
@@ -109,8 +106,8 @@ while :; do
 
 
   # Launch poll_state_loop in background
-  log_notice "main loop; Launching background poll_state_loop..."
-  poll_state_loop &
+  #log_notice "main loop; Launching background poll_state_loop..."
+  #poll_state_loop &
   
   # Launch listen_to_mqtt_loop in background
   log_notice "main loop; Launching background listen_to_mqtt_loop..."

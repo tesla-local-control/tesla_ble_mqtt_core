@@ -25,6 +25,11 @@ listen_to_mqtt_loop() {
 }
 
 listen_to_mqtt() {
+
+  # Launch poll_state_loop in background. Needs to be invoked here so we can change global variables
+  log_notice "main loop; Launching background poll_state_loop..."
+  poll_state_loop &
+  
   log_info "Listening to MQTT"
   eval $MOSQUITTO_SUB_BASE --nodelay --disable-clean-session --qos 1 --topic tesla_ble/+/+ -F \"%t %p\" --id tesla_ble_mqtt |
     while read -r payload; do
@@ -220,14 +225,14 @@ listen_to_mqtt() {
         log_notice "Updating variable ${vin}_${cmd}=$msg"
         # Dynamic variables in ash need to use eval
         eval "$(echo ${vin}_${cmd})=$msg"
-        echo Now LRW3F7FS5RC036403_polling        
+        echo Now $LRW3F7FS5RC036403_polling        
         ;;
 
       polling_interval)
         log_notice "Updating variable ${vin}_${cmd}=$msg"
         # Dynamic variables in ash need to use eval
         eval "$(echo ${vin}_${cmd})=$msg"
-        echo Now LRW3F7FS5RC036403_polling_interval
+        echo Now $LRW3F7FS5RC036403_polling_interval
         ;;
 
       *)
