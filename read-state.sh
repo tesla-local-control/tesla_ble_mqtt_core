@@ -9,27 +9,21 @@ function poll_state_loop() {
   log_notice "Entering poll_state_loop..."
 
   while :; do
+    vin=LRW3F7FS5RC036403
     sleep 60
 
-    eval $MOSQUITTO_SUB_BASE --nodelay -W 1 --topic tesla_ble/+/global_vars/+ -F \"%t %p\" 2>/dev/null |
-      while read -r payload; do
-        topic=${payload%% *}
-        val=${payload#* }
-        topic_stripped=${topic#*/}
-        vin=${topic_stripped%%/*}
-        var=${topic##*/}
-        log_info "Received global variable from MQTT; topic:$topic msg:$val vin:$vin cmd:$var"
-
-        # Set global variable. Note Dynamic variables in ash need to use eval
-        eval "export $(echo ${vin}_${var})=$val"
-      done     
-
-    # Dynamic variables in ash need to use eval
-    eval "p=\$$(echo ${vin}_polling)"
-    eval "pi=\$$(echo ${vin}_polling_interval)"
-    echo Polling $p
-    echo Interval $pi
-
+    mqttOp=$( eval $MOSQUITTO_SUB_BASE --nodelay -W 1 --topic tesla_ble/$vin/global_vars/+ -F \"%t=%p\"
+    EXIT_CODE=$?
+    if [ $EXIT_CODE -eq 27 ]; then
+      for item in $mqttOp; do
+        assign=${item##*/}
+        echo $assign
+        eval export ${vin}_$assign
+      done
+    fi
+    
+  echo $LRW3F7FS5RC036403_polling
+  echo $LRW3F7FS5RC036403_polling_interval
   done
 }
 
