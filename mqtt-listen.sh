@@ -220,13 +220,6 @@ listen_to_mqtt() {
         # These get handled in the subshell where they are used       
         ;;
 
-      polling_interval)
-        #log_notice "Updating variable ${vin}_${cmd}=$msg"
-        # Dynamic variables in ash need to use eval
-        #eval "$(echo ${vin}_${cmd})=$msg"
-        #echo Now $LRW3F7FS5RC036403_polling_interval
-        ;;
-
       *)
         log_error "Invalid request; topic:$topic vin:$vin msg:$msg"
         ;;

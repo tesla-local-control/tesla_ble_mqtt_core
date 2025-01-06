@@ -226,7 +226,7 @@ infoBluetoothAdapter() {
 
 # Gets global variable values from MQTT
 globalVarsfromMQTT() {
-eval $MOSQUITTO_SUB_BASE --nodelay -W 1 --topic tesla_ble/+/global_vars/+ -F \"%t %p\"  |
+eval $MOSQUITTO_SUB_BASE --nodelay -W 1 --topic tesla_ble/+/global_vars/+ -F \"%t %p\" 2>/dev/null |
     while read -r payload; do
       topic=${payload%% *}
       val=${payload#* }
@@ -236,7 +236,7 @@ eval $MOSQUITTO_SUB_BASE --nodelay -W 1 --topic tesla_ble/+/global_vars/+ -F \"%
       log_info "Received global variable from MQTT; topic:$topic msg:$val vin:$vin cmd:$var"
 
       # Set global variable. Note Dynamic variables in ash need to use eval
-      eval "$(echo ${vin}_${var})=$val"
-      echo Now $LRW3F7FS5RC036403_polling_interval
+      eval "export $(echo ${vin}_${var})=$val"
+
     done     
 }
