@@ -225,7 +225,7 @@ infoBluetoothAdapter() {
 }
 
 # Gets global variable values from MQTT
-get globalVarsfromMQTT(){
+globalVarsfromMQTT() {
 eval $MOSQUITTO_SUB_BASE --nodelay -W 1 --topic tesla_ble/+/global_vars/+ -F \"%t %p\"  |
     while read -r payload; do
       topic=${payload%% *}
