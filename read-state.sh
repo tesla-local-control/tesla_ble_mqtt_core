@@ -12,8 +12,9 @@ function poll_state_loop() {
     vin=LRW3F7FS5RC036403
     sleep 60
 
-    mqttOp=$( eval $MOSQUITTO_SUB_BASE --nodelay -W 1 --topic tesla_ble/$vin/global_vars/+ -F \"%t=%p\"
+    mqttOp=$( eval $MOSQUITTO_SUB_BASE --nodelay -W 1 --topic tesla_ble/$vin/global_vars/+ -F \"%t=%p\" 2>/dev/null )
     EXIT_CODE=$?
+
     if [ $EXIT_CODE -eq 27 ]; then
       for item in $mqttOp; do
         assign=${item##*/}
@@ -21,7 +22,7 @@ function poll_state_loop() {
         eval export ${vin}_$assign
       done
     fi
-    
+
   echo $LRW3F7FS5RC036403_polling
   echo $LRW3F7FS5RC036403_polling_interval
   done
