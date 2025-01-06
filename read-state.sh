@@ -16,7 +16,7 @@ function poll_state_loop() {
     #eval "pi=\$$(echo ${vin}_polling_interval)"
     #echo Polling $p
     #echo Interval $pi
-
+    globalVarsfromMQTT
   done
 }
 
