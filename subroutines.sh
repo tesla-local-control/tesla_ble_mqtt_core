@@ -229,11 +229,14 @@ globalVarsfromMQTT() {
 eval $MOSQUITTO_SUB_BASE --nodelay -W 1 --topic tesla_ble/+/global_vars/+ -F \"%t %p\"  |
     while read -r payload; do
       topic=${payload%% *}
-      msg=${payload#* }
+      val=${payload#* }
       topic_stripped=${topic#*/}
-      vin=${topic_stripped%/*}
-      cmd=${topic_stripped#*/}
-      log_info "Received global variable from MQTT; topic:$topic msg:$msg vin:$vin cmd:$cmd"
-    done     
+      vin=${topic_stripped%%/*}
+      var=${topic##*/}
+      log_info "Received global variable from MQTT; topic:$topic msg:$val vin:$vin cmd:$var"
 
+      # Set global variable. Note Dynamic variables in ash need to use eval
+      eval "$(echo ${vin}_${var})=$val"
+      echo Now $LRW3F7FS5RC036403_polling_interval
+    done     
 }
