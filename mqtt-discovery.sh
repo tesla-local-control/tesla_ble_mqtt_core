@@ -282,8 +282,8 @@ function setupExtendedControls() {
    }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 6 10 -t homeassistant/switch/${DEVICE_ID}/steering-wheel-heater/config -l
 
   echo '{
-   "command_topic": "'${TOPIC_ROOT}'/polling",
-   "state_topic": "'${TOPIC_ROOT}'/polling",  
+   "command_topic": "'${TOPIC_ROOT}'/global_vars/polling",
+   "state_topic": "'${TOPIC_ROOT}'/global_vars/polling",  
    "device": {
     "identifiers": [
     "'${DEVICE_ID}'"
@@ -495,7 +495,7 @@ function setupExtendedControls() {
     }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 6 10 -t homeassistant/number/${DEVICE_ID}/climate-temp/config -l
   fi
   echo '{
-   "command_topic": "'${TOPIC_ROOT}'/polling_interval",
+   "command_topic": "'${TOPIC_ROOT}'/global_vars/polling_interval",
    "device": {
     "identifiers": [
     "'${DEVICE_ID}'"
