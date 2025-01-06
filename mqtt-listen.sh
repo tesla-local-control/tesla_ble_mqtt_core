@@ -218,12 +218,16 @@ listen_to_mqtt() {
 
       polling)
         log_notice "Updating variable ${vin}_${cmd}=$msg"
-        export ${vin}_${cmd}=$msg
+        # Dynamic variables in ash need to use eval
+        eval "$(echo ${vin}_${cmd})=$msg"
+        echo Now LRW3F7FS5RC036403_polling        
         ;;
 
       polling_interval)
         log_notice "Updating variable ${vin}_${cmd}=$msg"
-        export ${vin}_${cmd}=$msg
+        # Dynamic variables in ash need to use eval
+        eval "$(echo ${vin}_${cmd})=$msg"
+        echo Now LRW3F7FS5RC036403_polling_interval
         ;;
 
       *)

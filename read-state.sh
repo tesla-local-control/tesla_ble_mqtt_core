@@ -10,8 +10,13 @@ function poll_state_loop() {
 
   while :; do
     sleep 60
-    echo Polling ${${vin}_polling}
-    echo Interval ${${vin}_polling_interval}
+    
+    # Dynamic variables in ash need to use eval
+    eval "p=\$$(echo ${vin}_polling)"
+    eval "pi=\$$(echo ${vin}_polling_interval)"
+    echo Polling $p
+    echo Interval $pi
+
   done
 }
 
