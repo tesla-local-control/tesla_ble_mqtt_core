@@ -968,10 +968,6 @@ setupHADiscoveryAllVINsMain() {
     eval $MOSQUITTO_PUB_BASE -t tesla_ble/$vin/config -n
     eval $MOSQUITTO_PUB_BASE -t tesla_ble/$vin/command -n
   done
-
-  #topic=tesla_ble/$vin/config
-  #log_notice "setupHADiscoveryAllVINsMain; Discarding any unread MQTT messages for topic:$topic"
-  #eval $MOSQUITTO_SUB_BASE -E -i tesla_ble_mqtt -t $topic
   
 }
 
