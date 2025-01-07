@@ -48,11 +48,10 @@ function poll_state_loop() {
           else
             log_info "Attempting to poll VIN: $vin"
             # Send a body-controller-state command. This checks if car is in bluetooth range and whether awake or asleep without acutally waking it
-            TESLA_VIN=$vin
-            TESLA_KEY_FILE=$KEYS_DIR/${vin}_private.pem
-            TESLA_KEY_NAME=$KEYS_DIR/${vin}_private.pem
-            retjson=$( /usr/bin/tesla-control -ble -command-timeout 5s -connect-timeout 10s body-controller-state 2>&1 )
+            set +e
+            retjson=$( /usr/bin/tesla-control -ble -vin $vin -command-timeout 5s -connect-timeout 10s body-controller-state 2>&1 )
             EXIT_VALUE=$?
+            set -e
 
             # If non zero, car is not contactable by bluetooth
             if [ $EXIT_VALUE -ne 0 ]; then
@@ -61,7 +60,7 @@ function poll_state_loop() {
               # Car has responded. Check if awake or asleep from the body-controller-state response
               rqdValue=$(echo $retjson | jq -e '.vehicleSleepStatus')
               EXIT_VALUE=$?
-              if [ $EXIT_VALUE -eq 0] && [ "$rqdValue" == "VEHICLE_SLEEP_STATUS_AWAKE" ]; then
+              if [ $EXIT_VALUE -eq 0 ] && [ "$rqdValue" == "\"VEHICLE_SLEEP_STATUS_AWAKE\"" ]; then
                 log_info "Car is awake, so polling VIN: $vin"
 
 
