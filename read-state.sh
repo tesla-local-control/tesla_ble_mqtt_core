@@ -51,7 +51,7 @@ function poll_state_loop() {
             TESLA_VIN=$vin
             TESLA_KEY_FILE=$KEYS_DIR/${vin}_private.pem
             TESLA_KEY_NAME=$KEYS_DIR/${vin}_private.pem
-            retjson=$( /usr/bin/tesla-control -ble -command-timeout 5s -connect-timeout 10s body-controller-state 2>&1" )
+            retjson=$( /usr/bin/tesla-control -ble -command-timeout 5s -connect-timeout 10s body-controller-state 2>&1 )
             EXIT_VALUE=$?
 
             # If non zero, car is not contactable by bluetooth
