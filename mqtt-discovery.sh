@@ -962,12 +962,17 @@ setupHADiscoveryAllVINsMain() {
     else
       log_info "setupHADiscoveryAllVINsMain; HA backend is disable, skipping setup for HA Auto Discovery"
     fi
+
+    # Discard /config and /command messages
+    log_notice "setupHADiscoveryAllVINsMain; Discarding unread MQTT messages for command and config topics"
+    eval $MOSQUITTO_PUB_BASE -t tesla_ble/$vin/config -n
+    eval $MOSQUITTO_PUB_BASE -t tesla_ble/$vin/command -n
   done
 
-  # Discard /config messages
-  topic=tesla_ble/$vin/config
-  log_notice "setupHADiscoveryAllVINsMain; Discarding any unread MQTT messages for topic:$topic"
-  eval $MOSQUITTO_SUB_BASE -E -i tesla_ble_mqtt -t $topic
+  #topic=tesla_ble/$vin/config
+  #log_notice "setupHADiscoveryAllVINsMain; Discarding any unread MQTT messages for topic:$topic"
+  #eval $MOSQUITTO_SUB_BASE -E -i tesla_ble_mqtt -t $topic
+  
 }
 
 ###

@@ -64,7 +64,7 @@ for vin in $VIN_LIST; do
   else
     # Remove single entities (brute force command, no easy way to collect declared MQTT topics crossplatform)
     log_notice "Removing single buttons to be replaced by switches & covers:"
-    log_notice "windows, charger, cherge-port, climate, trunk"
+    log_notice "windows, charger, charge-port, climate, trunk"
     delete_legacies_singles $vin
   fi # END TEMPORARY
 
