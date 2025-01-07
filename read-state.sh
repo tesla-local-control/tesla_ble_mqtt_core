@@ -475,7 +475,7 @@ function driveState() {
     log_debug "driveState; sendBLECommand failed for vin:$vin return:$ret"
     return $ret
   else
-    log_warning "driveState; sendBLECommand succeeded for vin:$vin"
+    log_debug "driveState; sendBLECommand succeeded for vin:$vin"
   fi
 
   # Get values from the JSON and publish corresponding MQTT state topic
