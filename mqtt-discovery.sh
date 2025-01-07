@@ -816,7 +816,7 @@ function setupDiagnostic() {
    "icon": "mdi:database-sync",
    "name": "Force Update All",
    "entity_category": "diagnostic",
-   "payload_press": "read-state",
+   "payload_press": "read-state-all",
    "qos": "'${QOS_LEVEL}'",
    "unique_id": "'${DEVICE_ID}'_read-state"
    }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 6 10 -t homeassistant/button/${DEVICE_ID}/read-state-all/config -l
