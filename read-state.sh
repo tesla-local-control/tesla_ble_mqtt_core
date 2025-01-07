@@ -35,7 +35,7 @@ function poll_state_loop() {
       polling_interval=$( eval "echo \"\$${vin}_polling_interval\"" )
      
       # Check if polling turned off for this car
-      if [ $polling -ne "on" ]; then
+      if [ "$polling != "on" ]; then
         log_debug "Polling is off for VIN: $vin, skipping"
       else
         log_debug "Polling is on for VIN: $vin, checking interval"
