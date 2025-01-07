@@ -366,7 +366,7 @@ function getStateValueAndPublish() {
 
   else
     ret=2
-    log_debug "getStateValueAndPublish; failed to parse $jsonParam for vin:$vin return:$ret"
+    log_warning "getStateValueAndPublish; failed to parse $jsonParam for vin:$vin return:$ret"
   fi
 
   return $ret
@@ -388,30 +388,20 @@ function readChargeState() {
   fi
 
   # Get values from the JSON and publish corresponding MQTT state topic
-  EXIT_STATUS=0
-  getStateValueAndPublish $vin '.chargeState.batteryLevel' sensor/charge_state "$TESLACTRLOUT" || EXIT_STATUS=1
-  getStateValueAndPublish $vin '.chargeState.batteryRange' sensor/battery_range "$TESLACTRLOUT" || EXIT_STATUS=1
-  getStateValueAndPublish $vin '.chargeState.chargerPower' sensor/charger_power "$TESLACTRLOUT" || EXIT_STATUS=1
-  getStateValueAndPublish $vin '.chargeState.chargerActualCurrent' sensor/charger_actual_current "$TESLACTRLOUT" || EXIT_STATUS=1
-  getStateValueAndPublish $vin '.chargeState.chargerVoltage' sensor/charger_voltage "$TESLACTRLOUT" || EXIT_STATUS=1
-  getStateValueAndPublish $vin '.chargeState.chargeEnergyAdded' sensor/charge_energy_added "$TESLACTRLOUT" || EXIT_STATUS=1
-  getStateValueAndPublish $vin '.chargeState.chargeMilesAddedRated' sensor/charge_range_added "$TESLACTRLOUT" || EXIT_STATUS=1
-  getStateValueAndPublish $vin '.chargeState.chargeRateMph' sensor/charge_speed "$TESLACTRLOUT" || EXIT_STATUS=1
-  getStateValueAndPublish $vin '.chargeState.connChargeCable' sensor/charge_cable "$TESLACTRLOUT" || EXIT_STATUS=1
-  getStateValueAndPublish $vin '.chargeState.chargeEnableRequest' switch/charge_enable_request "$TESLACTRLOUT" || EXIT_STATUS=1
-  getStateValueAndPublish $vin '.chargeState.chrgePortDoorOpen' cover/charge_port_door_open "$TESLACTRLOUT" || EXIT_STATUS=1
-  getStateValueAndPublish $vin '.chargeState.chargeCurrentRequest' number/charge_current_request "$TESLACTRLOUT" || EXIT_STATUS=1
-  getStateValueAndPublish $vin '.chargeState.chargeLimitSoc' number/charge_limit_soc "$TESLACTRLOUT" || EXIT_STATUS=1
+  getStateValueAndPublish $vin '.chargeState.batteryLevel' sensor/charge_state "$TESLACTRLOUT"
+  getStateValueAndPublish $vin '.chargeState.batteryRange' sensor/battery_range "$TESLACTRLOUT"
+  getStateValueAndPublish $vin '.chargeState.chargerPower' sensor/charger_power "$TESLACTRLOUT"
+  getStateValueAndPublish $vin '.chargeState.chargerActualCurrent' sensor/charger_actual_current "$TESLACTRLOUT"
+  getStateValueAndPublish $vin '.chargeState.chargerVoltage' sensor/charger_voltage "$TESLACTRLOUT"
+  getStateValueAndPublish $vin '.chargeState.chargeEnergyAdded' sensor/charge_energy_added "$TESLACTRLOUT"
+  getStateValueAndPublish $vin '.chargeState.chargeMilesAddedRated' sensor/charge_range_added "$TESLACTRLOUT"
+  getStateValueAndPublish $vin '.chargeState.chargeRateMph' sensor/charge_speed "$TESLACTRLOUT"
+  getStateValueAndPublish $vin '.chargeState.connChargeCable' sensor/charge_cable "$TESLACTRLOUT"
+  getStateValueAndPublish $vin '.chargeState.chargeEnableRequest' switch/charge_enable_request "$TESLACTRLOUT"
+  getStateValueAndPublish $vin '.chargeState.chrgePortDoorOpen' cover/charge_port_door_open "$TESLACTRLOUT"
+  getStateValueAndPublish $vin '.chargeState.chargeCurrentRequest' number/charge_current_request "$TESLACTRLOUT"
+  getStateValueAndPublish $vin '.chargeState.chargeLimitSoc' number/charge_limit_soc "$TESLACTRLOUT"
 
-  if [ $EXIT_STATUS -ne 0 ]; then
-    ret=3
-    log_error "readChargeState; one of the getStateValueAndPublish calls failed for vin:$vin return:$ret"
-  else
-    ret=0
-    log_info "readChargeState; Completed successfully for vin:$vin"
-  fi
-
-  return $ret
 }
 
 function readClimateState() {
