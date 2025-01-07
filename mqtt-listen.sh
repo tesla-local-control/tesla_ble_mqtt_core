@@ -216,7 +216,7 @@ listen_to_mqtt() {
         teslaCtrlSendCommand $vin "$cmd-$msg" "Set $cmd mode to $msg"
         ;;
 
-      global_vars)
+      variables)
         # These get handled in the subshell where they are used       
         ;;
 

@@ -8,24 +8,49 @@
 function poll_state_loop() {
   log_notice "Entering poll_state_loop..."
 
-  while :; do
-    vin=LRW3F7FS5RC036403
-    sleep 60
+  # Loop indefinitely
 
-    set +e
-    mqttOp=$( eval $MOSQUITTO_SUB_BASE --nodelay -W 1 --topic tesla_ble/$vin/global_vars/+ -F \"%t=%p\" 2>/dev/null )
-    EXIT_CODE=$?
-    set -e
-    if [ $EXIT_CODE -eq 27 ]; then
-      for item in $mqttOp; do
-        assign=${item##*/}
-        echo $assign
-        eval export ${vin}_$assign
-      done
-    fi
+  # Loop for an hour (max polling interval)
+  i=0
+  while [ $i -le 3600 ]; do
 
-  echo $LRW3F7FS5RC036403_polling
-  echo $LRW3F7FS5RC036403_polling_interval
+    # Repeat for each car
+    for vin in $VINLIST; do
+
+      log_debug "poll_state_loop: Setting variables from MQTT for VIN: $vin"
+      set +e
+      mqttOp=$( eval $MOSQUITTO_SUB_BASE --nodelay -W 1 --topic tesla_ble/$vin/variables/+ -F \"%t=%p\" 2>/dev/null )
+      EXIT_CODE=$?
+      set -e
+      if [ $EXIT_CODE -eq 27 ]; then
+        for item in $mqttOp; do
+          assign=${item##*/}
+          log_debug "Setting variable from MQTT: $assign"
+          eval export ${vin}_$assign
+        done
+      fi
+      
+      echo ${vin}_polling
+      echo ${vin}_polling_interval  
+      
+      # Check if polling turned off for this car
+      if [ ${vin}_polling -ne "on" ]; then
+        log_debug "Polling is off for VIN: $vin, skipping"
+      else
+        log_debug "Polling is on for VIN: $vin, checking interval"
+        
+        # Is i divisible by interval with no remainder?
+        mod=$(( i % ${vin}_polling_interval ))
+        echo Remander: $mod
+
+      fi
+
+    done
+
+    # Loop repeat approx every 30 secs
+    sleep 29
+    i=$(( i + 30 ))
+
   done
 }
 

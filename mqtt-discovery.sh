@@ -282,8 +282,8 @@ function setupExtendedControls() {
    }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 6 10 -t homeassistant/switch/${DEVICE_ID}/steering-wheel-heater/config -l
 
   echo '{
-   "command_topic": "'${TOPIC_ROOT}'/global_vars/polling",
-   "state_topic": "'${TOPIC_ROOT}'/global_vars/polling",  
+   "command_topic": "'${TOPIC_ROOT}'/variables/polling",
+   "state_topic": "'${TOPIC_ROOT}'/variables/polling",  
    "device": {
     "identifiers": [
     "'${DEVICE_ID}'"
@@ -495,7 +495,7 @@ function setupExtendedControls() {
     }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 6 10 -t homeassistant/number/${DEVICE_ID}/climate-temp/config -l
   fi
   echo '{
-   "command_topic": "'${TOPIC_ROOT}'/global_vars/polling_interval",
+   "command_topic": "'${TOPIC_ROOT}'/variables/polling_interval",
    "device": {
     "identifiers": [
     "'${DEVICE_ID}'"
@@ -506,15 +506,15 @@ function setupExtendedControls() {
     "sw_version": "'${SW_VERSION}'"
    },
    "icon": "mdi:timer-sync",
-   "min": "1",
-   "max": "60",
-   "step": "1",
+   "min": "30",
+   "max": "3600",
+   "step": "30",
    "mode": "slider",
    "name": "Polling Interval",
    "retain": "true",
    "unique_id": "'${DEVICE_ID}'_polling_interval",
    "entity_category": "diagnostic",
-   "unit_of_measurement": "mins"
+   "unit_of_measurement": "secs"
    }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 6 10 -t homeassistant/number/${DEVICE_ID}/polling_interval/config -l
 
   # Selects
