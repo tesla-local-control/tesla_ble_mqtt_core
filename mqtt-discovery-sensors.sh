@@ -141,7 +141,7 @@ function setupChargeStateSensors {
    "device_class": "voltage",
    "unit_of_measurement": "V",
    "suggested_display_precision": "0",
-   "unique_id": "'${DEVICE_ID}'_charger_voltage"
+   "unique_id": "'${DEVICE_ID}'_charger_voltage",
    "enabled_by_default": "false"
   }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 36 10 -t homeassistant/sensor/${DEVICE_ID}/charger_voltage/config -l
 

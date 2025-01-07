@@ -66,8 +66,9 @@ function poll_state_loop() {
               if [ $EXIT_VALUE -eq 0 ] && [ "$rqdValue" == "\"VEHICLE_SLEEP_STATUS_AWAKE\"" ]; then
                 log_info "Car is awake, so polling VIN: $vin"
                 
-                # Publish to MQTT awake topic
-                stateMQTTpub $vin 'true' 'binary_sensor/awake' 
+                # Publish to MQTT awake topic, 'press' the Data Update button 
+                stateMQTTpub $vin 'true' 'binary_sensor/awake'
+                stateMQTTpub $vin 'read-state' 'config'
 
               else
                 log_info "Car is asleep, not polling VIN: $vin"
