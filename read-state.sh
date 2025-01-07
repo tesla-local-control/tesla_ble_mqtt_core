@@ -160,6 +160,7 @@ function readState() {
       *)
       log_warning "readState: Invalid state category in NO_POLL_SECTIONS"
       ;;
+      esac
     done
   ;;  
   *)
