@@ -22,60 +22,58 @@ function poll_state_loop() {
         set +e
         mqttOp=$( eval $MOSQUITTO_SUB_BASE --nodelay -W 1 --topic tesla_ble/$vin/variables/+ -F \"%t=%p\" 2>/dev/null )
         EXIT_CODE=$?
-       set -e
-       if [ $EXIT_CODE -eq 27 ]; then
-         for item in $mqttOp; do
-            assign=${item##*/}
-            log_debug "Setting variable from MQTT: $assign"
-            eval export ${vin}_$assign
+        set -e
+        if [ $EXIT_CODE -eq 27 ]; then
+          for item in $mqttOp; do
+             assign=${item##*/}
+             log_debug "Setting variable from MQTT: $assign"
+             eval export ${vin}_$assign
           done
         fi
 
         # Get variables for this VIN. Note ash needs to use eval for dynamic variables
-       polling=$( eval "echo \"\$${vin}_polling\"" )
+        polling=$( eval "echo \"\$${vin}_polling\"" )
         polling_interval=$( eval "echo \"\$${vin}_polling_interval\"" )
      
         # Check if polling turned off for this car
-       if [ "$polling" != "on" ]; then
+        if [ "$polling" != "on" ]; then
           log_debug "Polling is off for VIN: $vin, skipping"
         else
           log_debug "Polling is on for VIN: $vin, checking interval"
         
-         # Is counter divisible by interval with no remainder? If so, it is time to attempt to poll
-         mod=$(( i % $polling_interval ))
-         if [ $mod -ne 0 ]; then
-           log_debug "Count not divisible by polling_interval for VIN: $vin, Count: $i, Interval: $polling_interval"
-         else
-           log_info "Attempting to poll VIN: $vin"
-              # Send a body-controller-state command. This checks if car is in bluetooth range and whether awake or asleep without acutally waking it
-              TESLA_VIN=$vin
-              TESLA_KEY_FILE=$KEYS_DIR/${vin}_private.pem
-              TESLA_KEY_NAME=$KEYS_DIR/${vin}_private.pem
-              retjson=$( TESLA_CONTROL_CMD="/usr/bin/tesla-control -ble -command-timeout 5s -connect-timeout 10s body-controller-state 2>&1" )
+          # Is counter divisible by interval with no remainder? If so, it is time to attempt to poll
+          mod=$(( i % $polling_interval ))
+          if [ $mod -ne 0 ]; then
+            log_debug "Count not divisible by polling_interval for VIN: $vin, Count: $i, Interval: $polling_interval"
+          else
+            log_info "Attempting to poll VIN: $vin"
+            # Send a body-controller-state command. This checks if car is in bluetooth range and whether awake or asleep without acutally waking it
+            TESLA_VIN=$vin
+            TESLA_KEY_FILE=$KEYS_DIR/${vin}_private.pem
+            TESLA_KEY_NAME=$KEYS_DIR/${vin}_private.pem
+            retjson=$( TESLA_CONTROL_CMD="/usr/bin/tesla-control -ble -command-timeout 5s -connect-timeout 10s body-controller-state 2>&1" )
+            EXIT_VALUE=$?
+
+            # If non zero, car is not contactable by bluetooth
+            if [ $EXIT_VALUE -ne 0 ]; then
+              log_warning "Car is not responding to bluetooth, maybe it's away. Not attempting to poll. VIN: $vin"
+            else
+              # Car has responded. Check if awake or asleep from the body-controller-state response
+              rqdValue=$(echo $retjson | jq -e '.vehicleSleepStatus')
               EXIT_VALUE=$?
+              if [ $EXIT_VALUE -eq 0] && [ "$rqdValue" == "VEHICLE_SLEEP_STATUS_AWAKE" ]; then
+                log_info "Car is awake, so polling VIN: $vin"
 
-              # If non zero, car is not contactable by bluetooth
-              if [ $EXIT_VALUE -ne 0 ]; then
-                log_warning "Car is not responding to bluetooth, maybe it's away. Not attempting to poll. VIN: $vin"
+
               else
-                # Car has responded. Check if awake or asleep from the body-controller-state response
-                rqdValue=$(echo $retjson | jq -e '.vehicleSleepStatus')
-                EXIT_VALUE=$?
-                if [ $EXIT_VALUE -eq 0] && [ "$rqdValue" == "VEHICLE_SLEEP_STATUS_AWAKE" ]; then
-                  log_info "Car is awake, so polling VIN: $vin"
-
-
-                else
-                  log_debug "Car is asleep, not polling VIN: $vin"
-                fi
-
+                log_debug "Car is asleep, not polling VIN: $vin"
               fi
 
             fi
 
           fi
 
-       fi
+        fi
 
       done
     
