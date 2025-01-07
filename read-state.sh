@@ -66,9 +66,9 @@ function poll_state_loop() {
               if [ $EXIT_VALUE -eq 0 ] && [ "$rqdValue" == "\"VEHICLE_SLEEP_STATUS_AWAKE\"" ]; then
                 log_info "Car is awake, so polling VIN: $vin"
                 
-                # Publish to MQTT awake topic, 'press' the Data Update button 
+                # Publish to MQTT awake topic, 'press' the Data Update Env button (which checks NO_POLL_SECTIONS environment variable to exclude various sections if required)
                 stateMQTTpub $vin 'true' 'binary_sensor/awake'
-                stateMQTTpub $vin 'read-state' 'config'
+                stateMQTTpub $vin 'read-state-envcheck' 'config'
 
               else
                 log_info "Car is asleep, not polling VIN: $vin"
@@ -141,6 +141,9 @@ function readState() {
   env_check)
     echo No poll sections: $NO_POLL_SECTIONS
     charge=1; climate=1; tyre=1; closure=1; drive=1
+    for sect in $NO_POLL_SECTIONS; do
+      echo Section: $sect
+    done
   ;;  
   *)
     charge=1; climate=1; tyre=1; closure=1; drive=1
