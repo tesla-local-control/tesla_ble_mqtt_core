@@ -56,16 +56,22 @@ function poll_state_loop() {
             # If non zero, car is not contactable by bluetooth
             if [ $EXIT_VALUE -ne 0 ]; then
               log_warning "Car is not responding to bluetooth, maybe it's away. Not attempting to poll. VIN: $vin"
+
+              # TODO: Update a future presence sensor. Set awake sensor to Unknown via MQTT availability
+
             else
               # Car has responded. Check if awake or asleep from the body-controller-state response
               rqdValue=$(echo $retjson | jq -e '.vehicleSleepStatus')
               EXIT_VALUE=$?
               if [ $EXIT_VALUE -eq 0 ] && [ "$rqdValue" == "\"VEHICLE_SLEEP_STATUS_AWAKE\"" ]; then
                 log_info "Car is awake, so polling VIN: $vin"
-
+                
+                # Publish to MQTT awake topic
+                stateMQTTpub $vin 'true' 'binary_sensor/awake' 
 
               else
                 log_info "Car is asleep, not polling VIN: $vin"
+                stateMQTTpub $vin 'false' 'binary_sensor/awake' 
               fi
 
             fi
@@ -211,6 +217,8 @@ sendBLECommand() {
     if [ $EXIT_STATUS -eq 0 ]; then
       log_debug "sendBLECommand; $TESLACTRLOUT"
       log_info "Command $command was successfully delivered to vin:$vin"
+      # Publish to MQTT awake topic
+      stateMQTTpub $vin 'true' 'binary_sensor/awake' 
       return 0
     else
       if [[ "$TESLACTRLOUT" == *"car could not execute command"* ]]; then

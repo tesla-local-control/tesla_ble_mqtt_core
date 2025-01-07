@@ -142,7 +142,7 @@ function setupChargeStateSensors {
    "unit_of_measurement": "V",
    "suggested_display_precision": "0",
    "unique_id": "'${DEVICE_ID}'_charger_voltage"
-   "enabled_by_default": "false",
+   "enabled_by_default": "false"
   }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 36 10 -t homeassistant/sensor/${DEVICE_ID}/charger_voltage/config -l
 
   echo '{
@@ -710,6 +710,26 @@ function setupChargeStateSensors {
    "enabled_by_default": "false",
    "unique_id": "'${DEVICE_ID}'_mirror_heater"
   }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 36 10 -t homeassistant/binary_sensor/${DEVICE_ID}/mirror_heater/config -l
+
+  echo '{
+   "state_topic": "'${TOPIC_ROOT}'/binary_sensor/awake",
+   "device": {
+    "identifiers": [
+    "'${DEVICE_ID}'"
+    ],
+    "manufacturer": "tesla-local-control",
+    "model": "Tesla_BLE",
+    "name": "'${DEVICE_NAME}'",
+    "sw_version": "'${SW_VERSION}'"
+   },
+   "platform": "binary_sensor",
+   "icon": "mdi:sleep-off",
+   "name": "Awake",
+   "payload_on": "true",
+   "payload_off": "false",
+   "qos": "'${QOS_LEVEL}'",
+   "unique_id": "'${DEVICE_ID}'_awake"
+  }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 36 10 -t homeassistant/binary_sensor/${DEVICE_ID}/awake/config -l
 
   # Status is only Disengaged for short time, it gets reengaged soon after even with no charger plugged in. Not useful
   # echo '{
