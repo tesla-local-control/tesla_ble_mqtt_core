@@ -118,73 +118,104 @@ function stateMQTTpub() {
 
 function readState() {
   vin=$1
+  sections=$2
 
-  log_debug "readState; entering vin:$vin"
+  log_debug "readState; entering. Sections: $sections VIN:$vin"
+  charge=0; climate=0; tyre=0; closure=0; drive=0
+  case $sections in
+  charge)
+    charge=1
+  ;;
+  climate)
+    climate=1
+  ;;
+  tyre)
+    tyre=1
+  ;;
+  closure)
+    closure=1
+  ;;
+  drive)
+    drive=1
+  ;;
+  env_check)
+    echo No poll sections: $NO_POLL_SECTIONS
+    charge=1; climate=1; tyre=1; closure=1; drive=1
+  ;;  
+  *)
+    charge=1; climate=1; tyre=1; closure=1; drive=1
+  ;;  
+  esac
 
-  # Read and parse charge state
-  readChargeState $vin
-  EXIT_STATUS=$?
-  if [ $EXIT_STATUS -ne 0 ]; then
-    log_debug "readState; failed to read charge state vin:$vin. Exit status: $EXIT_STATUS"
-    return 2
-  else
-    log_notice "readState; read of charge state succeeded vin:$vin"
-    ret=0
+  if [ $charge -eq 1 ]; then
+    # Read and parse charge state
+    readChargeState $vin
+    EXIT_STATUS=$?
+    if [ $EXIT_STATUS -ne 0 ]; then
+      log_debug "readState; failed to read charge state vin:$vin. Exit status: $EXIT_STATUS"
+      return 2
+    else
+      log_notice "readState; read of charge state succeeded vin:$vin"
+      ret=0
+    fi
+    sleep $BLE_CMD_RETRY_DELAY
   fi
 
-  sleep $BLE_CMD_RETRY_DELAY
-
-  # Read and parse climate state
-  readClimateState $vin
-  EXIT_STATUS=$?
-  if [ $EXIT_STATUS -ne 0 ]; then
-    log_debug "readState; failed to read climate state vin:$vin. Exit status: $EXIT_STATUS"
-    return 2
-  else
-    log_notice "readState; read of climate state succeeded vin:$vin"
-    ret=0
+  if [ $climate -eq 1 ]; then
+    # Read and parse climate state
+    readClimateState $vin
+    EXIT_STATUS=$?
+    if [ $EXIT_STATUS -ne 0 ]; then
+     log_debug "readState; failed to read climate state vin:$vin. Exit status: $EXIT_STATUS"
+     return 2
+    else
+     log_notice "readState; read of climate state succeeded vin:$vin"
+     ret=0
+    fi
+    sleep $BLE_CMD_RETRY_DELAY
   fi
 
-  sleep $BLE_CMD_RETRY_DELAY
-
-  # Read and parse tire-pressure state
-  readTyreState $vin
-  EXIT_STATUS=$?
-  if [ $EXIT_STATUS -ne 0 ]; then
-    log_debug "readState; failed to read tire-pressure state vin:$vin. Exit status: $EXIT_STATUS"
-    return 2
-  else
-    log_notice "readState; read of tire-pressure state succeeded vin:$vin"
-    ret=0
+  if [ $tyre -eq 1 ]; then
+    # Read and parse tire-pressure state
+    readTyreState $vin
+    EXIT_STATUS=$?
+    if [ $EXIT_STATUS -ne 0 ]; then
+      log_debug "readState; failed to read tire-pressure state vin:$vin. Exit status: $EXIT_STATUS"
+      return 2
+    else
+      log_notice "readState; read of tire-pressure state succeeded vin:$vin"
+      ret=0
+    fi
+    sleep $BLE_CMD_RETRY_DELAY
   fi
 
-  sleep $BLE_CMD_RETRY_DELAY
-
-  # Read and parse closures state
-  closuresState $vin
-  EXIT_STATUS=$?
-  if [ $EXIT_STATUS -ne 0 ]; then
-    log_debug "readState; failed to read closures state vin:$vin. Exit status: $EXIT_STATUS"
-    return 2
-  else
-    log_notice "readState; read of closures state succeeded vin:$vin"
-    ret=0
+  if [ $closure -eq 1 ]; then
+    # Read and parse closures state
+    closuresState $vin
+    EXIT_STATUS=$?
+    if [ $EXIT_STATUS -ne 0 ]; then
+      log_debug "readState; failed to read closures state vin:$vin. Exit status: $EXIT_STATUS"
+      return 2
+    else
+      log_notice "readState; read of closures state succeeded vin:$vin"
+      ret=0
+    fi
+    sleep $BLE_CMD_RETRY_DELAY
   fi
 
-  sleep $BLE_CMD_RETRY_DELAY
-
-  # Read and parse drive state
-  driveState $vin
-  EXIT_STATUS=$?
-  if [ $EXIT_STATUS -ne 0 ]; then
-    log_debug "readState; failed to read drive state vin:$vin. Exit status: $EXIT_STATUS"
-    return 2
-  else
-    log_notice "readState; read of drive state succeeded vin:$vin"
-    ret=0
+  if [ $drive -eq 1 ]; then
+    # Read and parse drive state
+    driveState $vin
+    EXIT_STATUS=$?
+    if [ $EXIT_STATUS -ne 0 ]; then
+      log_debug "readState; failed to read drive state vin:$vin. Exit status: $EXIT_STATUS"
+      return 2
+    else
+      log_notice "readState; read of drive state succeeded vin:$vin"
+      ret=0
+    fi
+    sleep $BLE_CMD_RETRY_DELAY
   fi
-
-  sleep $BLE_CMD_RETRY_DELAY
 
   log_debug "readState; leaving vin:$vin return:$ret"
   return $ret

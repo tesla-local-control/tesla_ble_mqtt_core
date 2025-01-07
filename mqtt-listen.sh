@@ -76,9 +76,38 @@ listen_to_mqtt() {
           infoBluetoothAdapter $vin
           ;;
 
-        read-state)
+        read-state-all)
           log_notice "read-state; calling readState()"
-          readState $vin
+          readState $vin all
+          ;;
+
+        read-state-envcheck)
+          log_notice "read-state; calling readState()"
+          readState $vin env_check
+          ;;
+
+        read-state-charge)
+          log_notice "read-state; calling readState()"
+          readState $vin charge
+          ;;
+
+        read-state-climate)
+          log_notice "read-state; calling readState()"
+          readState $vin climate
+          ;;
+
+        read-state-tyre)
+          log_notice "read-state; calling readState()"
+          readState $vin tyre
+          ;;
+
+        read-state-closure)
+          log_notice "read-state; calling readState()"
+          readState $vin closure
+          ;;
+        read-state-drive)
+          log_notice "read-state; calling readState()"
+          readState $vin drive
           ;;
 
         *)
