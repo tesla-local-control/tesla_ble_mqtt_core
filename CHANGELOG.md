@@ -5,12 +5,12 @@
 - RELEASE NEW Feature: Automatic Polling is now possible for state
 
 - NEW Feature: The following new states / entities are added:
-   - Sensors: Awake; Last Update
-   - Switches: State Polling 
+   - Sensors: Awake
+   - Switches: Polling 
    - Numbers: Polling Interval
-   - Buttons: Force Update buttons for individual state sections 
+   - Buttons: Force Update buttons for individual state categories 
 
-- NEW Feature: Environment variables provided to disable updating of various state sections during polling. This speeds up state updates, though less state entities are updated by the polling. The entities can still be manually updated by pressing the Force Update button for the relevent state section
+- NEW Feature: Environment variable NO_POLL_SECTIONS is provided to disable updating of various state categories during polling. This speeds up state updates, though less state entities are updated by the polling. The entities can still be manually updated by pressing the Force Update button for the relevent state category
 
 - Changes: 'Force Data Update' Button is renamed to 'Force Update All'
 

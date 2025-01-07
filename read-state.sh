@@ -139,10 +139,27 @@ function readState() {
     drive=1
   ;;
   env_check)
-    echo No poll sections: $NO_POLL_SECTIONS
     charge=1; climate=1; tyre=1; closure=1; drive=1
     for sect in $NO_POLL_SECTIONS; do
-      echo Section: $sect
+      case $sect in
+      charge)
+        charge=0
+      ;;
+      climate)
+        climate=0
+      ;;
+      tire-pressure)
+        tyre=0
+      ;;
+      closures)
+        closure=0
+      ;;
+      drive)
+        drive=0
+      ;;
+      *)
+      log_warning "readState: Invalid state category in NO_POLL_SECTIONS"
+      ;;
     done
   ;;  
   *)
