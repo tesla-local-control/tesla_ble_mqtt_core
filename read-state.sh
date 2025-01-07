@@ -15,7 +15,7 @@ function poll_state_loop() {
   while [ $i -le 3600 ]; do
 
     # Repeat for each car
-    for vin in $VINLIST; do
+    for vin in $VIN_LIST; do
 
       log_debug "poll_state_loop: Setting variables from MQTT for VIN: $vin"
       set +e
@@ -29,19 +29,24 @@ function poll_state_loop() {
           eval export ${vin}_$assign
         done
       fi
-      
-      echo ${vin}_polling
-      echo ${vin}_polling_interval  
-      
+
+      # Get variables for this VIN. Note ash needs to use eval for dynamic variables
+      polling=$( eval "echo \"\$${vin}_polling\"" )
+      polling_interval=$( eval "echo \"\$${vin}_polling_interval\"" )
+     
       # Check if polling turned off for this car
-      if [ ${vin}_polling -ne "on" ]; then
+      if [ $polling -ne "on" ]; then
         log_debug "Polling is off for VIN: $vin, skipping"
       else
         log_debug "Polling is on for VIN: $vin, checking interval"
         
-        # Is i divisible by interval with no remainder?
-        mod=$(( i % ${vin}_polling_interval ))
-        echo Remander: $mod
+        # Is counter divisible by interval with no remainder? If so, it is time to attempt to poll
+        mod=$(( i % $polling_interval ))
+        if [ $mod -ne 0 ]; then
+          log_debug "Count not divisible by polling_interval for VIN: $vin, Count: $i, Interval: $polling_interval"
+        else
+          log_info "Attempting to poll VIN: $vin"
+        fi
 
       fi
 

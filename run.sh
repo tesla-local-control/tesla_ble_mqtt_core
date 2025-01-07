@@ -14,6 +14,11 @@ VIN_LIST=$(echo $VIN_LIST | sed -e 's/[|,;]/ /g')
 
 vin_count=0
 for vin in $VIN_LIST; do
+
+  # Set defaults for MQTT derived variables
+  export ${vin}_polling=false
+  export ${vin}_polling_interval=680
+
   # Populate BLE Local Names list
   vin_count=$((vin_count + 1))
   BLE_LN=$(vinToBLEln $vin)
