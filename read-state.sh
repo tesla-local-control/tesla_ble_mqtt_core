@@ -30,42 +30,42 @@ function poll_state_loop() {
              eval export ${vin}_$assign
           done
         fi
-
         # Get variables for this VIN. Note ash needs to use eval for dynamic variables
         polling=$( eval "echo \"\$${vin}_polling\"" )
         polling_interval=$( eval "echo \"\$${vin}_polling_interval\"" )
-     
-        # Check if polling turned off for this car
-        if [ "$polling" != "on" ]; then
-          log_debug "Polling is off for VIN: $vin, skipping"
+
+        # Send a body-controller-state command. This checks if car is in bluetooth range and whether awake or asleep without acutally waking it
+        set +e
+        bcs_json=$( /usr/bin/tesla-control -ble -vin $vin -command-timeout 5s -connect-timeout 10s body-controller-state 2>&1 )
+        EXIT_VALUE=$?
+        set -e
+        # If non zero, car is not contactable by bluetooth
+        if [ $EXIT_VALUE -ne 0 ]; then
+          log_warning "Car is not responding to bluetooth, maybe it's away. Not attempting to poll. VIN: $vin"
+          # Publish to MQTT presence_bc sensor. TODO: Set awake sensor to Unknown via MQTT availability
+          stateMQTTpub $vin 'false' 'binary_sensor/presence_bc'
+
         else
-          log_debug "Polling is on for VIN: $vin, checking interval"
-        
-          # Is counter divisible by interval with no remainder? If so, it is time to attempt to poll
-          mod=$(( i % $polling_interval ))
-          if [ $mod -ne 0 ]; then
-            log_debug "Count not divisible by polling_interval for VIN: $vin, Count: $i, Interval: $polling_interval"
+          # Publish to MQTT presence_bc sensor.
+          stateMQTTpub $vin 'true' 'binary_sensor/presence_bc'
+          # Check if polling turned off for this car
+          if [ "$polling" != "on" ]; then
+            log_debug "Polling is off for VIN: $vin, skipping"
+
           else
-            log_info "Attempting to poll VIN: $vin"
-            # Send a body-controller-state command. This checks if car is in bluetooth range and whether awake or asleep without acutally waking it
-            set +e
-            retjson=$( /usr/bin/tesla-control -ble -vin $vin -command-timeout 5s -connect-timeout 10s body-controller-state 2>&1 )
-            EXIT_VALUE=$?
-            set -e
-
-            # If non zero, car is not contactable by bluetooth
-            if [ $EXIT_VALUE -ne 0 ]; then
-              log_warning "Car is not responding to bluetooth, maybe it's away. Not attempting to poll. VIN: $vin"
-
-              # TODO: Update a future presence sensor. Set awake sensor to Unknown via MQTT availability
-
+            log_debug "Polling is on for VIN: $vin, checking interval"       
+            # Is counter divisible by interval with no remainder? If so, it is time to attempt to poll
+            mod=$(( i % $polling_interval ))
+            if [ $mod -ne 0 ]; then
+              log_debug "Count not divisible by polling_interval for VIN: $vin, Count: $i, Interval: $polling_interval"
+            
             else
+              log_info "Attempting to poll VIN: $vin"            
               # Car has responded. Check if awake or asleep from the body-controller-state response
-              rqdValue=$(echo $retjson | jq -e '.vehicleSleepStatus')
+              rqdValue=$(echo $bcs_json | jq -e '.vehicleSleepStatus')
               EXIT_VALUE=$?
               if [ $EXIT_VALUE -eq 0 ] && [ "$rqdValue" == "\"VEHICLE_SLEEP_STATUS_AWAKE\"" ]; then
-                log_info "Car is awake, so polling VIN: $vin"
-                
+                log_info "Car is awake, so polling VIN: $vin"    
                 # Publish to MQTT awake topic, 'press' the Data Update Env button (which checks NO_POLL_SECTIONS environment variable to exclude various sections if required)
                 stateMQTTpub $vin 'true' 'binary_sensor/awake'
                 stateMQTTpub $vin 'read-state-envcheck' 'config'
