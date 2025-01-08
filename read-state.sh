@@ -11,9 +11,9 @@ function poll_state_loop() {
   # Loop indefinitely
   while :; do
   
-    # Loop for an hour (max polling interval)
+    # Loop for a day (arbitary but need to be a long time as modulus may slip when it resets casuing an early poll)
     i=0
-    while [ $i -le 3600 ]; do
+    while [ $i -le 86400 ]; do
 
       # Repeat for each car
       for vin in $VIN_LIST; do
