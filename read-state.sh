@@ -104,7 +104,7 @@ function stateMQTTpub() {
 
   MQTT_TOPIC="tesla_ble/$vin/$topic"
 
-  log_info "Setting MQTT topic $MQTT_TOPIC to $state"
+  log_debug "Setting MQTT topic $MQTT_TOPIC to $state"
 
   # Maybe we need a function in the future for mosquitto_pub w/ retry
   set +e

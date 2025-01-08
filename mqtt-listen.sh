@@ -33,7 +33,7 @@ listen_to_mqtt() {
       topic_stripped=${topic#*/}
       vin=${topic_stripped%/*}
       cmd=${topic_stripped#*/}
-      log_debug "Received MQTT message; topic:$topic msg:$msg vin:$vin cmd:$cmd"
+      log_info "Received MQTT message; topic:$topic msg:$msg vin:$vin cmd:$cmd"
 
       case $cmd in
       config)
