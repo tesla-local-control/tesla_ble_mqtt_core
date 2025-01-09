@@ -114,7 +114,7 @@ function stateMQTTpub() {
   [ $EXIT_STATUS -ne 0 ] &&
     log_error "${MQTT_OUT}" &&
     return 1
-  if [ $topic == "binary_sensor/presence_bc" ] || [ $topic == "binary_sensor/asleep" ]
+  if [ $topic == "binary_sensor/presence_bc" ] || [ $topic == "binary_sensor/asleep" ]; then 
     # Don't spam the logs for these topics
     log_debug "MQTT topic $MQTT_TOPIC successfully updated to $state"
   else
