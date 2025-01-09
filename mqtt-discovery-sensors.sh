@@ -57,6 +57,7 @@ function setupChargeStateSensors {
    "device_class": "battery",
    "unit_of_measurement": "%",
    "suggested_display_precision": "0",
+   "force_update": "true",
    "unique_id": "'${DEVICE_ID}'_charge_state"
   }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 36 10 -t homeassistant/sensor/${DEVICE_ID}/charge_state/config -l
 
@@ -310,7 +311,8 @@ function setupChargeStateSensors {
   "qos": "'${QOS_LEVEL}'",
   "device_class": "temperature",
   "unit_of_measurement": "°C",
-  "suggested_display_precision": "1",   
+  "suggested_display_precision": "1",
+  "force_update": "true",
   "unique_id": "'${DEVICE_ID}'_inside_temp"
   }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 36 10 -t homeassistant/sensor/${DEVICE_ID}/inside_temp/config -l
 
