@@ -55,11 +55,11 @@ function poll_state_loop() {
           EXIT_VALUE=$?
           if [ $EXIT_VALUE -ne 0 ] || [ "$rqdValue" != "\"VEHICLE_SLEEP_STATUS_AWAKE\"" ]; then
             log_info "Car is present but asleep VIN:$vin"
-            stateMQTTpub $vin 'asleep' 'binary_sensor/awake' 
+            stateMQTTpub $vin 'false' 'binary_sensor/awake' 
 
           else
             log_info "Car is present and awake VIN:$vin"
-            stateMQTTpub $vin 'awake' 'binary_sensor/awake'
+            stateMQTTpub $vin 'true' 'binary_sensor/awake'
 
             # Check if polling turned off for this car
             if [ "$polling" != "on" ]; then
@@ -114,7 +114,8 @@ function stateMQTTpub() {
   [ $EXIT_STATUS -ne 0 ] &&
     log_error "${MQTT_OUT}" &&
     return 1
-  if [ $topic == "binary_sensor/presence_bc" ] || [ $topic == "binary_sensor/asleep" ]; then 
+
+  if [ $topic == "binary_sensor/presence_bc" ] || [ $topic == "binary_sensor/awake" ]; then 
     # Don't spam the logs for these topics
     log_debug "MQTT topic $MQTT_TOPIC successfully updated to $state"
   else
