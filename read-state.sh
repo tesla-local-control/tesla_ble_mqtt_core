@@ -37,7 +37,7 @@ if [ $EXIT_CODE -eq 27 ]; then
   for item in $mqttOp; do
     assign=${item##*/}
     log_debug "Setting variable from MQTT: $assign"
-    eval export $var_{vin}_$assign
+    eval export var_${vin}_$assign
   done
 fi
 
