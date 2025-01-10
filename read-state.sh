@@ -28,9 +28,6 @@ function poll_state() {
 vin=$1
 loop_count=$2
 
-#echo VIN $vin
-echo Count: $loop_count
-
 log_debug "poll_state: Setting variables from MQTT for VIN:$vin"
 set +e
 mqttOp=$( eval $MOSQUITTO_SUB_BASE --nodelay -W 1 --topic tesla_ble/$vin/variables/+ -F \"%t=%p\" 2>/dev/null )
