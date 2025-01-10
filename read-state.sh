@@ -37,13 +37,13 @@ if [ $EXIT_CODE -eq 27 ]; then
   for item in $mqttOp; do
     assign=${item##*/}
     log_debug "Setting variable from MQTT: $assign"
-    eval export ${vin}_$assign
+    eval export $var_{vin}_$assign
   done
 fi
 
 # Get variables for this VIN. Note ash needs to use eval for dynamic variables
-polling=$( eval "echo \"\$${vin}_polling\"" )
-polling_interval=$( eval "echo \"\$${vin}_polling_interval\"" )
+polling=$( eval "echo \"\$var_${vin}_polling\"" )
+polling_interval=$( eval "echo \"\$var_${vin}_polling_interval\"" )
 
 # Send a body-controller-state command. This checks if car is in bluetooth range and whether awake or asleep without acutally waking it
 set +e
