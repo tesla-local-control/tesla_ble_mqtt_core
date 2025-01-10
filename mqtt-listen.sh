@@ -249,6 +249,11 @@ listen_to_mqtt() {
         # These get handled in the subshell where they are used       
         ;;
 
+      poll_state)
+        # Attempt to poll state for selected vehicle ($vin=vin, $msg=loop count from poll_state_loop)
+        poll_state $vin $msg
+        ;;
+        
       *)
         log_error "Invalid request; topic:$topic vin:$vin msg:$msg"
         ;;

@@ -15,6 +15,7 @@ function poll_state_loop() {
       # Repeat for each car
       for vin in $VIN_LIST; do
         # Call poll_state via MQTT command queue
+        stateMQTTpub $vin $1 'poll_state'
       done
       # Loop repeat approx every 30 secs
      sleep 29
