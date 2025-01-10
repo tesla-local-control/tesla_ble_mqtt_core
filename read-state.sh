@@ -31,7 +31,7 @@ loop_count=$2
 #echo VIN $vin
 echo Count: $loop_count
 
-log_debug "poll_state_loop: Setting variables from MQTT for VIN:$vin"
+log_debug "poll_state: Setting variables from MQTT for VIN:$vin"
 set +e
 mqttOp=$( eval $MOSQUITTO_SUB_BASE --nodelay -W 1 --topic tesla_ble/$vin/variables/+ -F \"%t=%p\" 2>/dev/null )
 EXIT_CODE=$?
@@ -54,6 +54,13 @@ bcs_json=$( /usr/bin/tesla-control -ble -vin $vin -command-timeout 5s -connect-t
 EXIT_VALUE=$?
 set -e
 
+# Check for json having unwanted text at the end. This might be a sign of a bluetooth hardware issue or sending commands too quickly
+# See https://github.com/tesla-local-control/tesla_ble_mqtt_docker/issues/74
+clean_bcs_json=$( echo "$bcs_json" | sed 's/\([0-9]\{4\}\/[0-9]\{2\}\/[0-9]\{2\}\).*$//' )
+if [ "$bcs_json" != "$clean_bcs_json" ]; then
+  log_warning "poll_state: tesla-control returned unclean JSON. See https://github.com/tesla-local-control/tesla_ble_mqtt_docker/issues/74"
+fi
+
 # If non zero, car is not contactable by bluetooth
 if [ $EXIT_VALUE -ne 0 ]; then
   log_info "Car is not responding to bluetooth, assuming it's away. VIN:$vin"
@@ -66,7 +73,7 @@ else
   stateMQTTpub $vin 'true' 'binary_sensor/presence_bc'
 
   # Check if awake or asleep from the body-controller-state response
-  rqdValue=$(echo $bcs_json | jq -e '.vehicleSleepStatus')
+  rqdValue=$(echo $clean_bcs_json | jq -e '.vehicleSleepStatus')
   EXIT_VALUE=$?
   if [ $EXIT_VALUE -ne 0 ] || [ "$rqdValue" != "\"VEHICLE_SLEEP_STATUS_AWAKE\"" ]; then
     log_info "Car is present but asleep VIN:$vin"
