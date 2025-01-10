@@ -33,8 +33,14 @@ listen_to_mqtt() {
       topic_stripped=${topic#*/}
       vin=${topic_stripped%/*}
       cmd=${topic_stripped#*/}
-      log_info "Received MQTT message; topic:$topic msg:$msg vin:$vin cmd:$cmd"
 
+      # Don't spam the logs for these topics/ commands
+      if [ $cmd == "poll_state" ]; then 
+        log_debug "Received MQTT message; topic:$topic msg:$msg vin:$vin cmd:$cmd"
+      else
+        log_info "Received MQTT message; topic:$topic msg:$msg vin:$vin cmd:$cmd"
+      fi
+      
       case $cmd in
       config)
 
@@ -253,7 +259,7 @@ listen_to_mqtt() {
         # Attempt to poll state for selected vehicle ($vin=vin, $msg=loop count from poll_state_loop)
         poll_state $vin $msg
         ;;
-        
+
       *)
         log_error "Invalid request; topic:$topic vin:$vin msg:$msg"
         ;;
