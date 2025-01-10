@@ -7,16 +7,29 @@
 ## function poll_state_loop. For future implementation
 function poll_state_loop() {
   log_notice "Entering poll_state_loop..."
-
   # Loop indefinitely
   while :; do
-  
-    # Loop for a day (arbitary but need to be a long time as modulus may slip when it resets casuing an early poll)
+    # Loop for a day (arbitary but need to be a long time as modulus may slip when it resets causing an early poll)
     i=0
     while [ $i -le 86400 ]; do
-
       # Repeat for each car
       for vin in $VIN_LIST; do
+        # Call poll_state via MQTT command queue
+      done
+      # Loop repeat approx every 30 secs
+     sleep 29
+     i=$(( i + 30 ))
+    done
+  done
+}
+
+function poll_state() {
+vin=$1
+loop_count=$2
+
+echo VIN $vin
+echo Count: $loop_count
+return 0
 
         log_debug "poll_state_loop: Setting variables from MQTT for VIN:$vin"
         set +e
@@ -85,15 +98,6 @@ function poll_state_loop() {
 
         fi
 
-      done
-    
-      # Loop repeat approx every 30 secs
-     sleep 29
-     i=$(( i + 30 ))
-
-    done
-
-  done
 
 }
 
