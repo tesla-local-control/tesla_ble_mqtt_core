@@ -308,15 +308,12 @@ function getStateValueAndPublish() {
       esac
     fi
 
-
     # Modify values in specific cases
-    # getStateValueAndPublish $vin '.climateState.driverTempSetting' number/driver_temp_setting "$TESLACTRLOUT" &&
     if [[ $jsonParam == ".climateState.driverTempSetting" && $TEMPERATURE_UNIT_FAHRENHEIT == "true" ]]; then
       log_debug "Converting C to F for Climate Temp State"
       rqdValue=`echo "1.8 * $rqdValue + 32" | bc`
       rqdValue=${rqdValue%.*} 
     fi
-
 
     # Modify values in specific cases
     if [ $jsonParam == ".closuresState.sentryModeState" ]; then
