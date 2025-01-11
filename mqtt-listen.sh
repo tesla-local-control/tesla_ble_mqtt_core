@@ -35,12 +35,12 @@ listen_to_mqtt() {
       cmd=${topic_stripped#*/}
 
       # Don't spam the logs for these topics/ commands
-      if [ $cmd == "poll_state" ]; then 
+      if [ $cmd == "poll_state" ]; then
         log_debug "Received MQTT message; topic:$topic msg:$msg vin:$vin cmd:$cmd"
       else
         log_info "Received MQTT message; topic:$topic msg:$msg vin:$vin cmd:$cmd"
       fi
-      
+
       case $cmd in
       config)
 
