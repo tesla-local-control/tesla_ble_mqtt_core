@@ -272,13 +272,14 @@ sendBLECommand() {
 
 function getStateValueAndPublish() {
   vin=$1
+  jsonParam=$2
   mqttTopic=$3
-  stateJSON=$4
+  #stateJSON=$4
 
   # Check for json having unwanted text at the end. This might be a sign of a bluetooth hardware issue or sending commands too quickly
   # See https://github.com/tesla-local-control/tesla_ble_mqtt_docker/issues/74
-  jsonParam=$( echo "$2" | sed 's/\([0-9]\{4\}\/[0-9]\{2\}\/[0-9]\{2\}\).*$//' )
-  if [ "$jsonParam" != "$2" ]; then
+  stateJSON=$( echo "$4" | sed 's/\([0-9]\{4\}\/[0-9]\{2\}\/[0-9]\{2\}\).*$//' )
+  if [ "$stateJSON" != "$4" ]; then
     log_warning "poll_state: tesla-control returned unclean JSON. See https://github.com/tesla-local-control/tesla_ble_mqtt_docker/issues/74"
   fi
   
