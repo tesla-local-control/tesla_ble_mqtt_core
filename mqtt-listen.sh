@@ -24,7 +24,7 @@ listen_to_mqtt_loop() {
 
 }
 
-listen_to_mqtt() { 
+listen_to_mqtt() {
   log_info "Listening to MQTT"
   eval $MOSQUITTO_SUB_BASE --nodelay --disable-clean-session --qos 1 --topic tesla_ble/+/+ -F \"%t %p\" --id tesla_ble_mqtt |
     while read -r payload; do
@@ -252,7 +252,7 @@ listen_to_mqtt() {
         ;;
 
       variables)
-        # These get handled in the subshell where they are used       
+        # These get handled in the subshell where they are used
         ;;
 
       poll_state)

@@ -18,85 +18,85 @@ function poll_state_loop() {
         stateMQTTpub $vin $i 'poll_state'
       done
       # Loop repeat approx every 30 secs
-     sleep 29
-     i=$(( i + 30 ))
+      sleep 29
+      i=$(( i + 30 ))
     done
   done
 }
 
 function poll_state() {
-vin=$1
-loop_count=$2
+  vin=$1
+  loop_count=$2
 
-log_debug "poll_state: Setting variables from MQTT for VIN:$vin"
-set +e
-mqttOp=$( eval $MOSQUITTO_SUB_BASE --nodelay -W 1 --topic tesla_ble/$vin/variables/+ -F \"%t=%p\" 2>/dev/null )
-EXIT_CODE=$?
-set -e
-if [ $EXIT_CODE -eq 27 ]; then
-  for item in $mqttOp; do
-    assign=${item##*/}
-    log_debug "Setting variable from MQTT: $assign"
-    eval export var_${vin}_$assign
-  done
-fi
+  log_debug "poll_state: Setting variables from MQTT for VIN:$vin"
+  set +e
+  mqttOp=$( eval $MOSQUITTO_SUB_BASE --nodelay -W 1 --topic tesla_ble/$vin/variables/+ -F \"%t=%p\" 2>/dev/null )
+  EXIT_CODE=$?
+  set -e
+  if [ $EXIT_CODE -eq 27 ]; then
+    for item in $mqttOp; do
+      assign=${item##*/}
+      log_debug "Setting variable from MQTT: $assign"
+      eval export var_${vin}_$assign
+    done
+  fi
 
-# Get variables for this VIN. Note ash needs to use eval for dynamic variables
-polling=$( eval "echo \"\$var_${vin}_polling\"" )
-polling_interval=$( eval "echo \"\$var_${vin}_polling_interval\"" )
+  # Get variables for this VIN. Note ash needs to use eval for dynamic variables
+  polling=$( eval "echo \"\$var_${vin}_polling\"" )
+  polling_interval=$( eval "echo \"\$var_${vin}_polling_interval\"" )
 
-# Send a body-controller-state command. This checks if car is in bluetooth range and whether awake or asleep without acutally waking it
-set +e
-bcs_json=$( /usr/bin/tesla-control -ble -vin $vin -command-timeout 5s -connect-timeout 10s body-controller-state 2>&1 )
-EXIT_VALUE=$?
-set -e
-
-# If non zero, car is not contactable by bluetooth
-if [ $EXIT_VALUE -ne 0 ]; then
-  log_info "Car is not responding to bluetooth, assuming it's away. VIN:$vin"
-  # Publish to MQTT presence_bc sensor. TODO: Set awake sensor to Unknown via MQTT availability
-  stateMQTTpub $vin 'false' 'binary_sensor/presence_bc'
-
-else
-  # Car has responded
-  log_debug "Car has responded to bluetooth, it is present. VIN:$vin"
-  stateMQTTpub $vin 'true' 'binary_sensor/presence_bc'
-
-  # Check if awake or asleep from the body-controller-state response
-  rqdValue=$(echo $bcs_json | jq -e '.vehicleSleepStatus')
+  # Send a body-controller-state command. This checks if car is in bluetooth range and whether awake or asleep without acutally waking it
+  set +e
+  bcs_json=$( /usr/bin/tesla-control -ble -vin $vin -command-timeout 5s -connect-timeout 10s body-controller-state 2>&1 )
   EXIT_VALUE=$?
-  if [ $EXIT_VALUE -ne 0 ] || [ "$rqdValue" != "\"VEHICLE_SLEEP_STATUS_AWAKE\"" ]; then
-    log_info "Car is present but asleep VIN:$vin"
-    stateMQTTpub $vin 'false' 'binary_sensor/awake' 
+  set -e
+
+  # If non zero, car is not contactable by bluetooth
+  if [ $EXIT_VALUE -ne 0 ]; then
+    log_info "Car is not responding to bluetooth, assuming it's away. VIN:$vin"
+    # Publish to MQTT presence_bc sensor. TODO: Set awake sensor to Unknown via MQTT availability
+    stateMQTTpub $vin 'false' 'binary_sensor/presence_bc'
 
   else
-    log_info "Car is present and awake VIN:$vin"
-    stateMQTTpub $vin 'true' 'binary_sensor/awake'
+    # Car has responded
+    log_debug "Car has responded to bluetooth, it is present. VIN:$vin"
+    stateMQTTpub $vin 'true' 'binary_sensor/presence_bc'
 
-    # Check if polling turned off for this car
-    if [ "$polling" != "on" ]; then
-      log_debug "Polling is off for VIN: $vin, skipping"
+    # Check if awake or asleep from the body-controller-state response
+    rqdValue=$(echo $bcs_json | jq -e '.vehicleSleepStatus')
+    EXIT_VALUE=$?
+    if [ $EXIT_VALUE -ne 0 ] || [ "$rqdValue" != "\"VEHICLE_SLEEP_STATUS_AWAKE\"" ]; then
+      log_info "Car is present but asleep VIN:$vin"
+      stateMQTTpub $vin 'false' 'binary_sensor/awake' 
 
     else
-      log_debug "Polling is on for VIN: $vin, checking interval"       
+      log_info "Car is present and awake VIN:$vin"
+      stateMQTTpub $vin 'true' 'binary_sensor/awake'
+
+      # Check if polling turned off for this car
+      if [ "$polling" != "on" ]; then
+        log_debug "Polling is off for VIN: $vin, skipping"
+
+      else
+        log_debug "Polling is on for VIN: $vin, checking interval"       
   
-      # Is counter divisible by interval with no remainder? If so, it is time to attempt to poll
-      mod=$(( loop_count % $polling_interval ))
-      if [ $mod -ne 0 ]; then
-        log_debug "Count not divisible by polling_interval for VIN: $vin, Count: $loop_count, Interval: $polling_interval"
+        # Is counter divisible by interval with no remainder? If so, it is time to attempt to poll
+        mod=$(( loop_count % polling_interval ))
+        if [ $mod -ne 0 ]; then
+          log_debug "Count not divisible by polling_interval for VIN: $vin, Count: $loop_count, Interval: $polling_interval"
            
-      else 
-        log_info "Polling VIN: $vin"    
-        # 'Press' the Data Update Env button (which checks NO_POLL_SECTIONS environment variable to exclude various sections if required)
-        stateMQTTpub $vin 'read-state-envcheck' 'config'
+        else 
+          log_info "Polling VIN: $vin"    
+          # 'Press' the Data Update Env button (which checks NO_POLL_SECTIONS environment variable to exclude various sections if required)
+          stateMQTTpub $vin 'read-state-envcheck' 'config'
+
+        fi
 
       fi
 
     fi
 
   fi
-
-fi
 }
 
 function stateMQTTpub() {
@@ -118,7 +118,7 @@ function stateMQTTpub() {
     return 1
 
   # Don't spam the logs for these topics
-  if [ $topic == "binary_sensor/presence_bc" ] || [ $topic == "binary_sensor/awake" ] || [ $topic == "poll_state" ]; then 
+  if [ $topic == "binary_sensor/presence_bc" ] || [ $topic == "binary_sensor/awake" ] || [ $topic == "poll_state" ]; then
     log_debug "MQTT topic $MQTT_TOPIC successfully updated to $state"
   else
     log_info "MQTT topic $MQTT_TOPIC successfully updated to $state"
@@ -133,51 +133,65 @@ function readState() {
   sections=$2
 
   log_debug "readState; entering. Sections: $sections VIN:$vin"
-  charge=0; climate=0; tyre=0; closure=0; drive=0
+ 
+  charge=0
+  climate=0
+  tyre=0
+  closure=0
+  drive=0
+
   case $sections in
   charge)
     charge=1
-  ;;
+    ;;
   climate)
     climate=1
-  ;;
+    ;;
   tyre)
     tyre=1
-  ;;
+    ;;
   closure)
     closure=1
-  ;;
+    ;;
   drive)
     drive=1
-  ;;
+    ;;
   env_check)
-    charge=1; climate=1; tyre=1; closure=1; drive=1
+    charge=1
+    climate=1
+    tyre=1
+    closure=1
+    drive=1
     for sect in $NO_POLL_SECTIONS; do
       case $sect in
       charge)
         charge=0
-      ;;
+        ;;
       climate)
         climate=0
-      ;;
+        ;;
       tire-pressure)
         tyre=0
-      ;;
+        ;;
       closures)
         closure=0
-      ;;
+        ;;
       drive)
         drive=0
-      ;;
+        ;;
       *)
       log_warning "readState: Invalid state category in NO_POLL_SECTIONS"
-      ;;
+        ;;
       esac
     done
-  ;;  
+    ;;  
   *)
-    charge=1; climate=1; tyre=1; closure=1; drive=1
-  ;;  
+    charge=1
+    climate=1
+    tyre=1
+    closure=1
+    drive=1
+    ;;  
   esac
 
   if [ $charge -eq 1 ]; then
@@ -243,7 +257,7 @@ sendBLECommand() {
       log_debug "sendBLECommand; $TESLACTRLOUT"
       log_info "Command $command was successfully delivered to vin:$vin"
       # Publish to MQTT awake topic
-      stateMQTTpub $vin 'true' 'binary_sensor/awake' 
+      stateMQTTpub $vin 'true' 'binary_sensor/awake'
       return 0
     else
       if [[ "$TESLACTRLOUT" == *"car could not execute command"* ]]; then
@@ -278,11 +292,11 @@ function getStateValueAndPublish() {
 
   # Check for json having unwanted text at the end. This might be a sign of a bluetooth hardware issue or sending commands too quickly
   # See https://github.com/tesla-local-control/tesla_ble_mqtt_docker/issues/74
-  stateJSON=$( echo "$4" | sed 's/\([0-9]\{4\}\/[0-9]\{2\}\/[0-9]\{2\}\).*$//' )
+  stateJSON=$(echo "$4" | sed 's/\([0-9]\{4\}\/[0-9]\{2\}\/[0-9]\{2\}\).*$//')
   if [ "$stateJSON" != "$4" ]; then
     log_warning "poll_state: tesla-control returned unclean JSON. See https://github.com/tesla-local-control/tesla_ble_mqtt_docker/issues/74"
   fi
-  
+
   # Get value from JSON, and publish to MQTT
   rqdValue=$(echo $stateJSON | jq -e $jsonParam)
   EXIT_STATUS=$?

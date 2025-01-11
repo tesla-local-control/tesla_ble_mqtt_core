@@ -968,7 +968,7 @@ setupHADiscoveryAllVINsMain() {
     eval $MOSQUITTO_PUB_BASE -t tesla_ble/$vin/config -n
     eval $MOSQUITTO_PUB_BASE -t tesla_ble/$vin/command -n
   done
-  
+
 }
 
 ###
