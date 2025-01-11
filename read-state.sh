@@ -86,7 +86,7 @@ function poll_state() {
           log_debug "Count not divisible by polling_interval for VIN: $vin, Count: $loop_count, Interval: $polling_interval"
            
         else
-          log_info "Polling VIN: $vin"    
+          log_info "Polling VIN: $vin"
           # 'Press' the Data Update Env button (which checks NO_POLL_SECTIONS environment variable to exclude various sections if required)
           stateMQTTpub $vin 'read-state-envcheck' 'config'
 
@@ -184,7 +184,7 @@ function readState() {
         ;;
       esac
     done
-    ;;  
+    ;;
   *)
     charge=1
     climate=1
