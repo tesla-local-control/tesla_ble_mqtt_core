@@ -79,12 +79,12 @@ function poll_state() {
 
       else
         log_debug "Polling is on for VIN: $vin, checking interval"
-  
+
         # Is counter divisible by interval with no remainder? If so, it is time to attempt to poll
         mod=$((loop_count % polling_interval))
         if [ $mod -ne 0 ]; then
           log_debug "Count not divisible by polling_interval for VIN: $vin, Count: $loop_count, Interval: $polling_interval"
-           
+
         else
           log_info "Polling VIN: $vin"
           # 'Press' the Data Update Env button (which checks NO_POLL_SECTIONS environment variable to exclude various sections if required)
