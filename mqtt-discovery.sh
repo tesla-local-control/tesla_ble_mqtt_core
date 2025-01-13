@@ -281,6 +281,30 @@ function setupExtendedControls() {
    "unique_id": "'${DEVICE_ID}'_steering-wheel-heater"
    }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 6 10 -t homeassistant/switch/${DEVICE_ID}/steering-wheel-heater/config -l
 
+  echo '{
+   "command_topic": "'${TOPIC_ROOT}'/variables/polling",
+   "state_topic": "'${TOPIC_ROOT}'/variables/polling",  
+   "device": {
+    "identifiers": [
+    "'${DEVICE_ID}'"
+    ],
+    "manufacturer": "tesla-local-control",
+    "model": "Tesla_BLE",
+    "name": "'${DEVICE_NAME}'",
+    "sw_version": "'${SW_VERSION}'"
+   },
+   "icon": "mdi:car-connected",
+   "name": "State Polling",
+   "device_class": "switch",
+   "payload_on": "on",
+   "payload_off": "off",
+   "state_on": "on",
+   "state_off": "off",
+   "retain": "true",
+   "unique_id": "'${DEVICE_ID}'_polling",
+   "entity_category": "diagnostic"
+   }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 6 10 -t homeassistant/switch/${DEVICE_ID}/polling/config -l
+
   # Covers
 
   echo '{
@@ -448,6 +472,29 @@ function setupExtendedControls() {
     "unique_id": "'${DEVICE_ID}'_climate-set-temp"
   }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 6 10 -t homeassistant/number/${DEVICE_ID}/climate-temp/config -l
 
+  echo '{
+   "command_topic": "'${TOPIC_ROOT}'/variables/polling_interval",
+   "device": {
+    "identifiers": [
+    "'${DEVICE_ID}'"
+    ],
+    "manufacturer": "tesla-local-control",
+    "model": "Tesla_BLE",
+    "name": "'${DEVICE_NAME}'",
+    "sw_version": "'${SW_VERSION}'"
+   },
+   "icon": "mdi:timer-sync",
+   "min": "30",
+   "max": "3600",
+   "step": "30",
+   "mode": "slider",
+   "name": "Polling Interval",
+   "retain": "true",
+   "unique_id": "'${DEVICE_ID}'_polling_interval",
+   "entity_category": "diagnostic",
+   "unit_of_measurement": "secs"
+   }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 6 10 -t homeassistant/number/${DEVICE_ID}/polling_interval/config -l
+
   # Selects
 
   echo '{
@@ -487,6 +534,44 @@ function setupExtendedControls() {
    "qos": "'${QOS_LEVEL}'",
    "unique_id": "'${DEVICE_ID}'_heater-seat-front-right"
    }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 6 10 -t homeassistant/select/${DEVICE_ID}/heater-seat-front-right/config -l
+
+  echo '{
+   "command_topic": "'${TOPIC_ROOT}'/heater-seat-rear-left",
+   "state_topic": "'${TOPIC_ROOT}'/select/seat_heater_rear_left",
+   "device": {
+    "identifiers": [
+    "'${DEVICE_ID}'"
+    ],
+    "manufacturer": "tesla-local-control",
+    "model": "Tesla_BLE",
+    "name": "'${DEVICE_NAME}'",
+    "sw_version": "'${SW_VERSION}'"
+   },
+   "icon": "mdi:car-seat-heater",
+   "name": "Heated Seat Rear Left",
+   "options": ["off", "low", "medium", "high"],
+   "qos": "'${QOS_LEVEL}'",
+   "unique_id": "'${DEVICE_ID}'_heater-seat-rear-left"
+   }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 6 10 -t homeassistant/select/${DEVICE_ID}/heater-seat-rear-left/config -l
+
+  echo '{
+   "command_topic": "'${TOPIC_ROOT}'/heater-seat-rear-right",
+   "state_topic": "'${TOPIC_ROOT}'/select/seat_heater_rear_right",
+   "device": {
+    "identifiers": [
+    "'${DEVICE_ID}'"
+    ],
+    "manufacturer": "tesla-local-control",
+    "model": "Tesla_BLE",
+    "name": "'${DEVICE_NAME}'",
+    "sw_version": "'${SW_VERSION}'"
+   },
+   "icon": "mdi:car-seat-heater",
+   "name": "Heated Seat Rear Right",
+   "options": ["off", "low", "medium", "high"],
+   "qos": "'${QOS_LEVEL}'",
+   "unique_id": "'${DEVICE_ID}'_heater-seat-rear-right"
+   }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 6 10 -t homeassistant/select/${DEVICE_ID}/heater-seat-rear-right/config -l
 
   # Locks (future)
 
@@ -649,6 +734,7 @@ function setupDiagnostic() {
     "entity_category": "diagnostic",
     "icon": "mdi:car-info",
     "name": "Car state information",
+    "enabled_by_default": "false",    
     "payload_press": "body-controller-state",
     "qos": "'${QOS_LEVEL}'",
     "unique_id": "'${DEVICE_ID}'_body-controller-state"
@@ -705,12 +791,132 @@ function setupDiagnostic() {
      "sw_version": "'${SW_VERSION}'"
    },
    "icon": "mdi:database-sync",
-   "name": "Force Data Update",
+   "name": "Force Update All",
    "entity_category": "diagnostic",
-   "payload_press": "read-state",
+   "payload_press": "read-state-all",
    "qos": "'${QOS_LEVEL}'",
    "unique_id": "'${DEVICE_ID}'_read-state"
-   }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 6 10 -t homeassistant/button/${DEVICE_ID}/read-state/config -l
+   }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 6 10 -t homeassistant/button/${DEVICE_ID}/read-state-all/config -l
+
+  echo '{
+   "command_topic": "'${TOPIC_ROOT}'/config",
+   "device": {
+     "identifiers": [
+     "'${DEVICE_ID}'"
+     ],
+     "manufacturer": "tesla-local-control",
+     "model": "Tesla_BLE",
+     "name": "'${DEVICE_NAME}'",
+     "sw_version": "'${SW_VERSION}'"
+   },
+   "icon": "mdi:database-sync",
+   "name": "Force Update Env",
+   "entity_category": "diagnostic",
+   "payload_press": "read-state-envcheck",
+   "qos": "'${QOS_LEVEL}'",
+   "enabled_by_default": "false",
+   "unique_id": "'${DEVICE_ID}'_read-state-envcheck"
+   }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 6 10 -t homeassistant/button/${DEVICE_ID}/read-state-envcheck/config -l
+
+  echo '{
+   "command_topic": "'${TOPIC_ROOT}'/config",
+   "device": {
+     "identifiers": [
+     "'${DEVICE_ID}'"
+     ],
+     "manufacturer": "tesla-local-control",
+     "model": "Tesla_BLE",
+     "name": "'${DEVICE_NAME}'",
+     "sw_version": "'${SW_VERSION}'"
+   },
+   "icon": "mdi:database-sync",
+   "name": "Force Update Charge",
+   "entity_category": "diagnostic",
+   "payload_press": "read-state-charge",
+   "qos": "'${QOS_LEVEL}'",
+   "enabled_by_default": "false",
+   "unique_id": "'${DEVICE_ID}'_read-state-charge"
+   }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 6 10 -t homeassistant/button/${DEVICE_ID}/read-state-charge/config -l
+
+  echo '{
+   "command_topic": "'${TOPIC_ROOT}'/config",
+   "device": {
+     "identifiers": [
+     "'${DEVICE_ID}'"
+     ],
+     "manufacturer": "tesla-local-control",
+     "model": "Tesla_BLE",
+     "name": "'${DEVICE_NAME}'",
+     "sw_version": "'${SW_VERSION}'"
+   },
+   "icon": "mdi:database-sync",
+   "name": "Force Update Climate",
+   "entity_category": "diagnostic",
+   "payload_press": "read-state-climate",
+   "qos": "'${QOS_LEVEL}'",
+   "enabled_by_default": "false",
+   "unique_id": "'${DEVICE_ID}'_read-state-climate"
+   }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 6 10 -t homeassistant/button/${DEVICE_ID}/read-state-climate/config -l
+
+  echo '{
+   "command_topic": "'${TOPIC_ROOT}'/config",
+   "device": {
+     "identifiers": [
+     "'${DEVICE_ID}'"
+     ],
+     "manufacturer": "tesla-local-control",
+     "model": "Tesla_BLE",
+     "name": "'${DEVICE_NAME}'",
+     "sw_version": "'${SW_VERSION}'"
+   },
+   "icon": "mdi:database-sync",
+   "name": "Force Update Tyre",
+   "entity_category": "diagnostic",
+   "payload_press": "read-state-tyre",
+   "qos": "'${QOS_LEVEL}'",
+   "enabled_by_default": "false",
+   "unique_id": "'${DEVICE_ID}'_read-state-tyre"
+   }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 6 10 -t homeassistant/button/${DEVICE_ID}/read-state-tyre/config -l
+
+  echo '{
+   "command_topic": "'${TOPIC_ROOT}'/config",
+   "device": {
+     "identifiers": [
+     "'${DEVICE_ID}'"
+     ],
+     "manufacturer": "tesla-local-control",
+     "model": "Tesla_BLE",
+     "name": "'${DEVICE_NAME}'",
+     "sw_version": "'${SW_VERSION}'"
+   },
+   "icon": "mdi:database-sync",
+   "name": "Force Update Closure",
+   "entity_category": "diagnostic",
+   "payload_press": "read-state-closure",
+   "qos": "'${QOS_LEVEL}'",
+   "enabled_by_default": "false",
+   "unique_id": "'${DEVICE_ID}'_read-state-closure"
+   }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 6 10 -t homeassistant/button/${DEVICE_ID}/read-state-closure/config -l
+
+  echo '{
+   "command_topic": "'${TOPIC_ROOT}'/config",
+   "device": {
+     "identifiers": [
+     "'${DEVICE_ID}'"
+     ],
+     "manufacturer": "tesla-local-control",
+     "model": "Tesla_BLE",
+     "name": "'${DEVICE_NAME}'",
+     "sw_version": "'${SW_VERSION}'"
+   },
+   "icon": "mdi:database-sync",
+   "name": "Force Update Drive",
+   "entity_category": "diagnostic",
+   "payload_press": "read-state-drive",
+   "qos": "'${QOS_LEVEL}'",
+   "enabled_by_default": "false",
+   "unique_id": "'${DEVICE_ID}'_read-state-drive"
+   }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 6 10 -t homeassistant/button/${DEVICE_ID}/read-state-drive/config -l
 
   log_debug "setupDiagnostic() leaving vin:$vin"
 
@@ -733,12 +939,13 @@ setupHADiscoveryAllVINsMain() {
     else
       log_info "setupHADiscoveryAllVINsMain; HA backend is disable, skipping setup for HA Auto Discovery"
     fi
+
+    # Discard /config and /command messages
+    log_notice "setupHADiscoveryAllVINsMain; Discarding unread MQTT messages for command and config topics"
+    eval $MOSQUITTO_PUB_BASE -t tesla_ble/$vin/config -n
+    eval $MOSQUITTO_PUB_BASE -t tesla_ble/$vin/command -n
   done
 
-  # Discard /config messages
-  topic=tesla_ble/$vin/config
-  log_notice "setupHADiscoveryAllVINsMain; Discarding any unread MQTT messages for topic:$topic"
-  eval $MOSQUITTO_SUB_BASE -E -i tesla_ble_mqtt -t $topic
 }
 
 ###

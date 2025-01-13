@@ -1,5 +1,38 @@
 # Changelog
 
+## 0.4.2
+
+- RELEASE NEW Feature: Automatic Polling is now possible for state
+
+- NEW Feature: The following new states / entities are added:
+   - Sensors: Awake (updated approx every 30 secs from body-controller-state)
+   - Binary_Sensors: Presence_BC (experimental presence detection updated approx every 30 secs from body_controller_state rather than listening for BLE mac)
+   - Switches: Polling 
+   - Numbers: Polling Interval
+   - Buttons: Force Update buttons for individual state categories 
+
+- NEW Feature: Environment variable NO_POLL_SECTIONS is provided to disable updating of various state categories during polling. This speeds up state updates, though less state entities are updated by the polling. The entities can still be manually updated by pressing the Force Update button for the relevent state category
+
+- Changes:
+   - 'Force Data Update' Button is renamed to 'Force Update All'
+   - Errors which occur whilst reading state will not automatically prevent the next state or state category being read. This will fix an issue reported in #135 below where a user doesn't have a Heated Steering Wheel. This previously prevented any states after this one from being read
+
+- Fixes:
+   - [ Dev ] Bad variable name #75 (_docker). Many thanks to aneisch and dettofatto who really helped to track down this bug
+   - parse error: Invalid numeric literal #74 (_docker). Many thanks to jipema who also helped a lot in identifying this issue
+   - All my sensor entities are "unknown" #131 (_core)
+   - Any potential to "read state" via bluetooth? #115 (_core)
+
+## 0.3.1
+
+- NEW Feature: The following new states / entities are added:
+   - Sensors: Charger Voltage; Charger Range Added; Charge Speed mph; Passenger Temp Setting, Odometer
+   - Binary_Sensors: Front Defroster; Rear Defroster; Wiper Heater; Side Mirror Heater; Doors Open
+   - Selects: Heated Seat Rear Left; Heated Seat Rear Right
+
+- Fixes:
+   - Temp units incorrect for new Inside Temp and Outside Temp #135 (_core)
+
 ## 0.3.0
 
 - MAJOR NEW Feature: Read car state using BLE

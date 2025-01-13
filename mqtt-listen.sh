@@ -33,7 +33,13 @@ listen_to_mqtt() {
       topic_stripped=${topic#*/}
       vin=${topic_stripped%/*}
       cmd=${topic_stripped#*/}
-      log_info "Received MQTT message; topic:$topic msg:$msg vin:$vin cmd:$cmd"
+
+      # Don't spam the logs for these topics/ commands
+      if [ $cmd == "poll_state" ]; then
+        log_debug "Received MQTT message; topic:$topic msg:$msg vin:$vin cmd:$cmd"
+      else
+        log_info "Received MQTT message; topic:$topic msg:$msg vin:$vin cmd:$cmd"
+      fi
 
       case $cmd in
       config)
@@ -76,9 +82,38 @@ listen_to_mqtt() {
           infoBluetoothAdapter $vin
           ;;
 
-        read-state)
+        read-state-all)
           log_notice "read-state; calling readState()"
-          readState $vin
+          readState $vin all
+          ;;
+
+        read-state-envcheck)
+          log_notice "read-state; calling readState()"
+          readState $vin env_check
+          ;;
+
+        read-state-charge)
+          log_notice "read-state; calling readState()"
+          readState $vin charge
+          ;;
+
+        read-state-climate)
+          log_notice "read-state; calling readState()"
+          readState $vin climate
+          ;;
+
+        read-state-tyre)
+          log_notice "read-state; calling readState()"
+          readState $vin tyre
+          ;;
+
+        read-state-closure)
+          log_notice "read-state; calling readState()"
+          readState $vin closure
+          ;;
+        read-state-drive)
+          log_notice "read-state; calling readState()"
+          readState $vin drive
           ;;
 
         *)
@@ -215,6 +250,15 @@ listen_to_mqtt() {
 
       windows)
         teslaCtrlSendCommand $vin "$cmd-$msg" "Set $cmd mode to $msg"
+        ;;
+
+      variables)
+        # These get handled in the subshell where they are used
+        ;;
+
+      poll_state)
+        # Attempt to poll state for selected vehicle ($vin=vin, $msg=loop count from poll_state_loop)
+        poll_state $vin $msg
         ;;
 
       *)
