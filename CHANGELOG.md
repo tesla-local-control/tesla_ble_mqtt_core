@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.4.1
+## 0.4.2
 
 - RELEASE NEW Feature: Automatic Polling is now possible for state
 
