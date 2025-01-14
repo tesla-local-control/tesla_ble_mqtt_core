@@ -242,7 +242,7 @@ sendBLECommand() {
   export TESLA_VIN=$vin
   export TESLA_KEY_FILE=$KEYS_DIR/${vin}_private.pem
   export TESLA_KEY_NAME=$KEYS_DIR/${vin}_private.pem
-  TESLA_CONTROL_CMD="/usr/bin/tesla-control -ble -command-timeout 5s -connect-timeout 10s $command 2>&1"
+  TESLA_CONTROL_CMD="/usr/bin/tesla-control -ble -command-timeout ${TC_CMD_TIMEOUT}s -connect-timeout ${TC_CON_TIMEOUT}s $command 2>&1"
 
   # Retry loop
   max_retries=5
@@ -268,8 +268,8 @@ sendBLECommand() {
         log_warning "teslaCtrlSendCommand; $TESLACTRLOUT"
         log_warning "Vehicle might be asleep, or not present. Sending wake command"
         sleep $BLE_CMD_RETRY_DELAY
-        tesla-control -ble -command-timeout 20s -connect-timeout 20s -domain vcsec wake
-        sleep 5
+        tesla-control -ble -command-timeout ${TC_CMD_TIMEOUT}s -connect-timeout ${TC_CON_TIMEOUT}s -domain vcsec wake
+        sleep 6
       else
         log_error "tesla-control send command:$command to vin:$vin failed exit status $EXIT_STATUS."
         log_error "sendBLECommand; $TESLACTRLOUT"
