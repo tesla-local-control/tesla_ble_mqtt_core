@@ -30,7 +30,7 @@ teslaCtrlSendCommand() {
   export TESLA_KEY_FILE=$KEYS_DIR/${vin}_private.pem
   export TESLA_KEY_NAME=$KEYS_DIR/${vin}_private.pem
   # shellcheck disable=SC2016
-  TESLA_CONTROL_CMD='/usr/bin/tesla-control -ble -command-timeout 20s $command 2>&1'
+  TESLA_CONTROL_CMD='/usr/bin/tesla-control -ble -command-timeout ${TC_CMD_TIMEOUT}s -connect-timeout ${TC_CON_TIMEOUT}s $command 2>&1'
 
   # Retry loop
   max_retries=5

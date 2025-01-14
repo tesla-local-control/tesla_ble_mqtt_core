@@ -17,9 +17,9 @@ function poll_state_loop() {
         # Call poll_state via MQTT command queue
         stateMQTTpub $vin $i 'poll_state'
       done
-      # Loop repeat approx every 30 secs
-      sleep 29
-      i=$((i + 30))
+      # Loop repeat approx every PS_LOOP_DELAY secs
+      sleep $PS_LOOP_DELAY
+      i=$((i + $PS_LOOP_DELAY))
     done
   done
 }
@@ -47,7 +47,7 @@ function poll_state() {
 
   # Send a body-controller-state command. This checks if car is in bluetooth range and whether awake or asleep without acutally waking it
   set +e
-  bcs_json=$(/usr/bin/tesla-control -ble -vin $vin -command-timeout 5s -connect-timeout 10s body-controller-state 2>&1)
+  bcs_json=$(/usr/bin/tesla-control -ble -vin $vin -command-timeout ${TC_CMD_TIMEOUT}s -connect-timeout ${TC_CON_TIMEOUT}s body-controller-state 2>&1)
   EXIT_VALUE=$?
   set -e
 

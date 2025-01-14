@@ -29,6 +29,9 @@ done
 
 # If empty string, initialize w/ default value - Required for add-on and Docker standalone
 export BLE_CMD_RETRY_DELAY=${BLE_CMD_RETRY_DELAY:-5}
+export TC_CMD_TIMEOUT=${TC_CMD_TIMEOUT:-5}
+export TC_CON_TIMEOUT=${TC_CON_TIMEOUT:-10}
+export PS_LOOP_DELAY=${PS_LOOP_DELAY:-30}
 export BLECTL_FILE_INPUT=${BLECTL_FILE_INPUT:-}
 export ENABLE_HA_FEATURES=${ENABLE_HA_FEATURES:-true}
 export PRESENCE_DETECTION_LOOP_DELAY=${PRESENCE_DETECTION_LOOP_DELAY:-120}
@@ -47,6 +50,9 @@ export VIN_REGEX='[A-HJ-NPR-Z0-9]{17}'
 ### LOG CONFIG VARS ###########################################################
 log_info "Configuration Options are:
   BLE_CMD_RETRY_DELAY=$BLE_CMD_RETRY_DELAY
+  TC_CMD_TIMEOUT=$TC_CMD_TIMEOUT
+  TC_CON_TIMEOUT=$TC_CON_TIMEOUT
+  PS_LOOP_DELAY=$PS_LOOP_DELAY
   DEBUG=$DEBUG
   MQTT_SERVER=$MQTT_SERVER
   MQTT_PORT=$MQTT_PORT
