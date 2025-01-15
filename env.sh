@@ -30,7 +30,7 @@ done
 # If empty string, initialize w/ default value - Required for add-on and Docker standalone
 export BLE_CMD_RETRY_DELAY=${BLE_CMD_RETRY_DELAY:-3}
 export TC_CMD_TIMEOUT=${TC_CMD_TIMEOUT:-5}
-export TC_CON_TIMEOUT=${TC_CON_TIMEOUT:-5}
+export TC_CON_TIMEOUT=${TC_CON_TIMEOUT:-10}
 export PS_LOOP_DELAY=${PS_LOOP_DELAY:-60}
 export BLECTL_FILE_INPUT=${BLECTL_FILE_INPUT:-}
 export ENABLE_HA_FEATURES=${ENABLE_HA_FEATURES:-true}
