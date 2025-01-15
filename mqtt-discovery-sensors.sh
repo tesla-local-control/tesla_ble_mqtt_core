@@ -624,7 +624,7 @@ function setupChargeStateSensors {
    "payload_off": "false",
    "device_class": "lock",   
    "qos": "'${QOS_LEVEL}'",
-   "unique_id": "'${DEVICE_ID}'_window_open_pr"
+   "unique_id": "'${DEVICE_ID}'_door_lock"
   }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 36 10 -t homeassistant/binary_sensor/${DEVICE_ID}/door_lock/config -l
 
   echo '{

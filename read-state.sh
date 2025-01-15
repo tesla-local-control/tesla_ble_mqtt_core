@@ -484,7 +484,7 @@ function closuresState() {
   getStateValueAndPublish $vin '.closuresState.doorOpenPassengerFront' binary_sensor/door_open_pass_front "$TESLACTRLOUT"
   getStateValueAndPublish $vin '.closuresState.doorOpenDriverRear' binary_sensor/door_open_driver_rear "$TESLACTRLOUT"
   getStateValueAndPublish $vin '.closuresState.doorOpenPassengerRear' binary_sensor/door_open_pass_rear "$TESLACTRLOUT"
-  getStateValueAndPublish $vin '.closuresState.locked' lock/locked "$TESLACTRLOUT"
+  getStateValueAndPublish $vin '.closuresState.locked' binary_sensor/door_lock "$TESLACTRLOUT"
 
   # Publish to windows cover state topic
   if [ $ANYWINDOWOPEN == "true" ]; then

@@ -600,7 +600,7 @@ function setupExtendedControls() {
 
   #echo '{
   # "command_topic": "'${TOPIC_ROOT}'/door_lock",
-  # "state_topic": "'${TOPIC_ROOT}'/lock/locked",
+  # "state_topic": "'${TOPIC_ROOT}'/binary_sensor/door_lock",
   # "device": {
   #  "identifiers": [
   #  "'${DEVICE_ID}'"
