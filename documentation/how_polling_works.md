@@ -1,0 +1,23 @@
+Here's a high level description of how the polling loop works. I had several attempts before I was happy with it. 
+
+Firstly my requirements: 
+ - Allow independent turn on/off polling and set polling interval for each car. This had to be dynamic from HA, not fixed by an environment variable. Therefore we have HA switch and number entities created via MQTT discovery
+ - There was a challenge to ensure these values get translated into variables which are dynamically readable wherever needed in the code. Sounds simple, however shell doesn't have global variables like proper languages do. Whilst functions and sub-processes get a 'copy' of exported variables, their copy doesn't change if it changes at the 'global' level, nor can they change the 'global' value if they need to. This means I had to reorganise the structure of the code slightly. The MQTT 'version' of these variables is considered to be the 'master' as this can be accessed anywhere in the code
+ - Calling tesla-control must be done in a single thread. I originally had sending commands (original code), polling, and requesting body-controller-state all happening independently of each other in different threads. Inevitably, there would be times when two threads accessed tesla-control at the same time. This caused unpredictable behaviour sometimes locking up the container and requiring a restart, sometimes even needing a reboot of the host. This required further restructuring of the code. All calls to tesla-control to send commands are done by publishing to the relevent MQTT topic which is only read and acted on by listen_to_mqtt(). This does two things - it queues the commands so they are processed in order, secondly the calling of tesla-control is always in the same thread, so it doesn't cause the problem described above
+ - See whether body-controller-state can be used to provide awake and presence status, potentially superceding the exiting method of presence detection in the future
+
+With these things in mind, I'll talk through how it works:
+
+**function poll_state_loop()** 
+ - Loops indefinitely, via the outer while loop
+ - Inside that is a another while loop which counts seconds (it resets every 24 hours so the number doesn't get too big and break something when it overflows). This is used to allow multiple cars to have different polling intervals (see later). There is also a nominal 30 second delay when the loop repeats so we don't send body-controller-state requests more often than necessary
+ - Inside that is a for loop which cycles though multiple cars in VIN_LIST. For each car i,t publishes to MQTT command topic containing the VIN and count from the above while loop.  Function listen_to_mqtt() 'hears' this and calls function poll_state(). Function poll_state() is not called directly as this would break the requirements to have tesla-control calls all in one thread
+
+**function poll_state()**
+This gets called approx every 30 secs for each VIN in turn as described above. For the specified VIN we test whether the conditions for polling are met, and if so initiate the poll, publishing the results to MQTT. In more detail:
+ - Get the 'global' polling and polling_interval variables for the specified VIN from MQTT. The code is a bit difficult to follow here as the version of shell we are using (ash) needs to use eval to perform dynamic variable substitution based on the VIN
+ - Send the body-controller-state command to the car, which will return an exit code, and if the car is present some JSON
+ - Use the exit code and JSON to determine presence and asleep status, publishing to MQTT to update the associated HA entities. Exit unless the car is present and awake
+ - Check if polling is turned on for this VIN, exit if not
+ - Check the loop counter to see if it is time to poll this car. This is done by dividing the loop counter by the car's polling_interval. If it divides exactly (i.e. no remainder / modulus is zero), then it is time to poll. Exit if not
+ - Poll the car. This is done by publishing to the relevent MQTT topic. This is 'heard' by listen_to_mqtt(), which results in a call to function read-state(). This reads the state using tesla-control and publishes the result to MQTT. As above we don't call read-state() directly here as this would break the requirements to have tesla-control calls all in one thread
