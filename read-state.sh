@@ -4,7 +4,7 @@
 #
 # read-state.sh
 
-## function poll_state_loop. For future implementation
+## function poll_state_loop
 function poll_state_loop() {
   log_notice "Entering poll_state_loop..."
   # Loop indefinitely
@@ -17,7 +17,7 @@ function poll_state_loop() {
         # Call poll_state via MQTT command queue
         stateMQTTpub $vin $i 'poll_state'
       done
-      # Loop repeat approx every PS_LOOP_DELAY secs
+      # Loop repeat approx every PS_LOOP_DELAY secs. This must be a multiple of 30
       sleep $PS_LOOP_DELAY
       i=$((i + $PS_LOOP_DELAY))
     done
@@ -47,10 +47,14 @@ function poll_state() {
 
   # Send a body-controller-state command. This checks if car is in bluetooth range and whether awake or asleep without acutally waking it
   set +e
-  bcs_json=$(/usr/bin/tesla-control -ble -vin $vin -command-timeout ${TC_CMD_TIMEOUT}s -connect-timeout ${TC_CON_TIMEOUT}s body-controller-state 2>&1)
+  bcs_json=$(timeout -k 1 -s SIGKILL $TC_KILL_TIMEOUT /usr/bin/tesla-control -ble -vin $vin -command-timeout ${TC_CMD_TIMEOUT}s -connect-timeout ${TC_CON_TIMEOUT}s body-controller-state 2>&1)
   EXIT_VALUE=$?
   set -e
-
+  echo Exit V $EXIT_VALUE
+  wait
+  WEXIT_VALUE=$?
+  echo wexit: $WEXIT_VALUE
+  
   # If non zero, car is not contactable by bluetooth
   if [ $EXIT_VALUE -ne 0 ]; then
     log_info "Car is not responding to bluetooth, assuming it's away. VIN:$vin"
