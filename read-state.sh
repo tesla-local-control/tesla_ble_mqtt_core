@@ -50,11 +50,11 @@ function poll_state() {
   bcs_json=$(timeout -k 1 -s SIGKILL $TC_KILL_TIMEOUT /usr/bin/tesla-control -ble -vin $vin -command-timeout ${TC_CMD_TIMEOUT}s -connect-timeout ${TC_CON_TIMEOUT}s body-controller-state 2>&1)
   EXIT_VALUE=$?
   set -e
-  echo Exit V $EXIT_VALUE
+  echo BCS Exit V $EXIT_VALUE
   wait
   WEXIT_VALUE=$?
-  echo wexit: $WEXIT_VALUE
-  
+  echo BCS wexit: $WEXIT_VALUE
+
   # If non zero, car is not contactable by bluetooth
   if [ $EXIT_VALUE -ne 0 ]; then
     log_info "Car is not responding to bluetooth, assuming it's away. VIN:$vin"
@@ -201,31 +201,31 @@ function readState() {
   if [ $charge -eq 1 ]; then
     # Read and parse charge state
     readChargeState $vin
-    sleep $BLE_CMD_RETRY_DELAY
+    #sleep $BLE_CMD_RETRY_DELAY
   fi
 
   if [ $climate -eq 1 ]; then
     # Read and parse climate state
     readClimateState $vin
-    sleep $BLE_CMD_RETRY_DELAY
+    #sleep $BLE_CMD_RETRY_DELAY
   fi
 
   if [ $tyre -eq 1 ]; then
     # Read and parse tire-pressure state
     readTyreState $vin
-    sleep $BLE_CMD_RETRY_DELAY
+    #sleep $BLE_CMD_RETRY_DELAY
   fi
 
   if [ $closure -eq 1 ]; then
     # Read and parse closures state
     closuresState $vin
-    sleep $BLE_CMD_RETRY_DELAY
+    #sleep $BLE_CMD_RETRY_DELAY
   fi
 
   if [ $drive -eq 1 ]; then
     # Read and parse drive state
     driveState $vin
-    sleep $BLE_CMD_RETRY_DELAY
+    #sleep $BLE_CMD_RETRY_DELAY
   fi
 
   log_debug "readState; leaving vin:$vin return:$ret"
@@ -246,7 +246,6 @@ sendBLECommand() {
   export TESLA_VIN=$vin
   export TESLA_KEY_FILE=$KEYS_DIR/${vin}_private.pem
   export TESLA_KEY_NAME=$KEYS_DIR/${vin}_private.pem
-  TESLA_CONTROL_CMD="/usr/bin/tesla-control -ble -command-timeout ${TC_CMD_TIMEOUT}s -connect-timeout ${TC_CON_TIMEOUT}s $command 2>&1"
 
   # Retry loop
   max_retries=5
@@ -254,32 +253,52 @@ sendBLECommand() {
 
     log_notice "sendBLECommand: Attempt $sendCommandCount/${max_retries} sending $commandDescription to vin:$vin command:$command"
     set +e
-    TESLACTRLOUT=$(eval $TESLA_CONTROL_CMD)
+    TESLACTRLOUT=$(timeout -k 1 -s SIGKILL $TC_KILL_TIMEOUT /usr/bin/tesla-control -ble -command-timeout ${TC_CMD_TIMEOUT}s -connect-timeout ${TC_CON_TIMEOUT}s $command 2>&1)
     EXIT_STATUS=$?
     set -e
+  
+    echo State cmd Exit V $EXIT_STATUS
+    # wait for all tesla-control processes to end
+    wait
+    WEXIT_VALUE=$?
+    echo State cmd wexit: $WEXIT_VALUE
+
     if [ $EXIT_STATUS -eq 0 ]; then
       log_debug "sendBLECommand; $TESLACTRLOUT"
       log_info "Command $command was successfully delivered to vin:$vin"
       # Publish to MQTT awake topic
       stateMQTTpub $vin 'true' 'binary_sensor/awake'
       return 0
+
     else
       if [[ "$TESLACTRLOUT" == *"car could not execute command"* ]]; then
         log_warning "sendBLECommand; $TESLACTRLOUT"
         log_warning "Skipping command $command to vin:$vin, not retrying"
         return 10
+
       elif [[ "$TESLACTRLOUT" == *"context deadline exceeded"* ]]; then
         log_warning "teslaCtrlSendCommand; $TESLACTRLOUT"
         log_warning "Vehicle might be asleep, or not present. Sending wake command"
-        sleep $BLE_CMD_RETRY_DELAY
-        tesla-control -ble -command-timeout ${TC_CMD_TIMEOUT}s -connect-timeout ${TC_CON_TIMEOUT}s -domain vcsec wake
-        sleep 6
+        #sleep $BLE_CMD_RETRY_DELAY
+        set +e
+        timeout -k 1 -s SIGKILL $TC_KILL_TIMEOUT tesla-control -ble -command-timeout ${TC_CMD_TIMEOUT}s -connect-timeout ${TC_CON_TIMEOUT}s -domain vcsec wake
+        EXIT_STATUS=$?
+        set -e
+        sleep 8
+
+        echo Wake Exit V $EXIT_STATUS
+        # wait for all tesla-control processes to end
+        wait
+        WEXIT_VALUE=$?
+        echo Wake wexit: $WEXIT_VALUE
+
       else
         log_error "tesla-control send command:$command to vin:$vin failed exit status $EXIT_STATUS."
         log_error "sendBLECommand; $TESLACTRLOUT"
+
       fi
-      log_notice "sendBLECommand; Retrying in $BLE_CMD_RETRY_DELAY seconds"
-      sleep $BLE_CMD_RETRY_DELAY
+      log_notice "sendBLECommand; Retrying...."
+      #sleep $BLE_CMD_RETRY_DELAY
     fi
   done
 
