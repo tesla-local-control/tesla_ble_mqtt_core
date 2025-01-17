@@ -112,11 +112,11 @@ function stateMQTTpub() {
 
   log_debug "Setting MQTT topic $MQTT_TOPIC to $state"
 
-  # Maybe we need a function in the future for mosquitto_pub w/ retry
   set +e
   MQTT_OUT=$(eval $MOSQUITTO_PUB_BASE --nodelay -t "$MQTT_TOPIC" -m $state 2>&1)
   EXIT_STATUS=$?
   set -e
+
   [ $EXIT_STATUS -ne 0 ] &&
     log_error "${MQTT_OUT}" &&
     return 1
@@ -252,34 +252,37 @@ sendBLECommand() {
   for sendCommandCount in $(seq $max_retries); do
 
     log_notice "sendBLECommand: Attempt $sendCommandCount/${max_retries} sending $commandDescription to vin:$vin command:$command"
+    
+    # Get presence and awake status via body-controller-state
     set +e
-    TESLACTRLOUT=$(timeout -k 1 -s SIGKILL $TC_KILL_TIMEOUT /usr/bin/tesla-control -ble -command-timeout ${TC_CMD_TIMEOUT}s -connect-timeout ${TC_CON_TIMEOUT}s $command 2>&1)
-    EXIT_STATUS=$?
+    bcs_json=$(timeout -k 1 -s SIGKILL $TC_KILL_TIMEOUT /usr/bin/tesla-control -ble -vin $vin -command-timeout ${TC_CMD_TIMEOUT}s -connect-timeout ${TC_CON_TIMEOUT}s body-controller-state 2>&1)
+    EXIT_VALUE=$?
     set -e
-  
-    echo State cmd Exit V $EXIT_STATUS
-    # wait for all tesla-control processes to end
+    echo sendBLECommand BCS Exit V $EXIT_VALUE
     wait
     WEXIT_VALUE=$?
-    echo State cmd wexit: $WEXIT_VALUE
+    echo sendBLECommand BCS wexit: $WEXIT_VALUE
 
-    if [ $EXIT_STATUS -eq 0 ]; then
-      log_debug "sendBLECommand; $TESLACTRLOUT"
-      log_info "Command $command was successfully delivered to vin:$vin"
-      # Publish to MQTT awake topic
-      stateMQTTpub $vin 'true' 'binary_sensor/awake'
-      return 0
+    # If non zero, car is not contactable by bluetooth
+    if [ $EXIT_VALUE -ne 0 ]; then
+      log_info "Car is not responding to bluetooth, it's probably away VIN:$vin"
+      # Publish to MQTT presence_bc sensor. TODO: Set awake sensor to Unknown via MQTT availability
+      stateMQTTpub $vin 'false' 'binary_sensor/presence_bc'
 
     else
-      if [[ "$TESLACTRLOUT" == *"car could not execute command"* ]]; then
-        log_warning "sendBLECommand; $TESLACTRLOUT"
-        log_warning "Skipping command $command to vin:$vin, not retrying"
-        return 10
+      # Car has responded
+      log_debug "Car has responded to bluetooth, it is present. VIN:$vin"
+      stateMQTTpub $vin 'true' 'binary_sensor/presence_bc'
 
-      elif [[ "$TESLACTRLOUT" == *"context deadline exceeded"* ]]; then
-        log_warning "teslaCtrlSendCommand; $TESLACTRLOUT"
-        log_warning "Vehicle might be asleep, or not present. Sending wake command"
-        #sleep $BLE_CMD_RETRY_DELAY
+      # Check if awake or asleep from the body-controller-state response
+      rqdValue=$(echo $bcs_json | jq -e '.vehicleSleepStatus')
+      EXIT_VALUE=$?
+      if [ $EXIT_VALUE -ne 0 ] || [ "$rqdValue" != "\"VEHICLE_SLEEP_STATUS_AWAKE\"" ]; then
+        log_info "Car is present but asleep VIN:$vin. Attempting to wake it"
+         
+        stateMQTTpub $vin 'false' 'binary_sensor/awake'
+
+        # Send wake command
         set +e
         timeout -k 1 -s SIGKILL $TC_KILL_TIMEOUT tesla-control -ble -command-timeout ${TC_CMD_TIMEOUT}s -connect-timeout ${TC_CON_TIMEOUT}s -domain vcsec wake
         EXIT_STATUS=$?
@@ -293,13 +296,47 @@ sendBLECommand() {
         echo Wake wexit: $WEXIT_VALUE
 
       else
-        log_error "tesla-control send command:$command to vin:$vin failed exit status $EXIT_STATUS."
-        log_error "sendBLECommand; $TESLACTRLOUT"
+        log_info "Car is present and awake VIN:$vin, sending command"
+        stateMQTTpub $vin 'true' 'binary_sensor/awake'
+
+        # Send command to car
+        set +e
+        TESLACTRLOUT=$(timeout -k 1 -s SIGKILL $TC_KILL_TIMEOUT /usr/bin/tesla-control -ble -command-timeout ${TC_CMD_TIMEOUT}s -connect-timeout ${TC_CON_TIMEOUT}s $command 2>&1)
+        EXIT_STATUS=$?
+        set -e
+  
+        echo State cmd Exit V $EXIT_STATUS
+        # wait for all tesla-control processes to end
+        wait
+        WEXIT_VALUE=$?
+        echo State cmd wexit: $WEXIT_VALUE
+
+        if [ $EXIT_STATUS -eq 0 ]; then
+          log_debug "sendBLECommand; $TESLACTRLOUT"
+          log_info "Command $command was successfully delivered to vin:$vin"
+          return 0
+
+        elif [[ "$TESLACTRLOUT" == *"car could not execute command"* ]]; then
+          log_warning "sendBLECommand; $TESLACTRLOUT"
+          log_warning "Skipping command $command to vin:$vin, not retrying"
+          return 10
+
+        elif [[ "$TESLACTRLOUT" == *"context deadline exceeded"* ]]; then
+          log_warning "teslaCtrlSendCommand; $TESLACTRLOUT"
+          log_warning "Vehicle might be asleep, though it shouldn't be as it was previously awake"
+
+        else
+          log_error "tesla-control send command:$command to vin:$vin failed exit status $EXIT_STATUS"
+          log_error "sendBLECommand; $TESLACTRLOUT"
+
+        fi
 
       fi
-      log_notice "sendBLECommand; Retrying...."
-      #sleep $BLE_CMD_RETRY_DELAY
+      
     fi
+
+    log_notice "sendBLECommand; Retrying...."
+
   done
 
   # Max retries
