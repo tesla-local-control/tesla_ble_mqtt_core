@@ -389,6 +389,9 @@ function setupChargeStateSensors {
     "platform": "sensor",
     "icon": "mdi:counter",
     "name": "Odometer",
+    "device_class": "distance",
+    "unit_of_measurement": "mi",
+    "suggested_display_precision": "0",    
     "qos": "'${QOS_LEVEL}'",
     "unique_id": "'${DEVICE_ID}'_odometer"
   }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 36 10 -t homeassistant/sensor/${DEVICE_ID}/odometer/config -l
