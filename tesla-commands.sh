@@ -113,6 +113,14 @@ sendBLECommand() {
   return 99
 }
 
+# Original function is deprecated. Now call sendBLECommand instead
+teslaCtrlSendCommand() {
+  vin=$1
+  command=$2
+  commandDescription=$3
+  sendBLECommand $vin $command $commandDescription
+  }
+
 #   teslaCtrlSendCommand. Deprecated
 #teslaCtrlSendCommand() {
 #  # Process in case of nested call (autowake)
