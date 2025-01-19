@@ -202,8 +202,9 @@ listen_to_mqtt() {
         ;;
 
       climate-set-temp)
-        [ ${msg} -le 50 ] && T="${msg}C" || T="${msg}F"
-        teslaCtrlSendCommand $vin "climate-set-temp ${T}" "Set climate temperature to ${T}"
+        # Set decimal precision
+        T=$(printf "%0.2f" ${msg})
+        teslaCtrlSendCommand $vin "climate-set-temp ${T}C" "Set climate temperature to ${T}"
         ;;
 
       heater-seat-front-left)
