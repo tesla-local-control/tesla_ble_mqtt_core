@@ -46,17 +46,22 @@ function poll_state() {
   polling_interval=$(eval "echo \"\$var_${vin}_polling_interval\"")
 
   # Send a body-controller-state command. This checks if car is in bluetooth range and whether awake or asleep without acutally waking it
+  # Kill the tesla-control process if it doesn't complete in $TC_KILL_TIMEOUT seconds
   set +e
   bcs_json=$(timeout -k 1 -s SIGKILL $TC_KILL_TIMEOUT /usr/bin/tesla-control -ble -vin $vin -command-timeout ${TC_CMD_TIMEOUT}s -connect-timeout ${TC_CON_TIMEOUT}s body-controller-state 2>&1)
   EXIT_VALUE=$?
   set -e
-  echo BCS Exit V $EXIT_VALUE
+  # Wait for all tesla-control processes to finish before continuing
+  # Thanks to @BogdanDIA https://github.com/BogdanDIA for this idea. https://github.com/tesla-local-control/tesla_ble_mqtt_core/issues/142
   wait
-  WEXIT_VALUE=$?
-  echo BCS wexit: $WEXIT_VALUE
+
+  # If exit code is 137 then the tesla-control process had to be killed
+  if [ $EXIT_VALUE -eq 137 ]; then
+    log_warning "poll_state: tesla_control process was killed. This may indicate that the bluetooth adapter is struggling to keep up with the rate of commands"
+    log_warning "See https://github.com/tesla-local-control/tesla_ble_mqtt_core/issues/142"
 
   # If non zero, car is not contactable by bluetooth
-  if [ $EXIT_VALUE -ne 0 ]; then
+  elif [ $EXIT_VALUE -ne 0 ]; then
     log_info "Car is not responding to bluetooth, assuming it's away. VIN:$vin"
     # Publish to MQTT presence_bc sensor. TODO: Set awake sensor to Unknown via MQTT availability
     stateMQTTpub $vin 'false' 'binary_sensor/presence_bc'
@@ -258,13 +263,15 @@ sendBLECommand() {
     bcs_json=$(timeout -k 1 -s SIGKILL $TC_KILL_TIMEOUT /usr/bin/tesla-control -ble -vin $vin -command-timeout ${TC_CMD_TIMEOUT}s -connect-timeout ${TC_CON_TIMEOUT}s body-controller-state 2>&1)
     EXIT_VALUE=$?
     set -e
-    echo sendBLECommand BCS Exit V $EXIT_VALUE
     wait
-    WEXIT_VALUE=$?
-    echo sendBLECommand BCS wexit: $WEXIT_VALUE
+
+    # If exit code is 137 then the tesla-control process had to be killed
+    if [ $EXIT_VALUE -eq 137 ]; then
+      log_warning "sendBLECommand (BCS): tesla_control process was killed. This may indicate that the bluetooth adapter is struggling to keep up with the rate of commands"
+      log_warning "See https://github.com/tesla-local-control/tesla_ble_mqtt_core/issues/142"
 
     # If non zero, car is not contactable by bluetooth
-    if [ $EXIT_VALUE -ne 0 ]; then
+    elif [ $EXIT_VALUE -ne 0 ]; then
       log_info "Car is not responding to bluetooth, it's probably away VIN:$vin"
       # Publish to MQTT presence_bc sensor. TODO: Set awake sensor to Unknown via MQTT availability
       stateMQTTpub $vin 'false' 'binary_sensor/presence_bc'
@@ -287,13 +294,13 @@ sendBLECommand() {
         timeout -k 1 -s SIGKILL $TC_KILL_TIMEOUT tesla-control -ble -command-timeout ${TC_CMD_TIMEOUT}s -connect-timeout ${TC_CON_TIMEOUT}s -domain vcsec wake
         EXIT_STATUS=$?
         set -e
-        sleep 8
-
-        echo Wake Exit V $EXIT_STATUS
-        # wait for all tesla-control processes to end
         wait
-        WEXIT_VALUE=$?
-        echo Wake wexit: $WEXIT_VALUE
+        # If exit code is 137 then the tesla-control process had to be killed
+        if [ $EXIT_STATUS -eq 137 ]; then
+          log_warning "sendBLECommand (wake): tesla_control process was killed. This may indicate that the bluetooth adapter is struggling to keep up with the rate of commands"
+          log_warning "See https://github.com/tesla-local-control/tesla_ble_mqtt_core/issues/142"
+        fi
+        sleep 7
 
       else
         log_info "Car is present and awake VIN:$vin, sending command"
@@ -304,14 +311,14 @@ sendBLECommand() {
         TESLACTRLOUT=$(timeout -k 1 -s SIGKILL $TC_KILL_TIMEOUT /usr/bin/tesla-control -ble -command-timeout ${TC_CMD_TIMEOUT}s -connect-timeout ${TC_CON_TIMEOUT}s $command 2>&1)
         EXIT_STATUS=$?
         set -e
-  
-        echo State cmd Exit V $EXIT_STATUS
-        # wait for all tesla-control processes to end
         wait
-        WEXIT_VALUE=$?
-        echo State cmd wexit: $WEXIT_VALUE
+      
+        # If exit code is 137 then the tesla-control process had to be killed
+        if [ $EXIT_STATUS -eq 137 ]; then
+          log_warning "sendBLECommand (cmd): tesla_control process was killed. This may indicate that the bluetooth adapter is struggling to keep up with the rate of commands"
+          log_warning "See https://github.com/tesla-local-control/tesla_ble_mqtt_core/issues/142"
 
-        if [ $EXIT_STATUS -eq 0 ]; then
+        elif [ $EXIT_STATUS -eq 0 ]; then
           log_debug "sendBLECommand; $TESLACTRLOUT"
           log_info "Command $command was successfully delivered to vin:$vin"
           return 0
