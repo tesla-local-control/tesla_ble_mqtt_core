@@ -115,10 +115,7 @@ sendBLECommand() {
 
 # Original function is deprecated. Now call sendBLECommand instead
 teslaCtrlSendCommand() {
-  vin=$1
-  command=$2
-  commandDescription=$3
-  sendBLECommand $vin $command $commandDescription
+  sendBLECommand "$@"
   }
 
 #   teslaCtrlSendCommand. Deprecated
