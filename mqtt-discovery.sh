@@ -449,51 +449,28 @@ function setupExtendedControls() {
    "unit_of_measurement": "%"
    }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 6 10 -t homeassistant/number/${DEVICE_ID}/charging-set-limit/config -l
 
-  if [ $TEMPERATURE_UNIT_FAHRENHEIT = "true" ]; then
-    echo '{
-      "command_topic": "'${TOPIC_ROOT}'/climate-set-temp",
-      "state_topic": "'${TOPIC_ROOT}'/number/driver_temp_setting",
-      "device": {
-        "identifiers": [
-          "'${DEVICE_ID}'"
-        ],
-        "manufacturer": "tesla-local-control",
-        "model": "Tesla_BLE",
-        "name": "'${DEVICE_NAME}'",
-        "sw_version": "'${SW_VERSION}'"
-      },
-      "icon": "mdi:thermometer",
-      "name": "Climate Temp",
-      "min": "57",
-      "max": "83",
-      "mode": "slider",
-      "qos": "'${QOS_LEVEL}'",
-      "unique_id": "'${DEVICE_ID}'_climate-set-temp"
-    }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 6 10 -t homeassistant/number/${DEVICE_ID}/climate-temp/config -l
-
-  else
-
-    echo '{
-      "command_topic": "'${TOPIC_ROOT}'/climate-set-temp",
-      "state_topic": "'${TOPIC_ROOT}'/number/driver_temp_setting",
-      "device": {
-        "identifiers": [
-          "'${DEVICE_ID}'"
-        ],
-        "manufacturer": "tesla-local-control",
-        "model": "Tesla_BLE",
-        "name": "'${DEVICE_NAME}'",
-        "sw_version": "'${SW_VERSION}'"
-      },
-      "icon": "mdi:thermometer",
-      "name": "Climate Temp",
-      "min": "15",
-      "max": "28",
-      "mode": "slider",
-      "qos": "'${QOS_LEVEL}'",
-      "unique_id": "'${DEVICE_ID}'_climate-set-temp"
-    }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 6 10 -t homeassistant/number/${DEVICE_ID}/climate-temp/config -l
-  fi
+  echo '{
+    "command_topic": "'${TOPIC_ROOT}'/climate-set-temp",
+    "state_topic": "'${TOPIC_ROOT}'/number/driver_temp_setting",
+    "device": {
+      "identifiers": [
+        "'${DEVICE_ID}'"
+      ],
+      "manufacturer": "tesla-local-control",
+      "model": "Tesla_BLE",
+      "name": "'${DEVICE_NAME}'",
+      "sw_version": "'${SW_VERSION}'"
+    },
+    "icon": "mdi:thermometer",
+    "name": "Climate Temp",
+    "device_class": "temperature",                                                                            
+    "unit_of_measurement": "°C",
+    "min": "15",
+    "max": "28",
+    "mode": "slider",
+    "qos": "'${QOS_LEVEL}'",
+    "unique_id": "'${DEVICE_ID}'_climate-set-temp"
+  }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 6 10 -t homeassistant/number/${DEVICE_ID}/climate-temp/config -l
 
   echo '{
    "command_topic": "'${TOPIC_ROOT}'/variables/polling_interval",
@@ -600,7 +577,7 @@ function setupExtendedControls() {
 
   #echo '{
   # "command_topic": "'${TOPIC_ROOT}'/door_lock",
-  # "state_topic": "'${TOPIC_ROOT}'/lock/locked",
+  # "state_topic": "'${TOPIC_ROOT}'/binary_sensor/door_lock",
   # "device": {
   #  "identifiers": [
   #  "'${DEVICE_ID}'"
