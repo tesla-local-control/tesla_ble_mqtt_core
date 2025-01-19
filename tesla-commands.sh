@@ -19,7 +19,7 @@ sendBLECommand() {
   for sendCommandCount in $(seq $max_retries); do
 
     log_notice "sendBLECommand: Attempt $sendCommandCount/${max_retries} sending $commandDescription to vin:$vin command:$command"
-    
+
     # Get presence and awake status via body-controller-state
     set +e
     bcs_json=$(timeout -k 1 -s SIGKILL $TC_KILL_TIMEOUT /usr/bin/tesla-control -ble -vin $vin -command-timeout ${TC_CMD_TIMEOUT}s -connect-timeout ${TC_CON_TIMEOUT}s body-controller-state 2>&1)
@@ -48,7 +48,7 @@ sendBLECommand() {
       EXIT_VALUE=$?
       if [ $EXIT_VALUE -ne 0 ] || [ "$rqdValue" != "\"VEHICLE_SLEEP_STATUS_AWAKE\"" ]; then
         log_info "Car is present but asleep VIN:$vin. Attempting to wake it"
-         
+
         stateMQTTpub $vin 'false' 'binary_sensor/awake'
 
         # Send wake command
@@ -74,7 +74,7 @@ sendBLECommand() {
         EXIT_STATUS=$?
         set -e
         wait
-      
+
         # If exit code is 137 then the tesla-control process had to be killed
         if [ $EXIT_STATUS -eq 137 ]; then
           log_warning "sendBLECommand (cmd): tesla_control process was killed. This may indicate that the bluetooth adapter is struggling to keep up with the rate of commands"
@@ -101,7 +101,7 @@ sendBLECommand() {
         fi
 
       fi
-      
+
     fi
 
     log_notice "sendBLECommand; Retrying...."
@@ -116,7 +116,7 @@ sendBLECommand() {
 # Original function is deprecated. Now call sendBLECommand instead
 teslaCtrlSendCommand() {
   sendBLECommand "$@"
-  }
+}
 
 #   teslaCtrlSendCommand. Deprecated
 #teslaCtrlSendCommand() {
@@ -216,7 +216,7 @@ teslaCtrlSendKey() {
     EXIT_STATUS=$?
     set -e
     wait
-  
+
     # If exit code is 137 then the tesla-control process had to be killed
     if [ $EXIT_STATUS -eq 137 ]; then
       log_warning "poll_state: tesla_control process was killed. This may indicate that the bluetooth adapter is struggling to keep up with the rate of commands"

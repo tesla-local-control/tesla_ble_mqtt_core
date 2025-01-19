@@ -19,7 +19,7 @@ function poll_state_loop() {
       done
       # Loop repeat approx every PS_LOOP_DELAY secs. This must be a multiple of 30
       sleep $PS_LOOP_DELAY
-      i=$((i + $PS_LOOP_DELAY))
+      i=$((i + PS_LOOP_DELAY))
     done
   done
 }
@@ -96,7 +96,7 @@ function poll_state() {
         else
           log_info "Car is present and awake. Polling VIN:$vin"
           stateMQTTpub $vin 'true' 'binary_sensor/awake'
-          
+
           # 'Press' the Data Update Env button (which checks NO_POLL_SECTIONS environment variable to exclude various sections if required)
           stateMQTTpub $vin 'read-state-envcheck' 'config'
 
