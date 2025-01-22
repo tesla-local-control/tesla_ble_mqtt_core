@@ -209,6 +209,7 @@ function setupExtendedControls() {
    "state_on": "true",
    "state_off": "false",
    "qos": "'${QOS_LEVEL}'",
+   "optimistic": "'${OPTIMISTIC_MODE}'",
    "unique_id": "'${DEVICE_ID}'_charging"
    }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 6 10 -t homeassistant/switch/${DEVICE_ID}/charging/config -l
 
@@ -232,6 +233,7 @@ function setupExtendedControls() {
    "state_on": "true",
    "state_off": "false",
    "qos": "'${QOS_LEVEL}'",
+   "optimistic": "'${OPTIMISTIC_MODE}'",
    "unique_id": "'${DEVICE_ID}'_climate"
    }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 6 10 -t homeassistant/switch/${DEVICE_ID}/climate/config -l
 
@@ -255,6 +257,7 @@ function setupExtendedControls() {
    "state_on": "true",
    "state_off": "false",
    "qos": "'${QOS_LEVEL}'",
+   "optimistic": "'${OPTIMISTIC_MODE}'",
    "unique_id": "'${DEVICE_ID}'_sentry-mode"
    }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 6 10 -t homeassistant/switch/${DEVICE_ID}/sentry-mode/config -l
 
@@ -278,6 +281,7 @@ function setupExtendedControls() {
    "state_on": "true",
    "state_off": "false",
    "qos": "'${QOS_LEVEL}'",
+   "optimistic": "'${OPTIMISTIC_MODE}'",
    "unique_id": "'${DEVICE_ID}'_steering-wheel-heater"
    }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 6 10 -t homeassistant/switch/${DEVICE_ID}/steering-wheel-heater/config -l
 
@@ -328,6 +332,7 @@ function setupExtendedControls() {
    "state_open": "true",
    "state_closed": "false",
    "qos": "'${QOS_LEVEL}'",
+   "optimistic": "'${OPTIMISTIC_MODE}'",
    "unique_id": "'${DEVICE_ID}'_charge-port"
    }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 6 10 -t homeassistant/cover/${DEVICE_ID}/charge-port/config -l
 
@@ -352,6 +357,7 @@ function setupExtendedControls() {
    "state_open": "true",
    "state_closed": "false",
    "qos": "'${QOS_LEVEL}'",
+   "optimistic": "'${OPTIMISTIC_MODE}'",
    "unique_id": "'${DEVICE_ID}'_trunk"
    }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 6 10 -t homeassistant/cover/${DEVICE_ID}/trunk/config -l
 
@@ -376,6 +382,7 @@ function setupExtendedControls() {
    "state_open": "true",
    "state_closed": "false",
    "qos": "'${QOS_LEVEL}'",
+   "optimistic": "'${OPTIMISTIC_MODE}'",
    "unique_id": "'${DEVICE_ID}'_windows"
    }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 6 10 -t homeassistant/cover/${DEVICE_ID}/windows/config -l
 
@@ -399,6 +406,7 @@ function setupExtendedControls() {
    "mode": "slider",
    "name": "Charging Current",
    "qos": "'${QOS_LEVEL}'",
+   "optimistic": "'${OPTIMISTIC_MODE}'",
    "unique_id": "'${DEVICE_ID}'_charging-set-amps",
    "unit_of_measurement": "A"
    }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 6 10 -t homeassistant/number/${DEVICE_ID}/charging-set-amps/config -l
@@ -422,6 +430,7 @@ function setupExtendedControls() {
    "name": "Charging Current single",
    "enabled_by_default": "false",
    "qos": "'${QOS_LEVEL}'",
+   "optimistic": "'${OPTIMISTIC_MODE}'",
    "unique_id": "'${DEVICE_ID}'_charging-set-amps-override",
    "entity_category": "diagnostic",
    "unit_of_measurement": "A"
@@ -445,6 +454,7 @@ function setupExtendedControls() {
    "max": "100",
    "mode": "slider",
    "qos": "'${QOS_LEVEL}'",
+   "optimistic": "'${OPTIMISTIC_MODE}'",
    "unique_id": "'${DEVICE_ID}'_charging-set-limit",
    "unit_of_measurement": "%"
    }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 6 10 -t homeassistant/number/${DEVICE_ID}/charging-set-limit/config -l
@@ -469,6 +479,7 @@ function setupExtendedControls() {
     "max": "28",
     "mode": "slider",
     "qos": "'${QOS_LEVEL}'",
+    "optimistic": "'${OPTIMISTIC_MODE}'",
     "unique_id": "'${DEVICE_ID}'_climate-set-temp"
   }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 6 10 -t homeassistant/number/${DEVICE_ID}/climate-temp/config -l
 
@@ -513,6 +524,7 @@ function setupExtendedControls() {
    "name": "Heated Seat Front Left",
    "options": ["off", "low", "medium", "high"],
    "qos": "'${QOS_LEVEL}'",
+   "optimistic": "'${OPTIMISTIC_MODE}'",
    "unique_id": "'${DEVICE_ID}'_heater-seat-front-left"
    }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 6 10 -t homeassistant/select/${DEVICE_ID}/heater-seat-front-left/config -l
 
@@ -532,6 +544,7 @@ function setupExtendedControls() {
    "name": "Heated Seat Front Right",
    "options": ["off", "low", "medium", "high"],
    "qos": "'${QOS_LEVEL}'",
+   "optimistic": "'${OPTIMISTIC_MODE}'",
    "unique_id": "'${DEVICE_ID}'_heater-seat-front-right"
    }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 6 10 -t homeassistant/select/${DEVICE_ID}/heater-seat-front-right/config -l
 
@@ -551,6 +564,7 @@ function setupExtendedControls() {
    "name": "Heated Seat Rear Left",
    "options": ["off", "low", "medium", "high"],
    "qos": "'${QOS_LEVEL}'",
+   "optimistic": "'${OPTIMISTIC_MODE}'",
    "unique_id": "'${DEVICE_ID}'_heater-seat-rear-left"
    }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 6 10 -t homeassistant/select/${DEVICE_ID}/heater-seat-rear-left/config -l
 
@@ -570,6 +584,7 @@ function setupExtendedControls() {
    "name": "Heated Seat Rear Right",
    "options": ["off", "low", "medium", "high"],
    "qos": "'${QOS_LEVEL}'",
+   "optimistic": "'${OPTIMISTIC_MODE}'",
    "unique_id": "'${DEVICE_ID}'_heater-seat-rear-right"
    }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 6 10 -t homeassistant/select/${DEVICE_ID}/heater-seat-rear-right/config -l
 
@@ -594,6 +609,7 @@ function setupExtendedControls() {
   # "state_locked": "true",
   # "state_unlocked": "false",
   # "qos": "'${QOS_LEVEL}'",
+  # "optimistic": "'${OPTIMISTIC_MODE}'",
   # "unique_id": "'${DEVICE_ID}'_door_lock"
   # }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 6 10 -t homeassistant/lock/${DEVICE_ID}/door_lock/config -l
 
