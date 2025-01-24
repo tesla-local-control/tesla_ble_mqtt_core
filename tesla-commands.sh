@@ -84,10 +84,74 @@ sendBLECommand() {
           log_debug "sendBLECommand; $TESLACTRLOUT"
           log_info "Command $command was successfully delivered to vin:$vin"
 
-          if [ $AUTO_UPDATE == "true" ] && [ $(echo $command | wc -w) -eq 2 ] && [ "${command%% *}" -neq "state" ]; then
+          if [ $IMMEDIATE_UPDATE == "true" ] && [ $(echo $command | wc -w) -eq 2 ] && [ "${command%% *}" -neq "state" ]; then
             case "${command%% *}" in
             charging)
               stateTopic=switch/charge_enable_request
+              value= ${command##* }
+              ;;
+            climate)
+              stateTopic=switch/is_climate_on
+              value= ${command##* }
+              ;;
+            sentry-mode)
+              stateTopic=switch/sentry_mode
+              value= ${command##* }
+              ;;
+            steering-wheel-heater)
+              stateTopic=switch/steering_wheel_heater
+              value= ${command##* }
+              ;;
+            charge-port)
+              stateTopic=cover/charge_port_door_open
+              value= ${command##* }
+              ;;
+            trunk)
+              stateTopic=cover/rear_trunk
+              value= ${command##* }
+              ;;
+            windows)
+              stateTopic=cover/windows
+              value= ${command##* }
+              ;;
+            charging-set-amps)
+              stateTopic=number/charge_current_request
+              value= ${command##* }
+              ;;
+            charging-set-limit)
+              stateTopic=number/charge_limit_soc
+              value= ${command##* }
+              ;;
+            charging-set-amps-override)
+              stateTopic=number/charge_current_request
+              value= ${command##* }
+              ;;
+            climate-set-temp)
+              stateTopic=number/driver_temp_setting
+              value= ${command##* }
+              ;;
+            heater-seat-front-left)
+              stateTopic=select/seat_heater_left
+              value= ${command##* }
+              ;;
+            heater-seat-front-right)
+              stateTopic=select/seat_heater_right
+              value= ${command##* }
+              ;;
+            heater-seat-rear-left)
+              stateTopic=select/seat_heater_rear_left
+              value= ${command##* }
+              ;;
+            heater-seat-rear-right)
+              stateTopic=select/seat_heater_rear_right
+              value= ${command##* }
+              ;;
+            door_lock)
+              stateTopic=binary_sensor/door_lock
+              value= ${command##* }
+              ;;
+            door_lock)
+              stateTopic=binary_sensor/door_lock
               value= ${command##* }
               ;;
             *)
