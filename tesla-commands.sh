@@ -88,71 +88,71 @@ sendBLECommand() {
             case "${command%% *}" in
             charging)
               stateTopic=switch/charge_enable_request
-              value= ${command##* }
+              value=${command##* }
               ;;
             climate)
               stateTopic=switch/is_climate_on
-              value= ${command##* }
+              value=${command##* }
               ;;
             sentry-mode)
               stateTopic=switch/sentry_mode
-              value= ${command##* }
+              value=${command##* }
               ;;
             steering-wheel-heater)
               stateTopic=switch/steering_wheel_heater
-              value= ${command##* }
+              value=${command##* }
               ;;
             charge-port)
               stateTopic=cover/charge_port_door_open
-              value= ${command##* }
+              value=${command##* }
               ;;
             trunk)
               stateTopic=cover/rear_trunk
-              value= ${command##* }
+              value=${command##* }
               ;;
             windows)
               stateTopic=cover/windows
-              value= ${command##* }
+              value=${command##* }
               ;;
             charging-set-amps)
               stateTopic=number/charge_current_request
-              value= ${command##* }
+              value=${command##* }
               ;;
             charging-set-limit)
               stateTopic=number/charge_limit_soc
-              value= ${command##* }
+              value=${command##* }
               ;;
             charging-set-amps-override)
               stateTopic=number/charge_current_request
-              value= ${command##* }
+              value=${command##* }
               ;;
             climate-set-temp)
               stateTopic=number/driver_temp_setting
-              value= ${command##* }
+              value=${command##* }
               ;;
             heater-seat-front-left)
               stateTopic=select/seat_heater_left
-              value= ${command##* }
+              value=${command##* }
               ;;
             heater-seat-front-right)
               stateTopic=select/seat_heater_right
-              value= ${command##* }
+              value=${command##* }
               ;;
             heater-seat-rear-left)
               stateTopic=select/seat_heater_rear_left
-              value= ${command##* }
+              value=${command##* }
               ;;
             heater-seat-rear-right)
               stateTopic=select/seat_heater_rear_right
-              value= ${command##* }
+              value=${command##* }
               ;;
             door_lock)
               stateTopic=binary_sensor/door_lock
-              value= ${command##* }
+              value=${command##* }
               ;;
             door_lock)
               stateTopic=binary_sensor/door_lock
-              value= ${command##* }
+              value=${command##* }
               ;;
             *)
               stateTopic=""
