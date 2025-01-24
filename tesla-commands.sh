@@ -84,7 +84,7 @@ sendBLECommand() {
           log_debug "sendBLECommand; $TESLACTRLOUT"
           log_info "Command $command was successfully delivered to vin:$vin"
 
-          if [ $IMMEDIATE_UPDATE == "true" ] && [ $(echo $command | wc -w) -eq 2 ] && [ "${command%% *}" -ne "state" ]; then
+          if [ $IMMEDIATE_UPDATE == "true" ] && [ $(echo $command | wc -w) -eq 2 ] && [ "${command%% *}" != "state" ]; then
             case "${command%% *}" in
             charging)
               stateTopic=switch/charge_enable_request
