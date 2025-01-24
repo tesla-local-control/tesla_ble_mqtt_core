@@ -83,6 +83,24 @@ sendBLECommand() {
         elif [ $EXIT_STATUS -eq 0 ]; then
           log_debug "sendBLECommand; $TESLACTRLOUT"
           log_info "Command $command was successfully delivered to vin:$vin"
+
+          if [ $AUTO_UPDATE == "true" ] && [ $(echo $command | wc -w) -eq 2 ]; then
+            case "${command%% *}" in
+            charging)
+              stateTopic=switch/charge_enable_request
+              value= ${command##* }
+              ;;
+            *)
+              stateTopic=""
+              value=""
+              ;;
+            esac
+            if [ -z $stateTopic ]; then
+              log_warning "No state_topic found for command $command for vin:$vin"
+            else
+              log_warning "Automatically updating state_topic: $stateTopic to value: $value for command: $command for vin:$vin"
+            fi
+          fi
           return 0
 
         elif [[ "$TESLACTRLOUT" == *"car could not execute command"* ]]; then
