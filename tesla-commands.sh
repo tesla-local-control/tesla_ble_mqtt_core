@@ -82,7 +82,7 @@ sendBLECommand() {
 
         elif [ $EXIT_STATUS -eq 0 ]; then
           log_debug "sendBLECommand; $TESLACTRLOUT"
-          log_info "Command $command was successfully delivered to vin:$vin
+          log_info "Command $command was successfully delivered to vin:$vin"
           return 0
 
         elif [[ "$TESLACTRLOUT" == *"car could not execute command"* ]]; then
