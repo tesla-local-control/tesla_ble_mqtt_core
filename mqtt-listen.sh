@@ -173,7 +173,10 @@ listen_to_mqtt() {
         ;; ## END of command)
 
       auto-seat-and-climate)
-        teslaCtrlSendCommand $vin "auto-seat-and-climate LR on" "Turn on automatic seat heating and HVAC"
+        teslaCtrlSendCommand $vin "auto-seat-and-climate LR on" "Turn on automatic seat heating and HVAC" && immediate_update $vin "switch/is_climate_on" "true" && \
+          immediate_update $vin "switch/steering_wheel_heater" "true" && \
+          immediate_update $vin "select/seat_heater_left" "high" && \
+          immediate_update $vin "select/seat_heater_right" "high"
         ;;
 
       charging-schedule)
@@ -203,7 +206,7 @@ listen_to_mqtt() {
 
       climate-set-temp)
         # Set decimal precision
-        T=$(printf "%0.2f" ${msg})number/charge_limit_soc
+        T=$(printf "%0.2f" ${msg})
         teslaCtrlSendCommand $vin "climate-set-temp ${T}C" "Set climate temperature to ${T}" && immediate_update $vin "number/driver_temp_setting" $msg
         ;;
 
@@ -213,6 +216,14 @@ listen_to_mqtt() {
 
       heater-seat-front-right)
         teslaCtrlSendCommand $vin "seat-heater front-right $msg" "Turn $msg front right seat heater" && immediate_update $vin "select/seat_heater_right" $msg
+        ;;
+
+      heater-seat-rear-left)
+        teslaCtrlSendCommand $vin "seat-heater front-left $msg" "Turn $msg rear left seat heater" && immediate_update $vin "select/seat_heater_rear_left" $msg
+        ;;
+
+      heater-seat-rear-right)
+        teslaCtrlSendCommand $vin "seat-heater front-right $msg" "Turn $msg rear right seat heater" && immediate_update $vin "select/seat_heater_rear_right" $msg
         ;;
 
       media-set-volume)
@@ -228,7 +239,10 @@ listen_to_mqtt() {
         ;;
 
       climate)
-        teslaCtrlSendCommand $vin "$cmd-$msg" "Set $cmd mode to $msg" && immediate_update $vin "switch/is_climate_on" $msg
+        teslaCtrlSendCommand $vin "$cmd-$msg" "Set $cmd mode to $msg" && immediate_update $vin "switch/is_climate_on" "true" && \
+          immediate_update $vin "switch/steering_wheel_heater" "true" && \
+          immediate_update $vin "select/seat_heater_left" "high" && \
+          immediate_update $vin "select/seat_heater_right" "high"
         ;;
 
       charging)
