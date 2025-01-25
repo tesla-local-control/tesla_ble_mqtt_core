@@ -183,11 +183,11 @@ listen_to_mqtt() {
       charging-set-amps)
         # https://github.com/iainbullock/tesla_ble_mqtt_docker/issues/4
         if [ $msg -gt 4 ]; then
-          teslaCtrlSendCommand $vin "charging-set-amps $msg" "Set charging Amps to $msg"
+          teslaCtrlSendCommand $vin "charging-set-amps $msg" "Set charging Amps to $msg" &&  immediate_update $vin "number/charge_current_request" $msg
         else
           teslaCtrlSendCommand $vin "charging-set-amps $msg" "4A or less requested, calling charging-set-amps $msg twice"
-          sleep 1
-          teslaCtrlSendCommand $vin "charging-set-amps $msg" "Set charging Amps to $msg"
+          # sleep 1
+          teslaCtrlSendCommand $vin "charging-set-amps $msg" "Set charging Amps to $msg" &&  immediate_update $vin "number/charge_current_request" $msg
         fi
         ;;
 

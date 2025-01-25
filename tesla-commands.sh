@@ -82,13 +82,7 @@ sendBLECommand() {
 
         elif [ $EXIT_STATUS -eq 0 ]; then
           log_debug "sendBLECommand; $TESLACTRLOUT"
-          log_info "Command $command was successfully delivered to vin:$vin"
-
-          # Process Immediate state_topic updates
-          if [ $IMMEDIATE_UPDATE == "true" ] && [ "${command%% *}" != "state" ]; then
-            immediate_update "$command" $vin
-          fi
-
+          log_info "Command $command was successfully delivered to vin:$vin
           return 0
 
         elif [[ "$TESLACTRLOUT" == *"car could not execute command"* ]]; then
@@ -124,101 +118,6 @@ teslaCtrlSendCommand() {
   sendBLECommand "$@"
 }
 
-function immediate_update() {
-  command=$1
-  vin=$2
-
-  case "${command%% *}" in
-    charging-on)
-      stateTopic=switch/charge_enable_request
-      value="on"
-      ;;
-    charging-off)
-      stateTopic=switch/charge_enable_request
-      value="off"
-      ;;
-    climate-on)
-      stateTopic=switch/is_climate_on
-      value="on"
-      ;;
-    climate-off)
-      stateTopic=switch/is_climate_on
-      value="off"
-      ;;
-    sentry-mode-on)
-      stateTopic=switch/sentry_mode
-      value="on"
-      ;;
-    sentry-mode-off)
-      stateTopic=switch/sentry_mode
-      value="off"
-      ;;
-    steering-wheel-heater)
-      stateTopic=switch/steering_wheel_heater
-      value=${command##* }
-      ;;
-    charge-port)
-      stateTopic=cover/charge_port_door_open
-      value=${command##* }
-      ;;
-    trunk)
-      stateTopic=cover/rear_trunk
-      value=${command##* }
-      ;;
-    windows)
-      stateTopic=cover/windows
-      value=${command##* }
-      ;;
-    charging-set-amps)
-      stateTopic=number/charge_current_request
-      value=${command##* }
-      ;;
-    charging-set-limit)
-      stateTopic=number/charge_limit_soc
-      value=${command##* }
-      ;;
-    charging-set-amps-override)
-      stateTopic=number/charge_current_request
-      value=${command##* }
-      ;;
-    climate-set-temp)
-      stateTopic=number/driver_temp_setting
-      value=${command##* }
-      ;;
-    heater-seat-front-left)
-      stateTopic=select/seat_heater_left
-      value=${command##* }
-      ;;
-    heater-seat-front-right)
-      stateTopic=select/seat_heater_right
-      value=${command##* }
-      ;;
-    heater-seat-rear-left)
-      stateTopic=select/seat_heater_rear_left
-      value=${command##* }
-      ;;
-    heater-seat-rear-right)
-      stateTopic=select/seat_heater_rear_right
-      value=${command##* }
-      ;;
-    door_lock)
-      stateTopic=binary_sensor/door_lock
-      value=${command##* }
-      ;;
-    *)
-      stateTopic=""
-      value=""
-      log_warning "No state_topic found for command $command for vin:$vin"
-      ;;
-  esac
-  
-  if [ ! -z "$stateTopic" ]; then
-    log_info "Automatically updating state_topic: $stateTopic to value: $value for command: $command for vin:$vin"
-    # Publish to MQTT state topic
-    # stateMQTTpub $vin $value $stateTopic
-  fi
-
-}
 
 #   teslaCtrlSendCommand. Deprecated
 #teslaCtrlSendCommand() {

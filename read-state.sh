@@ -469,3 +469,17 @@ function driveState() {
   getStateValueAndPublish $vin '.driveState.odometerInHundredthsOfAMile' sensor/odometer "$TESLACTRLOUT"
 
 }
+
+function immediate_update() {
+  vin=$1
+  stateTopic=$2
+  value=$3
+
+  if [ ! -z $IMMEDIATE_UPDATE ]; then  
+    log_info "Immediately updating state_topic: $stateTopic to value: $value for command: $command for vin:$vin"
+    
+    # Publish to MQTT state topic
+    # stateMQTTpub $vin $value $stateTopic
+  fi
+return 0
+}
