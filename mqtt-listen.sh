@@ -183,28 +183,28 @@ listen_to_mqtt() {
       charging-set-amps)
         # https://github.com/iainbullock/tesla_ble_mqtt_docker/issues/4
         if [ $msg -gt 4 ]; then
-          teslaCtrlSendCommand $vin "charging-set-amps $msg" "Set charging Amps to $msg" &&  immediate_update $vin "number/charge_current_request" $msg
+          teslaCtrlSendCommand $vin "charging-set-amps $msg" "Set charging Amps to $msg" && immediate_update $vin "number/charge_current_request" $msg
         else
           teslaCtrlSendCommand $vin "charging-set-amps $msg" "4A or less requested, calling charging-set-amps $msg twice"
           # sleep 1
-          teslaCtrlSendCommand $vin "charging-set-amps $msg" "Set charging Amps to $msg" &&  immediate_update $vin "number/charge_current_request" $msg
+          teslaCtrlSendCommand $vin "charging-set-amps $msg" "Set charging Amps to $msg" && immediate_update $vin "number/charge_current_request" $msg
         fi
         ;;
 
       charging-set-amps-override)
         # Command to send a single Amps request
         # Ref: https://github.com/tesla-local-control/tesla_ble_mqtt_core/issues/19
-        teslaCtrlSendCommand $vin "charging-set-amps $msg" "Set charging Amps to $msg"
+        teslaCtrlSendCommand $vin "charging-set-amps $msg" "Set charging Amps to $msg" && immediate_update $vin "number/charge_current_request" $msg
         ;;
 
       charging-set-limit)
-        teslaCtrlSendCommand $vin "charging-set-limit $msg" "Set charging limit to ${msg}%"
+        teslaCtrlSendCommand $vin "charging-set-limit $msg" "Set charging limit to ${msg}%" && immediate_update $vin "number/charge_limit_soc" $msg
         ;;
 
       climate-set-temp)
         # Set decimal precision
-        T=$(printf "%0.2f" ${msg})
-        teslaCtrlSendCommand $vin "climate-set-temp ${T}C" "Set climate temperature to ${T}"
+        T=$(printf "%0.2f" ${msg})number/charge_limit_soc
+        teslaCtrlSendCommand $vin "climate-set-temp ${T}C" "Set climate temperature to ${T}" && immediate_update $vin "number/driver_temp_setting" $msg
         ;;
 
       heater-seat-front-left)
@@ -232,7 +232,7 @@ listen_to_mqtt() {
         ;;
 
       charging)
-        teslaCtrlSendCommand $vin "$cmd-$msg" "Set $cmd mode to $msg"
+        teslaCtrlSendCommand $vin "$cmd-$msg" "Set $cmd mode to $msg" && immediate_update $vin "switch/charge_enable_request" $msg
         ;;
 
       charge-port)

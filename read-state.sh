@@ -479,7 +479,7 @@ function immediate_update() {
     log_info "Immediately updating state_topic: $stateTopic to value: $value for command: $command for vin:$vin"
     
     # Publish to MQTT state topic
-    # stateMQTTpub $vin $value $stateTopic
+    stateMQTTpub $vin $value $stateTopic
   fi
 return 0
 }
