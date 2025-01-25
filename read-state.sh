@@ -475,8 +475,20 @@ function immediate_update() {
   stateTopic=$2
   value=$3
 
+  # Modify according to special cases
+  if [ "$stateTopic" == "switch/is_climate_on" ] || \
+      [ "$stateTopic" == "switch/steering_wheel_heater" ] || \
+      [ "$stateTopic" == "switch/sentry_mode" ] || \
+      [ "$stateTopic" == "switch/charge_enable_request" ]; then
+    if [ "$value" == "on" ]; then
+      value="true"
+    else
+      value="false"
+    fi
+  fi
+
   if [ ! -z $IMMEDIATE_UPDATE ]; then  
-    log_info "Immediately updating state_topic: $stateTopic to value: $value for command: $command for vin:$vin"
+    log_info "Immediately updating state_topic: $stateTopic to value: $value for vin:$vin"
     
     # Publish to MQTT state topic
     stateMQTTpub $vin $value $stateTopic

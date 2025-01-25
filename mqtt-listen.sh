@@ -173,8 +173,8 @@ listen_to_mqtt() {
         ;; ## END of command)
 
       auto-seat-and-climate)
-        teslaCtrlSendCommand $vin "auto-seat-and-climate LR on" "Turn on automatic seat heating and HVAC" && immediate_update $vin "switch/is_climate_on" "true" && \
-          immediate_update $vin "switch/steering_wheel_heater" "true" && \
+        teslaCtrlSendCommand $vin "auto-seat-and-climate LR on" "Turn on automatic seat heating and HVAC" && immediate_update $vin "switch/is_climate_on" $msg && \
+          immediate_update $vin "switch/steering_wheel_heater" $msg && \
           immediate_update $vin "select/seat_heater_left" "high" && \
           immediate_update $vin "select/seat_heater_right" "high"
         ;;
@@ -239,8 +239,8 @@ listen_to_mqtt() {
         ;;
 
       climate)
-        teslaCtrlSendCommand $vin "$cmd-$msg" "Set $cmd mode to $msg" && immediate_update $vin "switch/is_climate_on" "true" && \
-          immediate_update $vin "switch/steering_wheel_heater" "true" && \
+        teslaCtrlSendCommand $vin "$cmd-$msg" "Set $cmd mode to $msg" && immediate_update $vin "switch/is_climate_on" $msg && \
+          immediate_update $vin "switch/steering_wheel_heater" $msg && \
           immediate_update $vin "select/seat_heater_left" "high" && \
           immediate_update $vin "select/seat_heater_right" "high"
         ;;
