@@ -86,7 +86,7 @@ sendBLECommand() {
 
           # Process Immediate state_topic updates
           if [ $IMMEDIATE_UPDATE == "true" ] && [ "${command%% *}" != "state" ]; then
-            immediate_update $command
+            immediate_update $command $vin
           fi
 
           return 0
@@ -126,109 +126,110 @@ teslaCtrlSendCommand() {
 
 function immediate_update() {
   command=$1
-  value=$2
+  vin=$2
 
   case $command in
     charging-on)
       stateTopic=switch/charge_enable_request
       value="on"
-      log_warning "Automatically updating state_topic: $stateTopic to value: $value for command: $command for vin:$vin"
+      log_info "Automatically updating state_topic: $stateTopic to value: $value for command: $command for vin:$vin"
       ;;
     charging-off)
       stateTopic=switch/charge_enable_request
       value="off"
-      log_warning "Automatically updating state_topic: $stateTopic to value: $value for command: $command for vin:$vin"
+      log_info "Automatically updating state_topic: $stateTopic to value: $value for command: $command for vin:$vin"
       ;;
     climate-on)
       stateTopic=switch/is_climate_on
       value="on"
-      log_warning "Automatically updating state_topic: $stateTopic to value: $value for command: $command for vin:$vin"
+      log_info "Automatically updating state_topic: $stateTopic to value: $value for command: $command for vin:$vin"
       ;;
     climate-off)
       stateTopic=switch/is_climate_on
       value="off"
-      log_warning "Automatically updating state_topic: $stateTopic to value: $value for command: $command for vin:$vin"
+      log_info "Automatically updating state_topic: $stateTopic to value: $value for command: $command for vin:$vin"
       ;;
     sentry-mode-on)
       stateTopic=switch/sentry_mode
       value="on"
-      log_warning "Automatically updating state_topic: $stateTopic to value: $value for command: $command for vin:$vin"
+      log_info "Automatically updating state_topic: $stateTopic to value: $value for command: $command for vin:$vin"
       ;;
     sentry-mode-off)
       stateTopic=switch/sentry_mode
       value="off"
-      log_warning "Automatically updating state_topic: $stateTopic to value: $value for command: $command for vin:$vin"
+      log_info "Automatically updating state_topic: $stateTopic to value: $value for command: $command for vin:$vin"
       ;;
     steering-wheel-heater)
       stateTopic=switch/steering_wheel_heater
       value=${command##* }
-      log_warning "Automatically updating state_topic: $stateTopic to value: $value for command: $command for vin:$vin"
+      log_info "Automatically updating state_topic: $stateTopic to value: $value for command: $command for vin:$vin"
       ;;
     charge-port)
       stateTopic=cover/charge_port_door_open
       value=${command##* }
-      log_warning "Automatically updating state_topic: $stateTopic to value: $value for command: $command for vin:$vin"
+      log_info "Automatically updating state_topic: $stateTopic to value: $value for command: $command for vin:$vin"
       ;;
     trunk)
       stateTopic=cover/rear_trunk
       value=${command##* }
-      log_warning "Automatically updating state_topic: $stateTopic to value: $value for command: $command for vin:$vin"
+      log_info "Automatically updating state_topic: $stateTopic to value: $value for command: $command for vin:$vin"
       ;;
     windows)
       stateTopic=cover/windows
       value=${command##* }
-      log_warning "Automatically updating state_topic: $stateTopic to value: $value for command: $command for vin:$vin"
+      log_info "Automatically updating state_topic: $stateTopic to value: $value for command: $command for vin:$vin"
       ;;
     charging-set-amps)
       stateTopic=number/charge_current_request
       value=${command##* }
-      log_warning "Automatically updating state_topic: $stateTopic to value: $value for command: $command for vin:$vin"
+      log_info "Automatically updating state_topic: $stateTopic to value: $value for command: $command for vin:$vin"
       ;;
     charging-set-limit)
       stateTopic=number/charge_limit_soc
       value=${command##* }
-      log_warning "Automatically updating state_topic: $stateTopic to value: $value for command: $command for vin:$vin"
+      log_info "Automatically updating state_topic: $stateTopic to value: $value for command: $command for vin:$vin"
       ;;
     charging-set-amps-override)
       stateTopic=number/charge_current_request
       value=${command##* }
-      log_warning "Automatically updating state_topic: $stateTopic to value: $value for command: $command for vin:$vin"
+      log_info "Automatically updating state_topic: $stateTopic to value: $value for command: $command for vin:$vin"
       ;;
     climate-set-temp)
       stateTopic=number/driver_temp_setting
       value=${command##* }
-      log_warning "Automatically updating state_topic: $stateTopic to value: $value for command: $command for vin:$vin"
+      log_info "Automatically updating state_topic: $stateTopic to value: $value for command: $command for vin:$vin"
       ;;
     heater-seat-front-left)
       stateTopic=select/seat_heater_left
       value=${command##* }
-      log_warning "Automatically updating state_topic: $stateTopic to value: $value for command: $command for vin:$vin"
+      log_info "Automatically updating state_topic: $stateTopic to value: $value for command: $command for vin:$vin"
       ;;
     heater-seat-front-right)
       stateTopic=select/seat_heater_right
       value=${command##* }
-      log_warning "Automatically updating state_topic: $stateTopic to value: $value for command: $command for vin:$vin"
+      log_info "Automatically updating state_topic: $stateTopic to value: $value for command: $command for vin:$vin"
       ;;
     heater-seat-rear-left)
       stateTopic=select/seat_heater_rear_left
       value=${command##* }
-      log_warning "Automatically updating state_topic: $stateTopic to value: $value for command: $command for vin:$vin"
+      log_info "Automatically updating state_topic: $stateTopic to value: $value for command: $command for vin:$vin"
       ;;
     heater-seat-rear-right)
       stateTopic=select/seat_heater_rear_right
       value=${command##* }
-      log_warning "Automatically updating state_topic: $stateTopic to value: $value for command: $command for vin:$vin"
+      log_info "Automatically updating state_topic: $stateTopic to value: $value for command: $command for vin:$vin"
       ;;
     door_lock)
       stateTopic=binary_sensor/door_lock
       value=${command##* }
-      log_warning "Automatically updating state_topic: $stateTopic to value: $value for command: $command for vin:$vin"
+      log_info "Automatically updating state_topic: $stateTopic to value: $value for command: $command for vin:$vin"
       ;;
     *)
       log_warning "No state_topic found for command $command for vin:$vin"
       ;;
   esac
 }
+
 #   teslaCtrlSendCommand. Deprecated
 #teslaCtrlSendCommand() {
 #  # Process in case of nested call (autowake)
