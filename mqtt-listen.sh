@@ -137,7 +137,7 @@ listen_to_mqtt() {
           teslaCtrlSendCommand $vin $msg "Flash lights"
           ;;
         frunk-open)
-          teslaCtrlSendCommand $vin $msg "Open vehicle frunk"
+          teslaCtrlSendCommand $vin $msg "Open vehicle frunk" && immediate_update $vin "binary_sensor/frunk_open" "true"
           ;;
         honk)
           teslaCtrlSendCommand $vin $msg "Honk horn"
@@ -146,7 +146,7 @@ listen_to_mqtt() {
           teslaCtrlSendCommand $vin $msg "List public keys enrolled on vehicle"
           ;;
         lock)
-          teslaCtrlSendCommand $vin $msg "Lock vehicle"
+          teslaCtrlSendCommand $vin $msg "Lock vehicle" && immediate_update $vin "binary_sensor/door_lock" "true"
           ;;
         media-toggle-playback)
           teslaCtrlSendCommand $vin $msg "Toggle between play/pause"
@@ -161,10 +161,10 @@ listen_to_mqtt() {
           teslaCtrlSendCommand $vin $msg "Start software update after delay"
           ;;
         unlock)
-          teslaCtrlSendCommand $vin $msg "Unlock vehicle"
+          teslaCtrlSendCommand $vin $msg "Unlock vehicle" && immediate_update $vin "binary_sensor/door_lock" "false"
           ;;
         wake)
-          teslaCtrlSendCommand $vin "-domain vcsec $msg" "Wake up vehicule"
+          teslaCtrlSendCommand $vin "-domain vcsec $msg" "Wake up vehicle"
           ;;
         *)
           log_error "Invalid command request; vin:$vin topic:$topic msg:$msg"
@@ -208,11 +208,11 @@ listen_to_mqtt() {
         ;;
 
       heater-seat-front-left)
-        teslaCtrlSendCommand $vin "seat-heater front-left $msg" "Turn $msg front left seat heater"
+        teslaCtrlSendCommand $vin "seat-heater front-left $msg" "Turn $msg front left seat heater" && immediate_update $vin "select/seat_heater_left" $msg
         ;;
 
       heater-seat-front-right)
-        teslaCtrlSendCommand $vin "seat-heater front-right $msg" "Turn $msg front right seat heater"
+        teslaCtrlSendCommand $vin "seat-heater front-right $msg" "Turn $msg front right seat heater" && immediate_update $vin "select/seat_heater_right" $msg
         ;;
 
       media-set-volume)
@@ -220,15 +220,15 @@ listen_to_mqtt() {
         ;;
 
       sentry-mode)
-        teslaCtrlSendCommand $vin "sentry-mode $msg" "Set sentry mode to $msg"
+        teslaCtrlSendCommand $vin "sentry-mode $msg" "Set sentry mode to $msg" && immediate_update $vin "switch/sentry_mode" $msg
         ;;
 
       steering-wheel-heater)
-        teslaCtrlSendCommand $vin "steering-wheel-heater $msg" "Set steering wheel mode to $msg"
+        teslaCtrlSendCommand $vin "steering-wheel-heater $msg" "Set steering wheel mode to $msg" && immediate_update $vin "switch/steering_wheel_heater" $msg
         ;;
 
       climate)
-        teslaCtrlSendCommand $vin "$cmd-$msg" "Set $cmd mode to $msg"
+        teslaCtrlSendCommand $vin "$cmd-$msg" "Set $cmd mode to $msg" && immediate_update $vin "switch/is_climate_on" $msg
         ;;
 
       charging)
@@ -236,11 +236,11 @@ listen_to_mqtt() {
         ;;
 
       charge-port)
-        teslaCtrlSendCommand $vin "$cmd-$msg" "Set $cmd mode to $msg"
+        teslaCtrlSendCommand $vin "$cmd-$msg" "Set $cmd mode to $msg" && immediate_update $vin "cover/charge_port_door_open" $msg
         ;;
 
       trunk)
-        teslaCtrlSendCommand $vin "$cmd-$msg" "Set $cmd mode to $msg"
+        teslaCtrlSendCommand $vin "$cmd-$msg" "Set $cmd mode to $msg" && immediate_update $vin "cover/rear_trunk" $msg
         ;;
 
       tonneau)
@@ -249,7 +249,7 @@ listen_to_mqtt() {
         ;;
 
       windows)
-        teslaCtrlSendCommand $vin "$cmd-$msg" "Set $cmd mode to $msg"
+        teslaCtrlSendCommand $vin "$cmd-$msg" "Set $cmd mode to $msg" && immediate_update $vin "cover/windows" $msg
         ;;
 
       variables)
