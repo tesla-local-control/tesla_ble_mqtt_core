@@ -210,6 +210,7 @@ function immediate_update() {
       value=""
       log_warning "No state_topic found for command $command for vin:$vin"
       ;;
+  esac
   
   if [ ! -z "$stateTopic" ]; then
     log_info "Automatically updating state_topic: $stateTopic to value: $value for command: $command for vin:$vin"
@@ -217,7 +218,6 @@ function immediate_update() {
     # stateMQTTpub $vin $value $stateTopic
   fi
 
-  esac
 }
 
 #   teslaCtrlSendCommand. Deprecated
