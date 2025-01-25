@@ -487,6 +487,18 @@ function immediate_update() {
     fi
   fi
 
+  # Special cases
+  if [ "$stateTopic" == "select/seat_heater_left" ] || \
+      [ "$stateTopic" == "select/seat_heater_right" ] || \ 
+      [ "$stateTopic" == "select/seat_heater_rear_left" ] || \
+      [ "$stateTopic" == "select/seat_heater_rear_right" ]; then
+    if [ "$value" == "on" ]; then
+      value="high"
+    else
+      value="off"
+    fi
+  fi
+
   if [ ! -z $IMMEDIATE_UPDATE ]; then  
     log_info "Immediately updating state_topic: $stateTopic to value: $value for vin:$vin"
     
