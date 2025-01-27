@@ -478,8 +478,7 @@ function immediate_update() {
   # Modify according to special cases
   if [ "$stateTopic" == "switch/is_climate_on" ] || \
       [ "$stateTopic" == "switch/steering_wheel_heater" ] || \
-      [ "$stateTopic" == "switch/sentry_mode" ] || \
-      [ "$stateTopic" == "switch/charge_enable_request" ]; then
+      [ "$stateTopic" == "switch/sentry_mode" ]; then
     if [ "$value" == "on" ]; then
       value="true"
     else
@@ -496,6 +495,15 @@ function immediate_update() {
       value="high"
     else
       value="off"
+    fi
+  fi
+
+  # Special case
+  if [ "$stateTopic" == "switch/charge_enable_request" ]; then
+    if [ "$value" == "start" ]; then
+      value="true"
+    else
+      value="false"
     fi
   fi
 
