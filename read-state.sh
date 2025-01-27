@@ -477,8 +477,8 @@ function immediate_update() {
 
   # Modify according to special cases
   if [ "$stateTopic" == "switch/is_climate_on" ] ||
-     [ "$stateTopic" == "switch/steering_wheel_heater" ] ||
-     [ "$stateTopic" == "switch/sentry_mode" ]; then
+    [ "$stateTopic" == "switch/steering_wheel_heater" ] ||
+    [ "$stateTopic" == "switch/sentry_mode" ]; then
     if [ "$value" == "on" ]; then
       value="true"
     else
@@ -488,9 +488,9 @@ function immediate_update() {
 
   # Special cases
   if [ "$stateTopic" == "select/seat_heater_left" ] ||
-     [ "$stateTopic" == "select/seat_heater_right" ] ||
-     [ "$stateTopic" == "select/seat_heater_rear_left" ] ||
-     [ "$stateTopic" == "select/seat_heater_rear_right" ]; then
+    [ "$stateTopic" == "select/seat_heater_right" ] ||
+    [ "$stateTopic" == "select/seat_heater_rear_left" ] ||
+    [ "$stateTopic" == "select/seat_heater_rear_right" ]; then
     if [ "$value" == "on" ]; then
       value="high"
     else
