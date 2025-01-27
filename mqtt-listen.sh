@@ -173,11 +173,12 @@ listen_to_mqtt() {
         ;; ## END of command)
 
       auto-seat-and-climate)
-        teslaCtrlSendCommand $vin "auto-seat-and-climate LR on" "Turn on automatic seat heating and HVAC" && immediate_update $vin "switch/is_climate_on" $msg && \
-          immediate_update $vin "switch/steering_wheel_heater" $msg && \
-          immediate_update $vin "select/seat_heater_left" $msg && \
-          immediate_update $vin "select/seat_heater_right" $msg && \
-          immediate_update $vin "select/seat_heater_rear_left" "off" && \
+        teslaCtrlSendCommand $vin "auto-seat-and-climate LR on" "Turn on automatic seat heating and HVAC" &&
+          immediate_update $vin "switch/is_climate_on" $msg &&
+          immediate_update $vin "switch/steering_wheel_heater" $msg &&
+          immediate_update $vin "select/seat_heater_left" $msg &&
+          immediate_update $vin "select/seat_heater_right" $msg &&
+          immediate_update $vin "select/seat_heater_rear_left" "off" &&
           immediate_update $vin "select/seat_heater_rear_right" "off"
         ;;
 
@@ -241,11 +242,12 @@ listen_to_mqtt() {
         ;;
 
       climate)
-        teslaCtrlSendCommand $vin "$cmd-$msg" "Set $cmd mode to $msg" && immediate_update $vin "switch/is_climate_on" $msg && \
-          immediate_update $vin "switch/steering_wheel_heater" $msg && \
-          immediate_update $vin "select/seat_heater_left" $msg && \
-          immediate_update $vin "select/seat_heater_right" $msg && \
-          immediate_update $vin "select/seat_heater_rear_left" "off" && \
+        teslaCtrlSendCommand $vin "$cmd-$msg" "Set $cmd mode to $msg" &&
+          immediate_update $vin "switch/is_climate_on" $msg &&
+          immediate_update $vin "switch/steering_wheel_heater" $msg &&
+          immediate_update $vin "select/seat_heater_left" $msg &&
+          immediate_update $vin "select/seat_heater_right" $msg &&
+          immediate_update $vin "select/seat_heater_rear_left" "off" &&
           immediate_update $vin "select/seat_heater_rear_right" "off"
         ;;
 

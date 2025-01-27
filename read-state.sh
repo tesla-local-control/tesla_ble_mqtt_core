@@ -476,8 +476,8 @@ function immediate_update() {
   value=$3
 
   # Modify according to special cases
-  if [ "$stateTopic" == "switch/is_climate_on" ] || \
-      [ "$stateTopic" == "switch/steering_wheel_heater" ] || \
+  if [ "$stateTopic" == "switch/is_climate_on" ] ||
+      [ "$stateTopic" == "switch/steering_wheel_heater" ] ||
       [ "$stateTopic" == "switch/sentry_mode" ]; then
     if [ "$value" == "on" ]; then
       value="true"
@@ -487,9 +487,9 @@ function immediate_update() {
   fi
 
   # Special cases
-  if [ "$stateTopic" == "select/seat_heater_left" ] || \
-      [ "$stateTopic" == "select/seat_heater_right" ] || \
-      [ "$stateTopic" == "select/seat_heater_rear_left" ] || \
+  if [ "$stateTopic" == "select/seat_heater_left" ] ||
+      [ "$stateTopic" == "select/seat_heater_right" ] ||
+      [ "$stateTopic" == "select/seat_heater_rear_left" ] ||
       [ "$stateTopic" == "select/seat_heater_rear_right" ]; then
     if [ "$value" == "on" ]; then
       value="high"
@@ -507,9 +507,9 @@ function immediate_update() {
     fi
   fi
 
-  if [ ! -z $IMMEDIATE_UPDATE ]; then  
+  if [ -n $IMMEDIATE_UPDATE ]; then
     log_info "Immediately updating state_topic: $stateTopic to value: $value for vin:$vin"
-    
+
     # Publish to MQTT state topic
     stateMQTTpub $vin $value $stateTopic
   fi

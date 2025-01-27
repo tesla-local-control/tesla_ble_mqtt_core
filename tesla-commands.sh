@@ -118,7 +118,6 @@ teslaCtrlSendCommand() {
   sendBLECommand "$@"
 }
 
-
 #   teslaCtrlSendCommand. Deprecated
 #teslaCtrlSendCommand() {
 #  # Process in case of nested call (autowake)
