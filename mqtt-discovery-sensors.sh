@@ -32,11 +32,11 @@ function setupPresenceSensor {
 
 }
 
-# Charge State Sensors
-function setupChargeStateSensors {
+# Setup remaining sensors
+function setupStateSensors {
   vin=$1
 
-  log_debug "setupChargeStateSensors() entering vin:$vin"
+  log_debug "setupStateSensors() entering vin:$vin"
   configHADeviceEnvVars $vin
 
   echo '{
@@ -773,6 +773,6 @@ function setupChargeStateSensors {
   #  "unique_id": "'${DEVICE_ID}'_charge_port_latch"
   # }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 36 10 -t homeassistant/binary_sensor/${DEVICE_ID}/charge_port_latch/config -l
 
-  log_debug "setupChargeStateSensors() leaving vin:$vin"
+  log_debug "setupStateSensors() leaving vin:$vin"
 
 }
