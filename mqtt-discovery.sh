@@ -115,7 +115,7 @@ teslaControlCommands="\
 1,C,tonneau-open,mdi:shutter,Open Cybertruck tonneau
 1,C,tonneau-stop,mdi:shutter,Stop moving Cybertruck tonneau
 1,*,unlock,mdi:lock-open,Unlock car
-0,*,wake,mdi:hand-wave,Wake up car"
+1,*,wake,mdi:hand-wave,Wake up car"
 
 generateCommandJson() {
   UNIQUE_ID=$1
