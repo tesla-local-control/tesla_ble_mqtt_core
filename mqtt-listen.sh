@@ -41,6 +41,19 @@ listen_to_mqtt() {
         log_info "Received MQTT message; topic:$topic msg:$msg vin:$vin cmd:$cmd"
       fi
 
+      # Ignore messages for cars not in the vin list
+      inVINList=0
+      for v in $VIN_LIST; do
+        if [ $v == $vin ]; then
+          inVINList=1
+          break
+        fi
+      done
+      if [ $inVINList -eq 0 ]; then
+        log_warning "Received MQTT message for vin: $vin which is not in VIN_LIST"
+        continue
+      fi
+
       case $cmd in
       config)
 
