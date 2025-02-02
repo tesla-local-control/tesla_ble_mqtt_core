@@ -50,7 +50,7 @@ listen_to_mqtt() {
         fi
       done
       if [ $inVINList -eq 0 ]; then
-        log_warning "Received MQTT message for vin: $vin which is not in VIN_LIST"
+        log_debug "Received MQTT message for vin: $vin which is not in VIN_LIST"
         continue
       fi
 
