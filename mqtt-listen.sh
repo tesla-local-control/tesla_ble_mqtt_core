@@ -35,13 +35,6 @@ listen_to_mqtt() {
       vin=${topic_stripped%/*}
       cmd=${topic_stripped#*/}
 
-      # Don't spam the logs for these topics/ commands
-      if [ $cmd == "poll_state" ]; then
-        log_debug "Received MQTT message; topic:$topic msg:$msg vin:$vin cmd:$cmd"
-      else
-        log_info "Received MQTT message; topic:$topic msg:$msg vin:$vin cmd:$cmd"
-      fi
-
       # Ignore messages for cars not in the vin list
       inVINList=0
       for v in $VIN_LIST; do
@@ -53,6 +46,13 @@ listen_to_mqtt() {
       if [ $inVINList -eq 0 ]; then
         log_debug "Received MQTT message for vin: $vin which is not in VIN_LIST"
         continue
+      fi
+
+      # Don't spam the logs for these topics / commands
+      if [ $cmd == "poll_state" ]; then
+        log_debug "Received MQTT message; topic:$topic msg:$msg vin:$vin cmd:$cmd"
+      else
+        log_info "Received MQTT message; topic:$topic msg:$msg vin:$vin cmd:$cmd"
       fi
 
       case $cmd in
