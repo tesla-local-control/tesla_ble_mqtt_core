@@ -7,7 +7,8 @@
 ##  - Main MQTT while loop
 #   - If listen_to_mqtt() fails due to MQTT service (restart/network/etc), loop handles restart
 #   - TODO: After testing, this loop might be useless.... process _sub keeps running when MQTT is
-##    down for ~ 10-15m
+#     down for ~ 10-15m. However it might be useful if _sub stops for another reason
+#   - TODO we might want to look at restarting other sub process loops if they fail
 ###
 listen_to_mqtt_loop() {
 
@@ -19,14 +20,14 @@ listen_to_mqtt_loop() {
       log_error "listen_to_mqtt stopped due to a failure; restarting the process in 10 seconds"
       sleep 10
     fi
-    exit 0
+    # exit 0 # comment this out otherwise the loop will just exit anyway
   done
 
 }
 
 listen_to_mqtt() {
   log_info "Listening to MQTT"
-  eval $MOSQUITTO_SUB_BASE --nodelay --disable-clean-session --qos 1 --topic tesla_ble/+/+ -F \"%t %p\" --id tesla_ble_mqtt |
+  eval $MOSQUITTO_SUB_BASE --nodelay --qos 1 --topic tesla_ble/+/+ -F \"%t %p\" |
     while read -r payload; do
       topic=${payload%% *}
       msg=${payload#* }
