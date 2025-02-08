@@ -58,9 +58,6 @@ function setupPanelMain() {
 
   fi
 
-  # Setup Charge State Sensors
-  setupChargeStateSensors $vin
-
   # Newly added car?
   if [ -f $KEYS_DIR/${vin}_pubkey_accepted ]; then
     log_debug "setupPanelMain() found vehicle with pubkey deployed vin:$vin"
@@ -69,6 +66,7 @@ function setupPanelMain() {
     setupDiagnostic $vin
     setupButtonControls $vin 1
     setupExtendedControls $vin
+    setupStateSensors $vin
   elif [ ! -f $KEYS_DIR/${vin}_private.pem ] && [ ! -f $KEYS_DIR/${vin}_public.pem ]; then
 
     log_debug "setupPanelMain() found new vehicle, need to generate keys set vin:$vin"
