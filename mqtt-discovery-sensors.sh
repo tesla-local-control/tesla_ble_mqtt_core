@@ -389,6 +389,9 @@ function setupChargeStateSensors {
     "platform": "sensor",
     "icon": "mdi:counter",
     "name": "Odometer",
+    "device_class": "distance",
+    "unit_of_measurement": "mi",
+    "suggested_display_precision": "0",    
     "qos": "'${QOS_LEVEL}'",
     "unique_id": "'${DEVICE_ID}'_odometer"
   }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 36 10 -t homeassistant/sensor/${DEVICE_ID}/odometer/config -l
@@ -620,11 +623,11 @@ function setupChargeStateSensors {
    "platform": "binary_sensor",
    "icon": "mdi:car-door-lock",
    "name": "Door Lock",
-   "payload_on": "true",
-   "payload_off": "false",
+   "payload_on": "false",
+   "payload_off": "true",
    "device_class": "lock",   
    "qos": "'${QOS_LEVEL}'",
-   "unique_id": "'${DEVICE_ID}'_window_open_pr"
+   "unique_id": "'${DEVICE_ID}'_door_lock"
   }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 36 10 -t homeassistant/binary_sensor/${DEVICE_ID}/door_lock/config -l
 
   echo '{
