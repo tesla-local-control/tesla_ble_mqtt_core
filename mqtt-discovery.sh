@@ -58,9 +58,6 @@ function setupPanelMain() {
 
   fi
 
-  # Setup Charge State Sensors
-  setupChargeStateSensors $vin
-
   # Newly added car?
   if [ -f $KEYS_DIR/${vin}_pubkey_accepted ]; then
     log_debug "setupPanelMain() found vehicle with pubkey deployed vin:$vin"
@@ -69,6 +66,7 @@ function setupPanelMain() {
     setupDiagnostic $vin
     setupButtonControls $vin 1
     setupExtendedControls $vin
+    setupStateSensors $vin
   elif [ ! -f $KEYS_DIR/${vin}_private.pem ] && [ ! -f $KEYS_DIR/${vin}_public.pem ]; then
 
     log_debug "setupPanelMain() found new vehicle, need to generate keys set vin:$vin"
@@ -117,7 +115,7 @@ teslaControlCommands="\
 1,C,tonneau-open,mdi:shutter,Open Cybertruck tonneau
 1,C,tonneau-stop,mdi:shutter,Stop moving Cybertruck tonneau
 1,*,unlock,mdi:lock-open,Unlock car
-0,*,wake,mdi:hand-wave,Wake up car"
+1,*,wake,mdi:hand-wave,Wake up car"
 
 generateCommandJson() {
   UNIQUE_ID=$1
