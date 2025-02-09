@@ -22,7 +22,7 @@ sendBLECommand() {
 
     # Get presence and awake status via body-controller-state
     set +e
-    bcs_json=$(timeout -k 1 -s SIGKILL $TC_KILL_TIMEOUT /usr/bin/tesla-control -ble -vin $vin -command-timeout ${TC_CMD_TIMEOUT}s -connect-timeout ${TC_CON_TIMEOUT}s body-controller-state 2>&1)
+    bcs_json=$(timeout -k 1 -s SIGKILL $TC_KILL_TIMEOUT /usr/bin/tesla-control -ble -vin $vin -command-timeout ${TC_COMMAND_TIMEOUT}s -connect-timeout ${TC_CONNECT_TIMEOUT}s body-controller-state 2>&1)
     EXIT_VALUE=$?
     set -e
     wait
@@ -53,7 +53,7 @@ sendBLECommand() {
 
         # Send wake command
         set +e
-        timeout -k 1 -s SIGKILL $TC_KILL_TIMEOUT tesla-control -ble -command-timeout ${TC_CMD_TIMEOUT}s -connect-timeout ${TC_CON_TIMEOUT}s -domain vcsec wake
+        timeout -k 1 -s SIGKILL $TC_KILL_TIMEOUT tesla-control -ble -command-timeout ${TC_COMMAND_TIMEOUT}s -connect-timeout ${TC_CONNECT_TIMEOUT}s -domain vcsec wake
         EXIT_STATUS=$?
         set -e
         wait
@@ -70,7 +70,7 @@ sendBLECommand() {
 
         # Send command to car
         set +e
-        TESLACTRLOUT=$(timeout -k 1 -s SIGKILL $TC_KILL_TIMEOUT /usr/bin/tesla-control -ble -command-timeout ${TC_CMD_TIMEOUT}s -connect-timeout ${TC_CON_TIMEOUT}s $command 2>&1)
+        TESLACTRLOUT=$(timeout -k 1 -s SIGKILL $TC_KILL_TIMEOUT /usr/bin/tesla-control -ble -command-timeout ${TC_COMMAND_TIMEOUT}s -connect-timeout ${TC_CONNECT_TIMEOUT}s $command 2>&1)
         EXIT_STATUS=$?
         set -e
         wait
@@ -141,7 +141,7 @@ teslaCtrlSendCommand() {
 #  export TESLA_KEY_FILE=$KEYS_DIR/${vin}_private.pem
 #  export TESLA_KEY_NAME=$KEYS_DIR/${vin}_private.pem
 #  # shellcheck disable=SC2016
-#  TESLA_CONTROL_CMD='/usr/bin/tesla-control -ble -command-timeout ${TC_CMD_TIMEOUT}s -connect-timeout ${TC_CON_TIMEOUT}s $command 2>&1'
+#  TESLA_CONTROL_CMD='/usr/bin/tesla-control -ble -command-timeout ${TC_COMMAND_TIMEOUT}s -connect-timeout ${TC_CONNECT_TIMEOUT}s $command 2>&1'
 #
 #  # Retry loop
 #  max_retries=5
