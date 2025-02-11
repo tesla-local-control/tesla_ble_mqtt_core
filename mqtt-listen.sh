@@ -19,7 +19,7 @@ listen_to_mqtt_loop() {
     if ! listen_to_mqtt; then
       log_error "listen_to_mqtt stopped due to a failure; restarting the process in 10 seconds"
       sleep 10
-    fi   
+    fi
   done
 
 }
