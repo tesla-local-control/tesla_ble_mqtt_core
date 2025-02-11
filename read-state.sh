@@ -59,7 +59,7 @@ function poll_state() {
 
     else
       log_info "Polling is on and polling interval is triggered for VIN:$vin. Polling interval is $polling_interval secs"
-      
+
       if [[ $polling_interval -lt 660 ]]; then
         log_warning "Polling intervals of less than 660 (11 mins) may prevent the car from sleeping, which will increase battery drain"
       fi

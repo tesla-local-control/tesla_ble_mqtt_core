@@ -180,7 +180,7 @@ listen_to_mqtt() {
           ;;
         wake)
           teslaCtrlSendCommand $vin "-domain vcsec $msg" "Wake up vehicle"
-          ;;       
+          ;;
         *)
           # Invalid command request, unless it was a call to setupHADiscoveryAllVINsMain after HA restart
           if [ $msg != $payload ]; then

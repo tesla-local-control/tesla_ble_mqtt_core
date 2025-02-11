@@ -45,7 +45,7 @@ for vin in $VIN_LIST; do
   if [[ $polling_interval -lt 660 ]]; then
     log_warning "  Polling intervals of less than 660 (11 mins) may prevent the car from sleeping, which will increase battery drain"
   fi
-  
+
   # Populate BLE Local Names list
   vin_count=$((vin_count + 1))
   BLE_LN=$(vinToBLEln $vin)
