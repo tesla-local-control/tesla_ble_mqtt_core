@@ -18,7 +18,25 @@ for vin in $VIN_LIST; do
   # Set defaults for MQTT derived variables
   # https://github.com/tesla-local-control/tesla_ble_mqtt_docker/issues/75
   export var_${vin}_polling=false
-  export var_${vin}_polling_interval=680
+  export var_${vin}_polling_interval=660
+
+  # Attempt to read MQTT derived variables
+  log_debug "run.sh: Setting variables from MQTT for VIN:$vin"
+  set +e
+  mqttOp=$(eval $MOSQUITTO_SUB_BASE --nodelay -W 1 --topic tesla_ble/$vin/variables/+ -F \"%t=%p\" 2>/dev/null)
+  EXIT_CODE=$?
+  set -e
+  if [ $EXIT_CODE -eq 27 ]; then
+    for item in $mqttOp; do
+      assign=${item##*/}
+      log_debug "Setting variable from MQTT: $assign"
+      eval export var_${vin}_$assign
+    done
+  fi
+
+  log_info "MQTT derived variables for vin=$vin are: 
+    var_${vin}_polling=$(eval "echo \"\$var_${vin}_polling\"")
+    var_${vin}_polling_interval=$(eval "echo \"\$var_${vin}_polling_interval\"")"
 
   # Populate BLE Local Names list
   vin_count=$((vin_count + 1))
