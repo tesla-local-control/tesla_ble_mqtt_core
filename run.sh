@@ -34,10 +34,18 @@ for vin in $VIN_LIST; do
     done
   fi
 
-  log_info "MQTT derived variables for vin=$vin are: 
-    var_${vin}_polling=$(eval "echo \"\$var_${vin}_polling\"")
-    var_${vin}_polling_interval=$(eval "echo \"\$var_${vin}_polling_interval\"")"
+  # Get variables for this VIN. Note ash needs to use eval for dynamic variables
+  polling=$(eval "echo \"\$var_${vin}_polling\"")
+  polling_interval=$(eval "echo \"\$var_${vin}_polling_interval\"")
 
+  log_info "MQTT derived variables for vin=$vin are: 
+  var_${vin}_polling=$polling
+  var_${vin}_polling_interval=$polling_interval"
+
+  if [[ $polling_interval -lt 660 ]]; then
+    log_warning "  Polling intervals of less than 660 (11 mins) may prevent the car from sleeping, which will increase battery drain"       
+  fi
+  
   # Populate BLE Local Names list
   vin_count=$((vin_count + 1))
   BLE_LN=$(vinToBLEln $vin)
