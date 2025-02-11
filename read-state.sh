@@ -58,7 +58,11 @@ function poll_state() {
       log_debug "Count not divisible by polling_interval for VIN: $vin, Count: $loop_count, Interval: $polling_interval"
 
     else
-      log_info "Polling is on and polling interval is triggered for VIN:$vin"
+      log_info "Polling is on and polling interval is triggered for VIN:$vin. Polling interval is $polling_interval secs"
+      
+      if [[ $polling_interval -lt 660 ]]; then
+        log_warning "Polling intervals of less than 660 (11 mins) may prevent the car from sleeping, which will increase battery drain"       
+      fi
 
       # Send a body-controller-state command. This checks if car is in bluetooth range and whether awake or asleep without acutally waking it
       # Kill the tesla-control process if it doesn't complete in $TC_KILL_TIMEOUT seconds
