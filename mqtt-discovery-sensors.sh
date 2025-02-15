@@ -376,6 +376,24 @@ function setupStateSensors {
   }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 36 10 -t homeassistant/sensor/${DEVICE_ID}/charge_cable/config -l
 
   echo '{
+    "state_topic": "'${TOPIC_ROOT}'/sensor/charging_state",
+    "device": {
+     "identifiers": [
+     "'${DEVICE_ID}'"
+        ],
+     "manufacturer": "tesla-local-control",
+     "model": "Tesla_BLE",
+     "name": "'${DEVICE_NAME}'",
+     "sw_version": "'${SW_VERSION}'"
+    },
+    "platform": "sensor",
+    "icon": "mdi:battery-unknown",
+    "name": "Charging State",
+    "qos": "'${QOS_LEVEL}'",
+    "unique_id": "'${DEVICE_ID}'_charging_state"
+  }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 36 10 -t homeassistant/sensor/${DEVICE_ID}/charging_state/config -l
+
+  echo '{
     "state_topic": "'${TOPIC_ROOT}'/sensor/odometer",
     "device": {
      "identifiers": [
