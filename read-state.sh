@@ -292,7 +292,7 @@ function getStateValueAndPublish() {
     fi
 
     # Modify values in specific cases
-    if [ $jsonParam == ".chargeState.connChargeCable" ]; then
+    if [ $jsonParam == ".chargeState.connChargeCable" ] || [ $jsonParam == ".chargeState.chargingState" ]; then
       rqdValue=$(echo $rqdValue | awk -F "\"" '{print $2}')
       if [ -z "$rqdValue" ]; then
         rqdValue="No"
@@ -348,6 +348,7 @@ function readChargeState() {
   getStateValueAndPublish $vin '.chargeState.chargeMilesAddedRated' sensor/charge_range_added "$TESLACTRLOUT"
   getStateValueAndPublish $vin '.chargeState.chargeRateMph' sensor/charge_speed "$TESLACTRLOUT"
   getStateValueAndPublish $vin '.chargeState.connChargeCable' sensor/charge_cable "$TESLACTRLOUT"
+  getStateValueAndPublish $vin '.chargeState.chargingState' sensor/charging_state "$TESLACTRLOUT"
   getStateValueAndPublish $vin '.chargeState.chargeEnableRequest' switch/charge_enable_request "$TESLACTRLOUT"
   getStateValueAndPublish $vin '.chargeState.chargePortDoorOpen' cover/charge_port_door_open "$TESLACTRLOUT"
   getStateValueAndPublish $vin '.chargeState.chargeCurrentRequest' number/charge_current_request "$TESLACTRLOUT"
