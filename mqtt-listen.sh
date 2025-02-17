@@ -20,7 +20,6 @@ listen_to_mqtt_loop() {
       log_error "listen_to_mqtt stopped due to a failure; restarting the process in 10 seconds"
       sleep 10
     fi
-    # exit 0 # comment this out otherwise the loop will just exit anyway
   done
 
 }
@@ -129,9 +128,11 @@ listen_to_mqtt() {
           log_notice "read-state; calling readState()"
           readState $vin drive
           ;;
-
         *)
-          log_error "Invalid configuration request:$msg topic:$topic vin:$vin"
+          # Invalid configuration request, unless it was a call to setupHADiscoveryAllVINsMain after HA restart
+          if [ $msg != $payload ]; then
+            log_error "Invalid configuration request:$msg topic:$topic vin:$vin"
+          fi
           ;;
         esac
         ;;
@@ -181,7 +182,10 @@ listen_to_mqtt() {
           teslaCtrlSendCommand $vin "-domain vcsec $msg" "Wake up vehicle"
           ;;
         *)
-          log_error "Invalid command request; vin:$vin topic:$topic msg:$msg"
+          # Invalid command request, unless it was a call to setupHADiscoveryAllVINsMain after HA restart
+          if [ $msg != $payload ]; then
+            log_error "Invalid command request; vin:$vin topic:$topic msg:$msg"
+          fi
           ;;
         esac
         ;; ## END of command)
