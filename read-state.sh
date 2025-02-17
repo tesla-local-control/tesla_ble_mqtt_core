@@ -292,7 +292,7 @@ function getStateValueAndPublish() {
     fi
 
     # Modify values in specific cases
-    if [ $jsonParam == ".chargeState.connChargeCable" ] || [ $jsonParam == ".chargeState.chargingState" ] ; then
+    if [ $jsonParam == ".chargeState.connChargeCable" ] || [ $jsonParam == ".chargeState.chargingState" ]; then
       rqdValue=$(echo $rqdValue | awk -F "\"" '{print $2}')
       if [ -z "$rqdValue" ]; then
         rqdValue="No"
