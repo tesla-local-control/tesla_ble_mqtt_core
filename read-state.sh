@@ -82,13 +82,15 @@ function poll_state() {
       # If non zero, car is not contactable by bluetooth
       elif [ $EXIT_VALUE -ne 0 ]; then
         log_info "Car is not responding to bluetooth, assuming it's away. VIN:$vin"
-        # Publish to MQTT presence_bc sensor. TODO: Set awake sensor to Unknown via MQTT availability
+        # Publish to MQTT presence_bc sensors. TODO: Set awake sensor to Unknown via MQTT availability
         stateMQTTpub $vin 'false' 'binary_sensor/presence_bc'
+        stateMQTTpub $vin 'false' 'device_tracker/presence_bc'
 
       else
         # Car has responded
         log_debug "Car has responded to bluetooth, it is present. VIN:$vin"
         stateMQTTpub $vin 'true' 'binary_sensor/presence_bc'
+        stateMQTTpub $vin 'true' 'device_tracker/presence_bc'
 
         # Check if awake or asleep from the body-controller-state response
         rqdValue=$(echo $bcs_json | jq -e '.vehicleSleepStatus')
@@ -132,7 +134,7 @@ function stateMQTTpub() {
     return 1
 
   # Don't spam the logs for these topics
-  if [ $topic == "binary_sensor/presence_bc" ] || [ $topic == "binary_sensor/awake" ] || [ $topic == "poll_state" ]; then
+  if [ $topic == "poll_state" ] || [ $topic == "binary_sensor/presence_bc" ] || [ $topic == "device_tracker/presence_bc" ] || [ $topic == "binary_sensor/awake" ]; then
     log_debug "MQTT topic $MQTT_TOPIC successfully updated to $state"
   else
     log_info "MQTT topic $MQTT_TOPIC successfully updated to $state"
@@ -292,7 +294,7 @@ function getStateValueAndPublish() {
     fi
 
     # Modify values in specific cases
-    if [ $jsonParam == ".chargeState.connChargeCable" ]; then
+    if [ $jsonParam == ".chargeState.connChargeCable" ] || [ $jsonParam == ".chargeState.chargingState" ]; then
       rqdValue=$(echo $rqdValue | awk -F "\"" '{print $2}')
       if [ -z "$rqdValue" ]; then
         rqdValue="No"
@@ -348,6 +350,7 @@ function readChargeState() {
   getStateValueAndPublish $vin '.chargeState.chargeMilesAddedRated' sensor/charge_range_added "$TESLACTRLOUT"
   getStateValueAndPublish $vin '.chargeState.chargeRateMph' sensor/charge_speed "$TESLACTRLOUT"
   getStateValueAndPublish $vin '.chargeState.connChargeCable' sensor/charge_cable "$TESLACTRLOUT"
+  getStateValueAndPublish $vin '.chargeState.chargingState' sensor/charging_state "$TESLACTRLOUT"
   getStateValueAndPublish $vin '.chargeState.chargeEnableRequest' switch/charge_enable_request "$TESLACTRLOUT"
   getStateValueAndPublish $vin '.chargeState.chargePortDoorOpen' cover/charge_port_door_open "$TESLACTRLOUT"
   getStateValueAndPublish $vin '.chargeState.chargeCurrentRequest' number/charge_current_request "$TESLACTRLOUT"

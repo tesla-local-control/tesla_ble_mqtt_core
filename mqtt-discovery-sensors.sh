@@ -376,6 +376,24 @@ function setupStateSensors {
   }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 36 10 -t homeassistant/sensor/${DEVICE_ID}/charge_cable/config -l
 
   echo '{
+    "state_topic": "'${TOPIC_ROOT}'/sensor/charging_state",
+    "device": {
+     "identifiers": [
+     "'${DEVICE_ID}'"
+        ],
+     "manufacturer": "tesla-local-control",
+     "model": "Tesla_BLE",
+     "name": "'${DEVICE_NAME}'",
+     "sw_version": "'${SW_VERSION}'"
+    },
+    "platform": "sensor",
+    "icon": "mdi:battery-unknown",
+    "name": "Charging State",
+    "qos": "'${QOS_LEVEL}'",
+    "unique_id": "'${DEVICE_ID}'_charging_state"
+  }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 36 10 -t homeassistant/sensor/${DEVICE_ID}/charging_state/config -l
+
+  echo '{
     "state_topic": "'${TOPIC_ROOT}'/sensor/odometer",
     "device": {
      "identifiers": [
@@ -755,6 +773,27 @@ function setupStateSensors {
    "enabled_by_default": "false",
    "unique_id": "'${DEVICE_ID}'_presence_bc"
   }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 36 10 -t homeassistant/binary_sensor/${DEVICE_ID}/presence_bc/config -l
+
+  echo '{
+   "state_topic": "'${TOPIC_ROOT}'/device_tracker/presence_bc",
+   "device": {
+    "identifiers": [
+    "'${DEVICE_ID}'"
+    ],
+    "manufacturer": "tesla-local-control",
+    "model": "Tesla_BLE",
+    "name": "'${DEVICE_NAME}'",
+    "sw_version": "'${SW_VERSION}'"
+   },
+   "platform": "device_tracker",
+   "name": "Presence BC",
+   "payload_home": "true",
+   "payload_not_home": "false",
+   "qos": "'${QOS_LEVEL}'",
+   "icon": "mdi:car-connected",
+   "enabled_by_default": "false",
+   "unique_id": "'${DEVICE_ID}'_presence_bc"
+  }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 36 10 -t homeassistant/device_tracker/${DEVICE_ID}/presence_bc/config -l
 
   # Status is only Disengaged for short time, it gets reengaged soon after even with no charger plugged in. Not useful
   # echo '{
