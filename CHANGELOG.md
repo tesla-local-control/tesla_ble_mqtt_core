@@ -1,8 +1,8 @@
 # Changelog
 
-## 0.4.3-rc2
+## 0.5.0
 
-- Release to improve robustness, and fix various things identified during recent development:
+- Major release to improve robustness, and fix various things identified during development of version v0.4.x:
    - Terminate tesla-control processes that run longer than $TC_KILL_TIMEOUT seconds. Discussion: https://github.com/tesla-local-control/tesla_ble_mqtt_core/issues/142
    - Wait for tesla-control processes to finish before moving on with the sequence. There is now no need to sleep after each command is sent, so the $BLE_CMD_RETRY_DELAY environment variable is deprecated. Credit to BogdanDIA for this. https://github.com/BogdanDIA
    - Don't make body-controller-state calls every $POLL_STATE_LOOP_DELAY as it's too hard on the bluetooth. The preferred means of determining presence is confirmed as the original passive bluetooth scanning, not body controller state. Awake sensor is not now updated every $POLL_STATE_LOOP_DELAY secs but only when state is read or a command is sent
