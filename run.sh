@@ -14,6 +14,38 @@ VIN_LIST=$(echo $VIN_LIST | sed -e 's/[|,;]/ /g')
 
 vin_count=0
 for vin in $VIN_LIST; do
+
+  # Set defaults for MQTT derived variables
+  # https://github.com/tesla-local-control/tesla_ble_mqtt_docker/issues/75
+  export var_${vin}_polling=false
+  export var_${vin}_polling_interval=660
+
+  # Attempt to read MQTT derived variables
+  log_debug "run.sh: Setting variables from MQTT for VIN:$vin"
+  set +e
+  mqttOp=$(eval $MOSQUITTO_SUB_BASE --nodelay -W 1 --topic tesla_ble/$vin/variables/+ -F \"%t=%p\" 2>/dev/null)
+  EXIT_CODE=$?
+  set -e
+  if [ $EXIT_CODE -eq 27 ]; then
+    for item in $mqttOp; do
+      assign=${item##*/}
+      log_debug "Setting variable from MQTT: $assign"
+      eval export var_${vin}_$assign
+    done
+  fi
+
+  # Get variables for this VIN. Note ash needs to use eval for dynamic variables
+  polling=$(eval "echo \"\$var_${vin}_polling\"")
+  polling_interval=$(eval "echo \"\$var_${vin}_polling_interval\"")
+
+  log_info "MQTT derived variables for vin=$vin are: 
+  var_${vin}_polling=$polling
+  var_${vin}_polling_interval=$polling_interval"
+
+  if [[ $polling_interval -lt 660 ]]; then
+    log_warning "  Polling intervals of less than 660 (11 mins) may prevent the car from sleeping, which will increase battery drain"
+  fi
+
   # Populate BLE Local Names list
   vin_count=$((vin_count + 1))
   BLE_LN=$(vinToBLEln $vin)
@@ -36,8 +68,6 @@ for vin in $VIN_LIST; do
   if [ -f $KEYS_DIR/${vin}_private.pem ] &&
     [ -f $KEYS_DIR/${vin}_public.pem ]; then
     log_debug "Found public and private keys set for vin:$vin"
-    # TODO Remove in next release
-    touch $KEYS_DIR/${vin}_pubkey_accepted
   else
     log_debug "Did not find public and private keys for vin:$vin"
   fi
@@ -59,7 +89,7 @@ for vin in $VIN_LIST; do
   else
     # Remove single entities (brute force command, no easy way to collect declared MQTT topics crossplatform)
     log_notice "Removing single buttons to be replaced by switches & covers:"
-    log_notice "windows, charger, cherge-port, climate, trunk"
+    log_notice "windows, charger, charge-port, climate, trunk"
     delete_legacies_singles $vin
   fi # END TEMPORARY
 

@@ -7,7 +7,8 @@
 ##  - Main MQTT while loop
 #   - If listen_to_mqtt() fails due to MQTT service (restart/network/etc), loop handles restart
 #   - TODO: After testing, this loop might be useless.... process _sub keeps running when MQTT is
-##    down for ~ 10-15m
+#     down for ~ 10-15m. However it might be useful if _sub stops for another reason
+#   - TODO we might want to look at restarting other sub process loops if they fail
 ###
 listen_to_mqtt_loop() {
 
@@ -19,21 +20,39 @@ listen_to_mqtt_loop() {
       log_error "listen_to_mqtt stopped due to a failure; restarting the process in 10 seconds"
       sleep 10
     fi
-    exit 0
   done
 
 }
 
 listen_to_mqtt() {
   log_info "Listening to MQTT"
-  eval $MOSQUITTO_SUB_BASE --nodelay --disable-clean-session --qos 1 --topic tesla_ble/+/+ -F \"%t %p\" --id tesla_ble_mqtt |
+  eval $MOSQUITTO_SUB_BASE --nodelay --qos 1 --topic tesla_ble/+/+ -F \"%t %p\" |
     while read -r payload; do
       topic=${payload%% *}
       msg=${payload#* }
       topic_stripped=${topic#*/}
       vin=${topic_stripped%/*}
       cmd=${topic_stripped#*/}
-      log_info "Received MQTT message; topic:$topic msg:$msg vin:$vin cmd:$cmd"
+
+      # Ignore messages for cars not in the vin list
+      inVINList=0
+      for v in $VIN_LIST; do
+        if [ $v == $vin ]; then
+          inVINList=1
+          break
+        fi
+      done
+      if [ $inVINList -eq 0 ]; then
+        log_debug "Received MQTT message for vin: $vin which is not in VIN_LIST"
+        continue
+      fi
+
+      # Don't spam the logs for these topics / commands
+      if [ $cmd == "poll_state" ]; then
+        log_debug "Received MQTT message; topic:$topic msg:$msg vin:$vin cmd:$cmd"
+      else
+        log_info "Received MQTT message; topic:$topic msg:$msg vin:$vin cmd:$cmd"
+      fi
 
       case $cmd in
       config)
@@ -76,13 +95,44 @@ listen_to_mqtt() {
           infoBluetoothAdapter $vin
           ;;
 
-        read-state)
+        read-state-all)
           log_notice "read-state; calling readState()"
-          readState $vin
+          readState $vin all
           ;;
 
+        read-state-envcheck)
+          log_notice "read-state; calling readState()"
+          readState $vin env_check
+          ;;
+
+        read-state-charge)
+          log_notice "read-state; calling readState()"
+          readState $vin charge
+          ;;
+
+        read-state-climate)
+          log_notice "read-state; calling readState()"
+          readState $vin climate
+          ;;
+
+        read-state-tyre)
+          log_notice "read-state; calling readState()"
+          readState $vin tyre
+          ;;
+
+        read-state-closure)
+          log_notice "read-state; calling readState()"
+          readState $vin closure
+          ;;
+        read-state-drive)
+          log_notice "read-state; calling readState()"
+          readState $vin drive
+          ;;
         *)
-          log_error "Invalid configuration request:$msg topic:$topic vin:$vin"
+          # Invalid configuration request, unless it was a call to setupHADiscoveryAllVINsMain after HA restart
+          if [ $msg != $payload ]; then
+            log_error "Invalid configuration request:$msg topic:$topic vin:$vin"
+          fi
           ;;
         esac
         ;;
@@ -102,7 +152,7 @@ listen_to_mqtt() {
           teslaCtrlSendCommand $vin $msg "Flash lights"
           ;;
         frunk-open)
-          teslaCtrlSendCommand $vin $msg "Open vehicle frunk"
+          teslaCtrlSendCommand $vin $msg "Open vehicle frunk" && immediate_update $vin "binary_sensor/frunk_open" "true"
           ;;
         honk)
           teslaCtrlSendCommand $vin $msg "Honk horn"
@@ -111,7 +161,7 @@ listen_to_mqtt() {
           teslaCtrlSendCommand $vin $msg "List public keys enrolled on vehicle"
           ;;
         lock)
-          teslaCtrlSendCommand $vin $msg "Lock vehicle"
+          teslaCtrlSendCommand $vin $msg "Lock vehicle" && immediate_update $vin "binary_sensor/door_lock" "true"
           ;;
         media-toggle-playback)
           teslaCtrlSendCommand $vin $msg "Toggle between play/pause"
@@ -126,19 +176,28 @@ listen_to_mqtt() {
           teslaCtrlSendCommand $vin $msg "Start software update after delay"
           ;;
         unlock)
-          teslaCtrlSendCommand $vin $msg "Unlock vehicle"
+          teslaCtrlSendCommand $vin $msg "Unlock vehicle" && immediate_update $vin "binary_sensor/door_lock" "false"
           ;;
         wake)
-          teslaCtrlSendCommand $vin "-domain vcsec $msg" "Wake up vehicule"
+          teslaCtrlSendCommand $vin "-domain vcsec $msg" "Wake up vehicle"
           ;;
         *)
-          log_error "Invalid command request; vin:$vin topic:$topic msg:$msg"
+          # Invalid command request, unless it was a call to setupHADiscoveryAllVINsMain after HA restart
+          if [ $msg != $payload ]; then
+            log_error "Invalid command request; vin:$vin topic:$topic msg:$msg"
+          fi
           ;;
         esac
         ;; ## END of command)
 
       auto-seat-and-climate)
-        teslaCtrlSendCommand $vin "auto-seat-and-climate LR on" "Turn on automatic seat heating and HVAC"
+        teslaCtrlSendCommand $vin "auto-seat-and-climate LR on" "Turn on automatic seat heating and HVAC" &&
+          immediate_update $vin "switch/is_climate_on" $msg &&
+          immediate_update $vin "switch/steering_wheel_heater" $msg &&
+          immediate_update $vin "select/seat_heater_left" $msg &&
+          immediate_update $vin "select/seat_heater_right" $msg &&
+          immediate_update $vin "select/seat_heater_rear_left" "off" &&
+          immediate_update $vin "select/seat_heater_rear_right" "off"
         ;;
 
       charging-schedule)
@@ -148,35 +207,44 @@ listen_to_mqtt() {
       charging-set-amps)
         # https://github.com/iainbullock/tesla_ble_mqtt_docker/issues/4
         if [ $msg -gt 4 ]; then
-          teslaCtrlSendCommand $vin "charging-set-amps $msg" "Set charging Amps to $msg"
+          teslaCtrlSendCommand $vin "charging-set-amps $msg" "Set charging Amps to $msg" && immediate_update $vin "number/charge_current_request" $msg
         else
           teslaCtrlSendCommand $vin "charging-set-amps $msg" "4A or less requested, calling charging-set-amps $msg twice"
-          sleep 1
-          teslaCtrlSendCommand $vin "charging-set-amps $msg" "Set charging Amps to $msg"
+          # sleep 1
+          teslaCtrlSendCommand $vin "charging-set-amps $msg" "Set charging Amps to $msg" && immediate_update $vin "number/charge_current_request" $msg
         fi
         ;;
 
       charging-set-amps-override)
         # Command to send a single Amps request
         # Ref: https://github.com/tesla-local-control/tesla_ble_mqtt_core/issues/19
-        teslaCtrlSendCommand $vin "charging-set-amps $msg" "Set charging Amps to $msg"
+        teslaCtrlSendCommand $vin "charging-set-amps $msg" "Set charging Amps to $msg" && immediate_update $vin "number/charge_current_request" $msg
         ;;
 
       charging-set-limit)
-        teslaCtrlSendCommand $vin "charging-set-limit $msg" "Set charging limit to ${msg}%"
+        teslaCtrlSendCommand $vin "charging-set-limit $msg" "Set charging limit to ${msg}%" && immediate_update $vin "number/charge_limit_soc" $msg
         ;;
 
       climate-set-temp)
-        [ ${msg} -le 50 ] && T="${msg}C" || T="${msg}F"
-        teslaCtrlSendCommand $vin "climate-set-temp ${T}" "Set climate temperature to ${T}"
+        # Set decimal precision
+        T=$(printf "%0.2f" ${msg})
+        teslaCtrlSendCommand $vin "climate-set-temp ${T}C" "Set climate temperature to ${T}" && immediate_update $vin "number/driver_temp_setting" $msg
         ;;
 
       heater-seat-front-left)
-        teslaCtrlSendCommand $vin "seat-heater front-left $msg" "Turn $msg front left seat heater"
+        teslaCtrlSendCommand $vin "seat-heater front-left $msg" "Turn $msg front left seat heater" && immediate_update $vin "select/seat_heater_left" $msg
         ;;
 
       heater-seat-front-right)
-        teslaCtrlSendCommand $vin "seat-heater front-right $msg" "Turn $msg front right seat heater"
+        teslaCtrlSendCommand $vin "seat-heater front-right $msg" "Turn $msg front right seat heater" && immediate_update $vin "select/seat_heater_right" $msg
+        ;;
+
+      heater-seat-rear-left)
+        teslaCtrlSendCommand $vin "seat-heater front-left $msg" "Turn $msg rear left seat heater" && immediate_update $vin "select/seat_heater_rear_left" $msg
+        ;;
+
+      heater-seat-rear-right)
+        teslaCtrlSendCommand $vin "seat-heater front-right $msg" "Turn $msg rear right seat heater" && immediate_update $vin "select/seat_heater_rear_right" $msg
         ;;
 
       media-set-volume)
@@ -184,27 +252,33 @@ listen_to_mqtt() {
         ;;
 
       sentry-mode)
-        teslaCtrlSendCommand $vin "sentry-mode $msg" "Set sentry mode to $msg"
+        teslaCtrlSendCommand $vin "sentry-mode $msg" "Set sentry mode to $msg" && immediate_update $vin "switch/sentry_mode" $msg
         ;;
 
       steering-wheel-heater)
-        teslaCtrlSendCommand $vin "steering-wheel-heater $msg" "Set steering wheel mode to $msg"
+        teslaCtrlSendCommand $vin "steering-wheel-heater $msg" "Set steering wheel mode to $msg" && immediate_update $vin "switch/steering_wheel_heater" $msg
         ;;
 
       climate)
-        teslaCtrlSendCommand $vin "$cmd-$msg" "Set $cmd mode to $msg"
+        teslaCtrlSendCommand $vin "$cmd-$msg" "Set $cmd mode to $msg" &&
+          immediate_update $vin "switch/is_climate_on" $msg &&
+          immediate_update $vin "switch/steering_wheel_heater" $msg &&
+          immediate_update $vin "select/seat_heater_left" $msg &&
+          immediate_update $vin "select/seat_heater_right" $msg &&
+          immediate_update $vin "select/seat_heater_rear_left" "off" &&
+          immediate_update $vin "select/seat_heater_rear_right" "off"
         ;;
 
       charging)
-        teslaCtrlSendCommand $vin "$cmd-$msg" "Set $cmd mode to $msg"
+        teslaCtrlSendCommand $vin "$cmd-$msg" "Set $cmd mode to $msg" && immediate_update $vin "switch/charge_enable_request" $msg
         ;;
 
       charge-port)
-        teslaCtrlSendCommand $vin "$cmd-$msg" "Set $cmd mode to $msg"
+        teslaCtrlSendCommand $vin "$cmd-$msg" "Set $cmd mode to $msg" && immediate_update $vin "cover/charge_port_door_open" $msg
         ;;
 
       trunk)
-        teslaCtrlSendCommand $vin "$cmd-$msg" "Set $cmd mode to $msg"
+        teslaCtrlSendCommand $vin "$cmd-$msg" "Set $cmd mode to $msg" && immediate_update $vin "cover/rear_trunk" $msg
         ;;
 
       tonneau)
@@ -213,7 +287,16 @@ listen_to_mqtt() {
         ;;
 
       windows)
-        teslaCtrlSendCommand $vin "$cmd-$msg" "Set $cmd mode to $msg"
+        teslaCtrlSendCommand $vin "$cmd-$msg" "Set $cmd mode to $msg" && immediate_update $vin "cover/windows" $msg
+        ;;
+
+      variables)
+        # These get handled in the subshell where they are used
+        ;;
+
+      poll_state)
+        # Attempt to poll state for selected vehicle ($vin=vin, $msg=loop count from poll_state_loop)
+        poll_state $vin $msg
         ;;
 
       *)
