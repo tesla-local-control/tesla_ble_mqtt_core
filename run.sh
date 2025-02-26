@@ -17,7 +17,7 @@ for vin in $VIN_LIST; do
 
   # Set defaults for MQTT derived variables
   # https://github.com/tesla-local-control/tesla_ble_mqtt_docker/issues/75
-  export var_${vin}_polling=false
+  export var_${vin}_polling=off
   export var_${vin}_polling_interval=660
 
   # Attempt to read MQTT derived variables
