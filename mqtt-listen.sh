@@ -231,7 +231,7 @@ listen_to_mqtt() {
         teslaCtrlSendCommand $vin "climate-set-temp ${T}C" "Set climate temperature to ${T}" && immediate_update $vin "number/driver_temp_setting" $msg
         ;;
 
-      custom-command)       
+      custom-command)
         if [ "$msg" != "tesla_ble/$vin/custom-command" ]; then 
           log_info "Received custom command: \"$msg\""
           teslaCtrlSendCommand $vin "$msg" "$msg"

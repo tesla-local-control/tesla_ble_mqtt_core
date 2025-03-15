@@ -586,7 +586,7 @@ function setupExtendedControls() {
    "unique_id": "'${DEVICE_ID}'_heater-seat-rear-right"
    }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 6 10 -t homeassistant/select/${DEVICE_ID}/heater-seat-rear-right/config -l
 
-  # Custom Command Text 
+  # Custom Command Text
   echo '{                                                                                                                
    "command_topic": "'${TOPIC_ROOT}'/custom-command",                                                            
    "state_topic": "'${TOPIC_ROOT}'/text/custom-command",                                                       
