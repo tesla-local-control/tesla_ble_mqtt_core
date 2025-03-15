@@ -232,7 +232,7 @@ listen_to_mqtt() {
         ;;
 
       custom-command)
-        if [ "$msg" != "tesla_ble/$vin/custom-command" ]; then 
+        if [ "$msg" != "tesla_ble/$vin/custom-command" ]; then
           log_info "Received custom command: \"$msg\""
           teslaCtrlSendCommand $vin "$msg" "$msg"
         else
