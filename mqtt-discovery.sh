@@ -586,6 +586,26 @@ function setupExtendedControls() {
    "unique_id": "'${DEVICE_ID}'_heater-seat-rear-right"
    }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 6 10 -t homeassistant/select/${DEVICE_ID}/heater-seat-rear-right/config -l
 
+  # Custom Command Text
+  echo '{                                                                                                                
+   "command_topic": "'${TOPIC_ROOT}'/custom-command",                                                            
+   "state_topic": "'${TOPIC_ROOT}'/text/custom-command",                                                       
+   "device": {                                                                                                           
+    "identifiers": [                                                                                                     
+    "'${DEVICE_ID}'"                                                                                                     
+    ],                                                                                                                   
+    "manufacturer": "tesla-local-control",                                                                               
+    "model": "Tesla_BLE",                                                                                                
+    "name": "'${DEVICE_NAME}'",                                                                                          
+    "sw_version": "'${SW_VERSION}'"                                                                                      
+   },                                                                                                                    
+   "icon": "mdi:text",                                                                                        
+   "name": "Custom Tesla-Control Command",                                                                                     
+   "mode": "text",
+   "qos": "'${QOS_LEVEL}'",                                                                                              
+   "unique_id": "'${DEVICE_ID}'_custom-command"                                                                  
+   }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 6 10 -t homeassistant/text/${DEVICE_ID}/custom-command/config -l
+
   # Locks (future)
 
   #echo '{
