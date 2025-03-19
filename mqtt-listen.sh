@@ -231,6 +231,15 @@ listen_to_mqtt() {
         teslaCtrlSendCommand $vin "climate-set-temp ${T}C" "Set climate temperature to ${T}" && immediate_update $vin "number/driver_temp_setting" $msg
         ;;
 
+      custom-command)
+        if [ "$msg" != "tesla_ble/$vin/custom-command" ]; then
+          log_info "Received custom command: \"$msg\""
+          teslaCtrlSendCommand $vin "$msg" "$msg"
+        else
+          log_error "Received empty custom command"
+        fi
+        ;;
+
       heater-seat-front-left)
         teslaCtrlSendCommand $vin "seat-heater front-left $msg" "Turn $msg front left seat heater" && immediate_update $vin "select/seat_heater_left" $msg
         ;;
