@@ -602,7 +602,8 @@ function setupExtendedControls() {
    "icon": "mdi:text",                                                                                        
    "name": "Custom Tesla-Control Command",                                                                                     
    "mode": "text",
-   "qos": "'${QOS_LEVEL}'",                                                                                              
+   "qos": "'${QOS_LEVEL}'",
+   "enabled_by_default": "false",                                                                                          
    "unique_id": "'${DEVICE_ID}'_custom-command"                                                                  
    }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 6 10 -t homeassistant/text/${DEVICE_ID}/custom-command/config -l
 
