@@ -37,7 +37,6 @@ sendBLECommand() {
       log_info "Car is not responding to bluetooth, it's probably away VIN:$vin"
       # Publish to MQTT presence_bc sensor. TODO: Set awake sensor to Unknown via MQTT availability
       stateMQTTpub $vin 'false' 'binary_sensor/presence_bc'
-      stateMQTTpub $vin 'on' 'binary_sensor/last_cmd_failed'
 
     else
       # Car has responded
