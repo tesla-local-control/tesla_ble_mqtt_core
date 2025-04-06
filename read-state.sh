@@ -64,7 +64,7 @@ function poll_state() {
         log_warning "Polling intervals of less than 660 (11 mins) may prevent the car from sleeping, which will increase battery drain"
       fi
 
-      # Send a body-controller-state command. This checks if car is in bluetooth range and whether awake or asleep without acutally waking it
+      # Send a body-controller-state command. This checks if car is in bluetooth range and whether awake or asleep without actually waking it
       # Kill the tesla-control process if it doesn't complete in $TC_KILL_TIMEOUT seconds
       set +e
       bcs_json=$(timeout -k 1 -s SIGKILL $TC_KILL_TIMEOUT /usr/bin/tesla-control -ble -vin $vin -command-timeout ${TC_COMMAND_TIMEOUT}s -connect-timeout ${TC_CONNECT_TIMEOUT}s body-controller-state)
@@ -85,6 +85,7 @@ function poll_state() {
         # Publish to MQTT presence_bc sensors. TODO: Set awake sensor to Unknown via MQTT availability
         stateMQTTpub $vin 'false' 'binary_sensor/presence_bc'
         stateMQTTpub $vin 'false' 'device_tracker/presence_bc'
+        
 
       else
         # Car has responded
