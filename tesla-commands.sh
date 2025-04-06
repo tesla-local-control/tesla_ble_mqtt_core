@@ -79,24 +79,29 @@ sendBLECommand() {
         if [ $EXIT_STATUS -eq 137 ]; then
           log_warning "sendBLECommand (cmd): tesla_control process was killed. This may indicate that the bluetooth adapter is struggling to keep up with the rate of commands"
           log_warning "See https://github.com/tesla-local-control/tesla_ble_mqtt_core/issues/142"
+          stateMQTTpub $vin 'on' 'binary_sensor/last_cmd_failed'
 
         elif [ $EXIT_STATUS -eq 0 ]; then
           log_debug "sendBLECommand; $TESLACTRLOUT"
           log_info "Command $command was successfully delivered to vin:$vin"
+          stateMQTTpub $vin 'off' 'binary_sensor/last_cmd_failed'
           return 0
 
         elif [[ "$TESLACTRLOUT" == *"car could not execute command"* ]]; then
           log_warning "sendBLECommand; $TESLACTRLOUT"
           log_warning "Skipping command $command to vin:$vin, not retrying"
+          stateMQTTpub $vin 'on' 'binary_sensor/last_cmd_failed'
           return 10
 
         elif [[ "$TESLACTRLOUT" == *"context deadline exceeded"* ]]; then
           log_warning "teslaCtrlSendCommand; $TESLACTRLOUT"
           log_warning "Vehicle might be asleep, though it shouldn't be as it was previously awake"
+          stateMQTTpub $vin 'on' 'binary_sensor/last_cmd_failed'
 
         else
           log_error "tesla-control send command:$command to vin:$vin failed exit status $EXIT_STATUS"
           log_error "sendBLECommand; $TESLACTRLOUT"
+          stateMQTTpub $vin 'on' 'binary_sensor/last_cmd_failed'
 
         fi
 
