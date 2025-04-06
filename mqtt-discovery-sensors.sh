@@ -732,6 +732,28 @@ function setupStateSensors {
    "unique_id": "'${DEVICE_ID}'_mirror_heater"
   }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 36 10 -t homeassistant/binary_sensor/${DEVICE_ID}/mirror_heater/config -l
 
+    echo '{
+   "state_topic": "'${TOPIC_ROOT}'/binary_sensor/last_cmd_failed",
+   "device": {
+    "identifiers": [
+    "'${DEVICE_ID}'"
+    ],
+    "manufacturer": "tesla-local-control",
+    "model": "Tesla_BLE",
+    "name": "'${DEVICE_NAME}'",
+    "sw_version": "'${SW_VERSION}'"
+   },
+   "platform": "binary_sensor",
+   "name": "Last Command Failed",
+   "payload_on": "on",
+   "payload_off": "off",
+   "qos": "'${QOS_LEVEL}'",
+   "device_class": "problem",
+   "icon": "mdi:thumbs-up-down",
+   "enabled_by_default": "false",
+   "unique_id": "'${DEVICE_ID}'_last_cmd_failed"
+  }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 36 10 -t homeassistant/binary_sensor/${DEVICE_ID}/last_cmd_failed/config -l
+
   echo '{
    "state_topic": "'${TOPIC_ROOT}'/binary_sensor/awake",
    "device": {
