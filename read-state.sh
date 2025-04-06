@@ -67,7 +67,7 @@ function poll_state() {
       # Send a body-controller-state command. This checks if car is in bluetooth range and whether awake or asleep without acutally waking it
       # Kill the tesla-control process if it doesn't complete in $TC_KILL_TIMEOUT seconds
       set +e
-      bcs_json=$(timeout -k 1 -s SIGKILL $TC_KILL_TIMEOUT /usr/bin/tesla-control -ble -vin $vin -command-timeout ${TC_COMMAND_TIMEOUT}s -connect-timeout ${TC_CONNECT_TIMEOUT}s body-controller-state 2>&1)
+      bcs_json=$(timeout -k 1 -s SIGKILL $TC_KILL_TIMEOUT /usr/bin/tesla-control -ble -vin $vin -command-timeout ${TC_COMMAND_TIMEOUT}s -connect-timeout ${TC_CONNECT_TIMEOUT}s body-controller-state)
       EXIT_VALUE=$?
       set -e
       # Wait for all tesla-control processes to finish before continuing
