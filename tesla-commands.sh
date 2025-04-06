@@ -22,7 +22,7 @@ sendBLECommand() {
 
     # Get presence and awake status via body-controller-state
     set +e
-    bcs_json=$(timeout -k 1 -s SIGKILL $TC_KILL_TIMEOUT /usr/bin/tesla-control -ble -vin $vin -command-timeout ${TC_COMMAND_TIMEOUT}s -connect-timeout ${TC_CONNECT_TIMEOUT}s body-controller-state)
+    bcs_json=$(timeout -k 1 -s SIGKILL $TC_KILL_TIMEOUT /usr/bin/tesla-control -ble -vin $vin -command-timeout ${TC_COMMAND_TIMEOUT}s -connect-timeout ${TC_CONNECT_TIMEOUT}s body-controller-state 2>/dev/null)
     EXIT_VALUE=$?
     set -e
     wait
