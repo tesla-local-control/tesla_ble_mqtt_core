@@ -83,13 +83,13 @@ sendBLECommand() {
         elif [ $EXIT_STATUS -eq 0 ]; then
           log_debug "sendBLECommand; $TESLACTRLOUT"
           log_info "Command $command was successfully delivered to vin:$vin"
-          stateMQTTpub $vin 'off' 'binary_sensor/last_cmd_failed'
+          stateMQTTpub $vin 'off' 'binary_sensor/last_cmd_status'
           return 0
 
         elif [[ "$TESLACTRLOUT" == *"car could not execute command"* ]]; then
           log_warning "sendBLECommand; $TESLACTRLOUT"
           log_warning "Skipping command $command to vin:$vin, not retrying"
-          stateMQTTpub $vin 'on' 'binary_sensor/last_cmd_failed'
+          stateMQTTpub $vin 'on' 'binary_sensor/last_cmd_status'
           return 10
 
         elif [[ "$TESLACTRLOUT" == *"context deadline exceeded"* ]]; then
@@ -112,7 +112,7 @@ sendBLECommand() {
 
   # Max retries
   log_warning "sendBLECommand; max retries unsuccessfully trying to send command $command to $vin"
-  stateMQTTpub $vin 'on' 'binary_sensor/last_cmd_failed'
+  stateMQTTpub $vin 'on' 'binary_sensor/last_cmd_status'
   return 99
 }
 

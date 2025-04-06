@@ -733,7 +733,7 @@ function setupStateSensors {
   }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 36 10 -t homeassistant/binary_sensor/${DEVICE_ID}/mirror_heater/config -l
 
     echo '{
-   "state_topic": "'${TOPIC_ROOT}'/binary_sensor/last_cmd_failed",
+   "state_topic": "'${TOPIC_ROOT}'/binary_sensor/last_cmd_status",
    "device": {
     "identifiers": [
     "'${DEVICE_ID}'"
@@ -744,15 +744,15 @@ function setupStateSensors {
     "sw_version": "'${SW_VERSION}'"
    },
    "platform": "binary_sensor",
-   "name": "Last Command Failed",
+   "name": "Last Command Status",
    "payload_on": "on",
    "payload_off": "off",
    "qos": "'${QOS_LEVEL}'",
    "device_class": "problem",
    "icon": "mdi:thumbs-up-down",
    "enabled_by_default": "false",
-   "unique_id": "'${DEVICE_ID}'_last_cmd_failed"
-  }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 36 10 -t homeassistant/binary_sensor/${DEVICE_ID}/last_cmd_failed/config -l
+   "unique_id": "'${DEVICE_ID}'_last_cmd_status"
+  }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 36 10 -t homeassistant/binary_sensor/${DEVICE_ID}/last_cmd_status/config -l
 
   echo '{
    "state_topic": "'${TOPIC_ROOT}'/binary_sensor/awake",
