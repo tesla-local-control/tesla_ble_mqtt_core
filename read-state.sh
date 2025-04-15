@@ -515,7 +515,7 @@ function immediate_update() {
     fi
   fi
 
-  if [ -n "$IMMEDIATE_UPDATE" ]; then
+  if [ $IMMEDIATE_UPDATE == "true" ]; then
     log_info "Immediately updating state_topic: $stateTopic to value: $value for vin:$vin"
 
     # Publish to MQTT state topic
