@@ -2,5 +2,5 @@
 #
 # shellcheck shell=dash
 #
-export SW_VERSION=0.5.2-dev
+export SW_VERSION=0.5.3-dev
 log_info "Core version is $SW_VERSION"
