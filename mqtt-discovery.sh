@@ -451,7 +451,6 @@ function setupExtendedControls() {
    "min": "50",
    "max": "100",
    "step": "5",
-#   "mode": "slider",
    "qos": "'${QOS_LEVEL}'",
    "optimistic": "'${OPTIMISTIC_MODE}'",
    "unique_id": "'${DEVICE_ID}'_charging-set-limit",
