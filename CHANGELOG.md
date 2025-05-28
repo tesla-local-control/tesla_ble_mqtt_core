@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.5.1
+
+**Performance and stability improvement release**
+
+- NEW Features:
+  - Implemented persistent MQTT connection to avoid flooding the MQTT broker with connections
+  - Added consistent client ID based on hostname instead of random auto-generated IDs
+  - Improved resource usage by reusing a single MQTT connection for all publications
+
 ## 0.5.0
  
  **Major release that improves Bluetooth stability and allows for periodically getting your car's state information (sensors and other entities). Whilst the car is at home, there is now no need for FleetAPI!**

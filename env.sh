@@ -8,6 +8,7 @@ echo "[$(date +%H:%M:%S)] loading libproduct.sh"
 . /app/libproduct.sh
 log_debug "Loading environment & functions..."
 for fSource in mqtt.sh \
+  mqtt-persistent.sh \
   mqtt-discovery.sh \
   mqtt-discovery-sensors.sh \
   mqtt-listen.sh \
