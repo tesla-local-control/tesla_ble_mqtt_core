@@ -376,6 +376,25 @@ function setupStateSensors {
   }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 36 10 -t homeassistant/sensor/${DEVICE_ID}/charge_cable/config -l
 
   echo '{
+    "state_topic": "'${TOPIC_ROOT}'/sensor/chargerPhases",
+    "device": {
+     "identifiers": [
+     "'${DEVICE_ID}'"
+        ],
+     "manufacturer": "tesla-local-control",
+     "model": "Tesla_BLE",
+     "name": "'${DEVICE_NAME}'",
+     "sw_version": "'${SW_VERSION}'"
+    },
+    "platform": "sensor",
+    "icon": "mdi:cable-data",
+    "name": "Charger Phases",
+    "qos": "'${QOS_LEVEL}'",
+    "unique_id": "'${DEVICE_ID}'_chargerPhases",
+    "enabled_by_default": "false"
+  }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 36 10 -t homeassistant/sensor/${DEVICE_ID}/chargerPhases/config -l
+
+  echo '{
     "state_topic": "'${TOPIC_ROOT}'/sensor/charging_state",
     "device": {
      "identifiers": [
