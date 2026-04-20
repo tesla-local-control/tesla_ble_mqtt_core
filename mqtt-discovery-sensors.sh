@@ -406,6 +406,7 @@ function setupStateSensors {
      "sw_version": "'${SW_VERSION}'"
     },
     "platform": "sensor",
+    "force_update": "true",
     "icon": "mdi:battery-unknown",
     "name": "Charging State",
     "qos": "'${QOS_LEVEL}'",
