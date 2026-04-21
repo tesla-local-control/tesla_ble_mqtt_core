@@ -7,10 +7,10 @@
 ##
 
 # Variables for the persistent connection process
-MQTT_FIFO_IN="/tmp/mqtt_fifo_in"
-MQTT_FIFO_OUT="/tmp/mqtt_fifo_out"
-MQTT_PERSIST_PID_FILE="/tmp/mqtt_persist_pid"
-MQTT_CLIENT_ID="tesla_ble_mqtt_$(hostname | md5sum | head -c 8)"
+export MQTT_FIFO_IN="/tmp/mqtt_fifo_in"
+export MQTT_FIFO_OUT="/tmp/mqtt_fifo_out"
+export MQTT_PERSIST_PID_FILE="/tmp/mqtt_persist_pid"
+export MQTT_CLIENT_ID="tesla_ble_mqtt_$(hostname | md5sum | head -c 8)"
 
 # Start the persistent MQTT connection
 start_mqtt_persistent() {
