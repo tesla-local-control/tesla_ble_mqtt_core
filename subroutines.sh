@@ -41,12 +41,20 @@ presenceMQTTpub() {
   log_info "vin:$vin presence has expired, set presence $presenceState"
   # save presence to disk for ha/status listener to have access
   echo $presenceState >$KEYS_DIR/${vin}_presence
-  set +e
-  # We need a function for mosquitto_pub w/ retry
-  # shellcheck disable=SC2034
-  MQTT_OUT=$(eval $MOSQUITTO_PUB_BASE --nodelay -t "$MQTT_TOPIC" -m $presenceState 2>&1)
-  EXIT_STATUS=$?
-  set -e
+ 
+  # Use persistent MQTT connection if available
+  if type mqtt_publish_persistent >/dev/null 2>&1; then
+    mqtt_publish_persistent "$MQTT_TOPIC" "$presenceState"
+    EXIT_STATUS=$?
+  else
+    # Fallback to traditional method if persistent connection is not available
+    set +e
+    # We need a function for mosquitto_pub w/ retry
+    # shellcheck disable=SC2034
+    MQTT_OUT=$(eval $MOSQUITTO_PUB_BASE --nodelay -t "$MQTT_TOPIC" -m $presenceState 2>&1)
+    EXIT_STATUS=$?
+    set -e
+  fi
   [ $EXIT_STATUS -ne 0 ] &&
     log_error "${MQTT_OUT}" &&
     return 1

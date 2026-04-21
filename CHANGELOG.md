@@ -10,6 +10,11 @@
       - closure_state_ts -> StateCategoryClosures
       - tyre_state_ts -> StateCategoryTirePressure
       - drive_state_ts -> StateCategoryDrive
+   - Implement MQTT related performance and stability improvements:
+      - Implemented persistent MQTT connection to avoid flooding the MQTT broker with connections
+      - Added consistent client ID based on hostname instead of random auto-generated IDs
+      - Improved resource usage by reusing a single MQTT connection for all publications
+      - Credit to mrwogu https://github.com/mrwogu for proposing this PR https://github.com/tesla-local-control/tesla_ble_mqtt_core/pull/162. Also credit to jherby2k https://github.com/jherby2k for first identifying the issue https://github.com/tesla-local-control/tesla_ble_mqtt_docker/issues/109
 
 ## 0.5.4-dev
  Development updates for version 0.5.0
