@@ -426,12 +426,96 @@ function setupStateSensors {
     "platform": "sensor",
     "force_update": "true",
     "icon": "mdi:calendar-clock",
-    "name": "Charging State",
+    "name": "Charge State Timestamp",
     "qos": "'${QOS_LEVEL}'",
     "unique_id": "'${DEVICE_ID}'_charge_state_ts",
     "enabled_by_default": "false",
     "entity_category": "diagnostic"
   }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 36 10 -t homeassistant/sensor/${DEVICE_ID}/charge_state_ts/config -l
+
+  echo '{
+    "state_topic": "'${TOPIC_ROOT}'/sensor/climate_state_ts",
+    "device": {
+     "identifiers": [
+     "'${DEVICE_ID}'"
+        ],
+     "manufacturer": "tesla-local-control",
+     "model": "Tesla_BLE",
+     "name": "'${DEVICE_NAME}'",
+     "sw_version": "'${SW_VERSION}'"
+    },
+    "platform": "sensor",
+    "force_update": "true",
+    "icon": "mdi:calendar-clock",
+    "name": "Climate State Timestamp",
+    "qos": "'${QOS_LEVEL}'",
+    "unique_id": "'${DEVICE_ID}'_climate_state_ts",
+    "enabled_by_default": "false",
+    "entity_category": "diagnostic"
+  }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 36 10 -t homeassistant/sensor/${DEVICE_ID}/climate_state_ts/config -l
+
+  echo '{
+    "state_topic": "'${TOPIC_ROOT}'/sensor/closure_state_ts",
+    "device": {
+     "identifiers": [
+     "'${DEVICE_ID}'"
+        ],
+     "manufacturer": "tesla-local-control",
+     "model": "Tesla_BLE",
+     "name": "'${DEVICE_NAME}'",
+     "sw_version": "'${SW_VERSION}'"
+    },
+    "platform": "sensor",
+    "force_update": "true",
+    "icon": "mdi:calendar-clock",
+    "name": "Closure State Timestamp",
+    "qos": "'${QOS_LEVEL}'",
+    "unique_id": "'${DEVICE_ID}'_closure_state_ts",
+    "enabled_by_default": "false",
+    "entity_category": "diagnostic"
+  }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 36 10 -t homeassistant/sensor/${DEVICE_ID}/closure_state_ts/config -l
+
+  echo '{
+    "state_topic": "'${TOPIC_ROOT}'/sensor/tyre_state_ts",
+    "device": {
+     "identifiers": [
+     "'${DEVICE_ID}'"
+        ],
+     "manufacturer": "tesla-local-control",
+     "model": "Tesla_BLE",
+     "name": "'${DEVICE_NAME}'",
+     "sw_version": "'${SW_VERSION}'"
+    },
+    "platform": "sensor",
+    "force_update": "true",
+    "icon": "mdi:calendar-clock",
+    "name": "Tyre State Timestamp",
+    "qos": "'${QOS_LEVEL}'",
+    "unique_id": "'${DEVICE_ID}'_tyre_state_ts",
+    "enabled_by_default": "false",
+    "entity_category": "diagnostic"
+  }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 36 10 -t homeassistant/sensor/${DEVICE_ID}/tyre_state_ts/config -l
+
+  echo '{
+    "state_topic": "'${TOPIC_ROOT}'/sensor/drive_state_ts",
+    "device": {
+     "identifiers": [
+     "'${DEVICE_ID}'"
+        ],
+     "manufacturer": "tesla-local-control",
+     "model": "Tesla_BLE",
+     "name": "'${DEVICE_NAME}'",
+     "sw_version": "'${SW_VERSION}'"
+    },
+    "platform": "sensor",
+    "force_update": "true",
+    "icon": "mdi:calendar-clock",
+    "name": "Drive State Timestamp",
+    "qos": "'${QOS_LEVEL}'",
+    "unique_id": "'${DEVICE_ID}'_drive_state_ts",
+    "enabled_by_default": "false",
+    "entity_category": "diagnostic"
+  }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 36 10 -t homeassistant/sensor/${DEVICE_ID}/drive_state_ts/config -l
 
   echo '{
     "state_topic": "'${TOPIC_ROOT}'/sensor/odometer",

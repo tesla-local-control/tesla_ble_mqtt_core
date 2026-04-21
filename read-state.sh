@@ -395,6 +395,7 @@ function readClimateState() {
   getStateValueAndPublish $vin '.climateState.seatHeaterRight' select/seat_heater_right "$TESLACTRLOUT"
   getStateValueAndPublish $vin '.climateState.seatHeaterRearLeft' select/seat_heater_rear_left "$TESLACTRLOUT"
   getStateValueAndPublish $vin '.climateState.seatHeaterRearRight' select/seat_heater_rear_right "$TESLACTRLOUT"
+  getStateValueAndPublish $vin '.climateState.timestamp' sensor/climate_state_ts "$TESLACTRLOUT"  
 
 }
 
@@ -418,6 +419,7 @@ function readTyreState() {
   getStateValueAndPublish $vin '.tirePressureState.tpmsPressureFr' sensor/tpms_pressure_fr "$TESLACTRLOUT"
   getStateValueAndPublish $vin '.tirePressureState.tpmsPressureRl' sensor/tpms_pressure_rl "$TESLACTRLOUT"
   getStateValueAndPublish $vin '.tirePressureState.tpmsPressureRr' sensor/tpms_pressure_rr "$TESLACTRLOUT"
+  getStateValueAndPublish $vin '.tirePressureState.timestamp' sensor/tyre_state_ts "$TESLACTRLOUT"  
 
 }
 
@@ -452,6 +454,7 @@ function closuresState() {
   getStateValueAndPublish $vin '.closuresState.doorOpenDriverRear' binary_sensor/door_open_driver_rear "$TESLACTRLOUT"
   getStateValueAndPublish $vin '.closuresState.doorOpenPassengerRear' binary_sensor/door_open_pass_rear "$TESLACTRLOUT"
   getStateValueAndPublish $vin '.closuresState.locked' binary_sensor/door_lock "$TESLACTRLOUT"
+  getStateValueAndPublish $vin '.closuresState.timestamp' sensor/closure_state_ts "$TESLACTRLOUT"
 
   # Publish to windows cover state topic
   if [ $ANYWINDOWOPEN == "true" ]; then
@@ -480,6 +483,7 @@ function driveState() {
 
   # Get values from the JSON and publish corresponding MQTT state topic
   getStateValueAndPublish $vin '.driveState.odometerInHundredthsOfAMile' sensor/odometer "$TESLACTRLOUT"
+  getStateValueAndPublish $vin '.driveState.timestamp' sensor/drive_state_ts "$TESLACTRLOUT"  
 
 }
 
