@@ -26,29 +26,15 @@ retryMQTTpub() {
   # read topic json fom stdin
   read -r topic_json
   
-  # Extract topic from args if available (for persistent connection)
-  topic=""
-  if echo "$args" | grep -q -- "-t"; then
-    topic=$(echo "$args" | sed -n 's/.*-t\s\+"\([^"]*\)".*/\1/p;s/.*-t\s\+\([^[:space:]]\+\).*/\1/p' | head -1)
-  fi
-
   # Retry loop
   cmdCounterLoop=0
   while [ $((cmdCounterLoop += 1)) -le $retryMQTTAttemptCount ]; do
 
-    # Use persistent connection if available and we have a topic
-    if type mqtt_publish_persistent >/dev/null 2>&1 && [ -n "$topic" ]; then
-      log_debug "Attempt $cmdCounterLoop/${retryMQTTAttemptCount} retryMQTTpub; using persistent connection for topic $topic"
-      mqtt_publish_persistent "$topic" "$topic_json"
-      exit_code=$?
-    else
-      # Fallback to traditional method
-      log_debug "Attempt $cmdCounterLoop/${retryMQTTAttemptCount} retryMQTTpub; calling mosquitto_pub $args"
-      set +e
-      echo "$topic_json" | eval $MOSQUITTO_PUB_BASE $args
-      exit_code=$?
-      set -e
-    fi
+    log_debug "Attempt $cmdCounterLoop/${retryMQTTAttemptCount} retryMQTTpub; calling mosquitto_pub $args"
+    set +e
+    echo "$topic_json" | eval $MOSQUITTO_PUB_BASE $args
+    exit_code=$?
+    set -e
 
     if [ $exit_code -eq 0 ]; then
       log_debug "mosquitto_pub successfully sent $args"

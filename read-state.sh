@@ -125,17 +125,10 @@ function stateMQTTpub() {
 
   log_debug "Setting MQTT topic $MQTT_TOPIC to $state"
 
-  # Use persistent MQTT connection if available
-  if type mqtt_publish_persistent >/dev/null 2>&1; then
-    mqtt_publish_persistent "$MQTT_TOPIC" "$state"
-    EXIT_STATUS=$?
-  else
-    # Fallback to traditional method if persistent connection is not available
-    set +e
-    MQTT_OUT=$(eval $MOSQUITTO_PUB_BASE --nodelay -t "$MQTT_TOPIC" -m $state 2>&1)
-    EXIT_STATUS=$?
-    set -e
-  fi
+  set +e
+  MQTT_OUT=$(eval $MOSQUITTO_PUB_BASE --nodelay -t "$MQTT_TOPIC" -m $state 2>&1)
+  EXIT_STATUS=$?
+  set -e
 
   [ $EXIT_STATUS -ne 0 ] &&
     log_error "${MQTT_OUT}" &&

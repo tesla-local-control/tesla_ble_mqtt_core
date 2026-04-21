@@ -9,14 +9,6 @@ echo "[$(date +%H:%M:%S)] Starting... loading /app/env.sh"
 # Init product's environment
 . /app/env.sh
 
-# Initialize persistent MQTT connection if available
-if type init_mqtt_persistent >/dev/null 2>&1; then
-  log_notice "Initializing persistent MQTT connection"
-  init_mqtt_persistent
-else
-  log_notice "Persistent MQTT connection not available, using standard connections"
-fi
-
 # Replace | with ' ' white space
 VIN_LIST=$(echo $VIN_LIST | sed -e 's/[|,;]/ /g')
 
@@ -161,16 +153,3 @@ while :; do
 
 done
 
-# Clean up on exit
-cleanup() {
-  log_notice "Shutting down tesla_ble_mqtt service"
-  # Stop the persistent MQTT connection
-  if type stop_mqtt_persistent >/dev/null 2>&1; then
-    log_notice "Closing persistent MQTT connection"
-    stop_mqtt_persistent
-  fi
-  exit 0
-}
-
-# Set trap for clean shutdown
-trap cleanup EXIT INT TERM
