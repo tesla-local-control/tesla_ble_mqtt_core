@@ -7,10 +7,10 @@
 ##
 
 # Variables for the persistent connection process
-export MQTT_FIFO_IN="/tmp/mqtt_fifo_in"
-export MQTT_FIFO_OUT="/tmp/mqtt_fifo_out"
-export MQTT_PERSIST_PID_FILE="/tmp/mqtt_persist_pid"
-export MQTT_CLIENT_ID="tesla_ble_mqtt_$(hostname | md5sum | head -c 8)"
+MQTT_FIFO_IN="/tmp/mqtt_fifo_in"
+MQTT_FIFO_OUT="/tmp/mqtt_fifo_out"
+MQTT_PERSIST_PID_FILE="/tmp/mqtt_persist_pid"
+MQTT_CLIENT_ID="tesla_ble_mqtt_$(hostname | md5sum | head -c 8)"
 
 # Start the persistent MQTT connection
 start_mqtt_persistent() {
@@ -23,7 +23,6 @@ start_mqtt_persistent() {
   # Start mosquitto_pub in persistent mode
   if [ -n "$MQTT_USERNAME" ]; then
     log_notice "Starting persistent MQTT client with authentication"
-    echo $MQTT_FIFO_IN
     cat "$MQTT_FIFO_IN" &
     mosquitto_pub -h "$MQTT_SERVER" -p "$MQTT_PORT" -u "$MQTT_USERNAME" -P "$MQTT_PASSWORD" \
       -i "$MQTT_CLIENT_ID" --nodelay -l -d < "$MQTT_FIFO_IN" > "$MQTT_FIFO_OUT" &
@@ -70,7 +69,7 @@ mqtt_publish_persistent() {
   
   # Send the topic and message to the FIFO in the format mosquitto_pub expects with -l option
   # For mosquitto_pub with -l flag, each line should be: "topic message"
-  echo "$topic" "$message" > "$MQTT_FIFO_IN"
+  echo "'$topic'" "'$message'" > "$MQTT_FIFO_IN"
 }
 
 # Initialize the persistent connection
