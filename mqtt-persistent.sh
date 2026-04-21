@@ -70,7 +70,7 @@ mqtt_publish_persistent() {
   
   # Send the topic and message to the FIFO in the format mosquitto_pub expects with -l option
   # For mosquitto_pub with -l flag, each line should be: "topic message"
-  echo "$topic $message" > "$MQTT_FIFO_IN"
+  echo "$topic" "$message" > "$MQTT_FIFO_IN"
 }
 
 # Initialize the persistent connection
