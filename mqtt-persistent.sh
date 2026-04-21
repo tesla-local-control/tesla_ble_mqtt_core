@@ -24,7 +24,7 @@ start_mqtt_persistent() {
   if [ -n "$MQTT_USERNAME" ]; then
     log_notice "Starting persistent MQTT client with authentication"
     mosquitto_pub -h "$MQTT_SERVER" -p "$MQTT_PORT" -u "$MQTT_USERNAME" -P "$MQTT_PASSWORD" \
-      -i "$MQTT_CLIENT_ID" --nodelay -l -d < "$MQTT_FIFO_IN" > "$MQTT_FIFO_OUT" 2>&1 &
+      -i "$MQTT_CLIENT_ID" --nodelay -l -d < "$MQTT_FIFO_IN" > "$MQTT_FIFO_OUT" &
   else
     log_notice "Starting persistent MQTT client in anonymous mode"
     mosquitto_pub -h "$MQTT_SERVER" -p "$MQTT_PORT" \
