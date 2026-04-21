@@ -264,13 +264,13 @@ listen_to_mqtt() {
         teslaCtrlSendCommand $vin "sentry-mode $msg" "Set sentry mode to $msg" && immediate_update $vin "switch/sentry_mode" $msg
         ;;
 
-      keep-accessory-power)
-        teslaCtrlSendCommand $vin "sentry-mode $msg" "Set keep accessory power mode to $msg" && immediate_update $vin "switch/keep_accessory_power" $msg
-        ;;
+      # keep-accessory-power)
+      #   teslaCtrlSendCommand $vin "sentry-mode $msg" "Set keep accessory power mode to $msg" && immediate_update $vin "switch/keep_accessory_power" $msg
+      #   ;;
 
-      low-power-mode)
-        teslaCtrlSendCommand $vin "sentry-mode $msg" "Set low power mode to $msg" && immediate_update $vin "switch/low_power_mode" $msg
-        ;;                
+      # low-power-mode)
+      #   teslaCtrlSendCommand $vin "sentry-mode $msg" "Set low power mode to $msg" && immediate_update $vin "switch/low_power_mode" $msg
+      #   ;;                
 
       steering-wheel-heater)
         teslaCtrlSendCommand $vin "steering-wheel-heater $msg" "Set steering wheel mode to $msg" && immediate_update $vin "switch/steering_wheel_heater" $msg

@@ -406,12 +406,32 @@ function setupStateSensors {
      "sw_version": "'${SW_VERSION}'"
     },
     "platform": "sensor",
-    "force_update": "true",
     "icon": "mdi:battery-unknown",
     "name": "Charging State",
     "qos": "'${QOS_LEVEL}'",
     "unique_id": "'${DEVICE_ID}'_charging_state"
   }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 36 10 -t homeassistant/sensor/${DEVICE_ID}/charging_state/config -l
+
+  echo '{
+    "state_topic": "'${TOPIC_ROOT}'/sensor/charge_state_ts",
+    "device": {
+     "identifiers": [
+     "'${DEVICE_ID}'"
+        ],
+     "manufacturer": "tesla-local-control",
+     "model": "Tesla_BLE",
+     "name": "'${DEVICE_NAME}'",
+     "sw_version": "'${SW_VERSION}'"
+    },
+    "platform": "sensor",
+    "force_update": "true",
+    "icon": "mdi:calendar-clock",
+    "name": "Charging State",
+    "qos": "'${QOS_LEVEL}'",
+    "unique_id": "'${DEVICE_ID}'_charge_state_ts",
+    "enabled_by_default": "false",
+    "entity_category": "diagnostic"
+  }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 36 10 -t homeassistant/sensor/${DEVICE_ID}/charge_state_ts/config -l
 
   echo '{
     "state_topic": "'${TOPIC_ROOT}'/sensor/odometer",

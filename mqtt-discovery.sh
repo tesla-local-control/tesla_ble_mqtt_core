@@ -283,53 +283,53 @@ function setupExtendedControls() {
    "unique_id": "'${DEVICE_ID}'_steering-wheel-heater"
    }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 6 10 -t homeassistant/switch/${DEVICE_ID}/steering-wheel-heater/config -l
 
-  echo '{
-   "command_topic": "'${TOPIC_ROOT}'/keep-accessory-power",
-   "state_topic": "'${TOPIC_ROOT}'/switch/keep_accessory_power",  
-   "device": {
-    "identifiers": [
-    "'${DEVICE_ID}'"
-    ],
-    "manufacturer": "tesla-local-control",
-    "model": "Tesla_BLE",
-    "name": "'${DEVICE_NAME}'",
-    "sw_version": "'${SW_VERSION}'"
-   },
-   "icon": "mdi:usb",
-   "name": "Keep Accessory Power",
-   "device_class": "switch",
-   "payload_on": "on",
-   "payload_off": "off",
-   "state_on": "true",
-   "state_off": "false",
-   "qos": "'${QOS_LEVEL}'",
-   "optimistic": "'${OPTIMISTIC_MODE}'",
-   "unique_id": "'${DEVICE_ID}'_keep-accessory-power"
-   }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 6 10 -t homeassistant/switch/${DEVICE_ID}/keep-accessory-power/config -l
+  # echo '{
+  #  "command_topic": "'${TOPIC_ROOT}'/keep-accessory-power",
+  #  "state_topic": "'${TOPIC_ROOT}'/switch/keep_accessory_power",  
+  #  "device": {
+  #   "identifiers": [
+  #   "'${DEVICE_ID}'"
+  #   ],
+  #   "manufacturer": "tesla-local-control",
+  #   "model": "Tesla_BLE",
+  #   "name": "'${DEVICE_NAME}'",
+  #   "sw_version": "'${SW_VERSION}'"
+  #  },
+  #  "icon": "mdi:usb",
+  #  "name": "Keep Accessory Power",
+  #  "device_class": "switch",
+  #  "payload_on": "on",
+  #  "payload_off": "off",
+  #  "state_on": "true",
+  #  "state_off": "false",
+  #  "qos": "'${QOS_LEVEL}'",
+  #  "optimistic": "'${OPTIMISTIC_MODE}'",
+  #  "unique_id": "'${DEVICE_ID}'_keep-accessory-power"
+  #  }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 6 10 -t homeassistant/switch/${DEVICE_ID}/keep-accessory-power/config -l
 
-  echo '{
-   "command_topic": "'${TOPIC_ROOT}'/low-power-mode",
-   "state_topic": "'${TOPIC_ROOT}'/switch/low_power_mode",  
-   "device": {
-    "identifiers": [
-    "'${DEVICE_ID}'"
-    ],
-    "manufacturer": "tesla-local-control",
-    "model": "Tesla_BLE",
-    "name": "'${DEVICE_NAME}'",
-    "sw_version": "'${SW_VERSION}'"
-   },
-   "icon": "mdi:power-cycle",
-   "name": "Low Power Mode",
-   "device_class": "switch",
-   "payload_on": "on",
-   "payload_off": "off",
-   "state_on": "true",
-   "state_off": "false",
-   "qos": "'${QOS_LEVEL}'",
-   "optimistic": "'${OPTIMISTIC_MODE}'",
-   "unique_id": "'${DEVICE_ID}'_low-power-mode"
-   }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 6 10 -t homeassistant/switch/${DEVICE_ID}/low-power-mode/config -l
+  # echo '{
+  #  "command_topic": "'${TOPIC_ROOT}'/low-power-mode",
+  #  "state_topic": "'${TOPIC_ROOT}'/switch/low_power_mode",  
+  #  "device": {
+  #   "identifiers": [
+  #   "'${DEVICE_ID}'"
+  #   ],
+  #   "manufacturer": "tesla-local-control",
+  #   "model": "Tesla_BLE",
+  #   "name": "'${DEVICE_NAME}'",
+  #   "sw_version": "'${SW_VERSION}'"
+  #  },
+  #  "icon": "mdi:power-cycle",
+  #  "name": "Low Power Mode",
+  #  "device_class": "switch",
+  #  "payload_on": "on",
+  #  "payload_off": "off",
+  #  "state_on": "true",
+  #  "state_off": "false",
+  #  "qos": "'${QOS_LEVEL}'",
+  #  "optimistic": "'${OPTIMISTIC_MODE}'",
+  #  "unique_id": "'${DEVICE_ID}'_low-power-mode"
+  #  }' | sed ':a;N;$!ba;s/\n//g' | retryMQTTpub 6 10 -t homeassistant/switch/${DEVICE_ID}/low-power-mode/config -l
 
   echo '{
    "command_topic": "'${TOPIC_ROOT}'/variables/polling",

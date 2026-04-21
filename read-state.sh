@@ -360,6 +360,7 @@ function readChargeState() {
   getStateValueAndPublish $vin '.chargeState.chargerPhases' sensor/chargerPhases "$TESLACTRLOUT"
   getStateValueAndPublish $vin '.chargeState.chargeCurrentRequest' number/charge_current_request "$TESLACTRLOUT"
   getStateValueAndPublish $vin '.chargeState.chargeLimitSoc' number/charge_limit_soc "$TESLACTRLOUT"
+  getStateValueAndPublish $vin '.chargeState.timestamp' sensor/charge_state_ts "$TESLACTRLOUT"
 
 }
 
