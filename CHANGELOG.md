@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.5.1
+   Minor update to fix https://github.com/tesla-local-control/tesla-local-control-addon/issues/148:
+   “Since Supervisor 2026.04.0, the BUILD_FROM argument is no longer provided by default. Use explicit FROM ghcr.io/home-assistant/base:latest in your Dockerfile to achieve the same build result as before. Using a pinned version of the base image is recommended for better build stability.”
+
+   Thanks to https://github.com/aaserali for idenfiying the issue, and to https://github.com/m7les for providing the fix (https://github.com/tesla-local-control/tesla-local-control-addon/pull/149)
+
 ## 0.5.0
  
  **Major release that improves Bluetooth stability and allows for periodically getting your car's state information (sensors and other entities). Whilst the car is at home, there is now no need for FleetAPI!**
