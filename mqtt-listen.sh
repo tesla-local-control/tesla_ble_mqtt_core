@@ -161,7 +161,7 @@ listen_to_mqtt() {
           teslaCtrlSendCommand $vin $msg "List public keys enrolled on vehicle"
           ;;
         lock)
-          teslaCtrlSendCommand $vin $msg "Lock vehicle" && immediate_update $vin "binary_sensor/door_lock" "true"
+          teslaCtrlSendCommand $vin "-domain vcsec $msg" "Lock vehicle" && immediate_update $vin "binary_sensor/door_lock" "true"
           ;;
         media-toggle-playback)
           teslaCtrlSendCommand $vin $msg "Toggle between play/pause"
@@ -176,7 +176,7 @@ listen_to_mqtt() {
           teslaCtrlSendCommand $vin $msg "Start software update after delay"
           ;;
         unlock)
-          teslaCtrlSendCommand $vin $msg "Unlock vehicle" && immediate_update $vin "binary_sensor/door_lock" "false"
+          teslaCtrlSendCommand $vin "-domain vcsec $msg" "Unlock vehicle" && immediate_update $vin "binary_sensor/door_lock" "false"
           ;;
         wake)
           teslaCtrlSendCommand $vin "-domain vcsec $msg" "Wake up vehicle"
